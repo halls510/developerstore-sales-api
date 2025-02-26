@@ -13,7 +13,10 @@ public class CreateUserProfile : Profile
     /// </summary>
     public CreateUserProfile()
     {
-        CreateMap<CreateUserRequest, CreateUserCommand>();
+        CreateMap<CreateUserRequest, CreateUserCommand>()
+            .ForMember(dest => dest.Firstname, opt => opt.MapFrom(src => src.Name.Firstname))
+            .ForMember(dest => dest.Lastname, opt => opt.MapFrom(src => src.Name.Lastname))
+            .ReverseMap();
         CreateMap<CreateUserResult, CreateUserResponse>();
     }
 }

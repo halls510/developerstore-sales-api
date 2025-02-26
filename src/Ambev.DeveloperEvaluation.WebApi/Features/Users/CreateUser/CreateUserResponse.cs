@@ -13,9 +13,9 @@ public class CreateUserResponse
     public Guid Id { get; set; }
 
     /// <summary>
-    /// The user's full name
+    /// The user's full name as an object.
     /// </summary>
-    public string Name { get; set; } = string.Empty;
+    public NameResponse Name { get; set; } = new NameResponse();
 
     /// <summary>
     /// The user's email address
@@ -36,4 +36,13 @@ public class CreateUserResponse
     /// The current status of the user
     /// </summary>
     public UserStatus Status { get; set; }
+}
+
+/// <summary>
+/// Represents the response structure for user name.
+/// </summary>
+public class NameResponse
+{
+    public string Firstname { get; set; } = string.Empty;
+    public string Lastname { get; set; } = string.Empty;
 }

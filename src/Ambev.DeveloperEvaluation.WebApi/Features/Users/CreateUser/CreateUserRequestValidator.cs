@@ -14,6 +14,8 @@ public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
     /// </summary>
     /// <remarks>
     /// Validation rules include:
+    /// - Fisrtname: Required, length between 3 and 24 characters
+    /// - Lasttname: Required, length between 3 and 24 characters
     /// - Email: Must be valid format (using EmailValidator)
     /// - Username: Required, length between 3 and 50 characters
     /// - Password: Must meet security requirements (using PasswordValidator)
@@ -23,6 +25,8 @@ public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
     /// </remarks>
     public CreateUserRequestValidator()
     {
+        RuleFor(user => user.Name.Firstname).NotEmpty().Length(3, 24);
+        RuleFor(user => user.Name.Lastname).NotEmpty().Length(3, 24);
         RuleFor(user => user.Email).SetValidator(new EmailValidator());
         RuleFor(user => user.Username).NotEmpty().Length(3, 50);
         RuleFor(user => user.Password).SetValidator(new PasswordValidator());
