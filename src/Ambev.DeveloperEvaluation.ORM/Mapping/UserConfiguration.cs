@@ -29,5 +29,20 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasConversion<string>()
             .HasMaxLength(20);
 
+        // Configuração do relacionamento com Address
+        builder.OwnsOne(u => u.Address, address =>
+        {
+            address.Property(a => a.City).IsRequired().HasMaxLength(100);
+            address.Property(a => a.Street).IsRequired().HasMaxLength(100);
+            address.Property(a => a.Number).IsRequired();
+            address.Property(a => a.Zipcode).IsRequired().HasMaxLength(20);
+
+            address.OwnsOne(a => a.Geolocation, geo =>
+            {
+                geo.Property(g => g.Lat).IsRequired().HasMaxLength(50);
+                geo.Property(g => g.Long).IsRequired().HasMaxLength(50);
+            });
+        });
+
     }
 }

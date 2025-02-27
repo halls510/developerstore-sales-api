@@ -23,6 +23,11 @@ public class User : BaseEntity, IUser
     public string Lastname { get; set; } = string.Empty;
 
     /// <summary>
+    /// Gets or sets the user's address.
+    /// </summary>
+    public Address Address { get; set; } = new Address();  // Adicionando o Address
+
+    /// <summary>
     /// Gets the user's full name.
     /// Must not be null or empty and should contain both first and last names.
     /// </summary>
