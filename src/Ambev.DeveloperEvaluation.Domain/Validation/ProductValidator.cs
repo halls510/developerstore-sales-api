@@ -17,9 +17,9 @@ public class ProductValidator : AbstractValidator<Product>
         RuleFor(product => product.Description)
             .MaximumLength(1000).WithMessage("Description cannot exceed 1000 characters.");
 
-        RuleFor(product => product.Category)
-            .NotEmpty().WithMessage("Category is required.")
-            .MaximumLength(100).WithMessage("Category cannot exceed 100 characters.");
+        RuleFor(product => product.CategoryId)
+                 .NotEmpty().WithMessage("CategoryId is required.")
+                 .NotEqual(Guid.Empty).WithMessage("CategoryId must be a valid GUID.");
 
         RuleFor(product => product.Image)
             .NotEmpty().WithMessage("Image URL is required.")
