@@ -9,6 +9,7 @@ namespace Ambev.DeveloperEvaluation.ORM;
 public class DefaultContext : DbContext
 {
     public DbSet<User> Users { get; set; }
+    public DbSet<Category> Categories { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Cart> Carts { get; set; }
     public DbSet<Sale> Sales { get; set; }
@@ -21,6 +22,14 @@ public class DefaultContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        // Adiciona a categoria padrão se não existir
+        modelBuilder.Entity<Category>().HasData(new Category
+        {
+            Id = Category.DefaultCategoryId,
+            Name = Category.DefaultCategoryName
+        });
+
         base.OnModelCreating(modelBuilder);
     }
 }

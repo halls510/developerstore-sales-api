@@ -24,14 +24,21 @@ public interface IProductRepository
     Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves all products with optional pagination and sorting.
+    /// Retrieves all products with pagination and sorting.
     /// </summary>
     /// <param name="page">The page number for pagination (default is 1).</param>
     /// <param name="pageSize">The number of items per page (default is 10).</param>
     /// <param name="orderBy">Sorting criteria, e.g., "price desc, title asc".</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A collection of products.</returns>
-    Task<IEnumerable<Product>> GetAllAsync(int page, int pageSize, string orderBy, CancellationToken cancellationToken = default);
+    /// <returns>
+    /// A tuple containing:
+    /// - A collection of products.
+    /// - Total number of items.
+    /// - Current page.
+    /// - Total number of pages.
+    /// </returns>
+    Task<(IEnumerable<Product> Products, int TotalItems, int CurrentPage, int TotalPages)>
+        GetAllAsync(int page, int pageSize, string orderBy, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates an existing product in the repository.
@@ -57,13 +64,20 @@ public interface IProductRepository
     Task<IEnumerable<string>> GetAllCategoriesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves products by category with optional pagination and sorting.
+    /// Retrieves products by category with pagination and sorting.
     /// </summary>
-    /// <param name="category">The category name.</param>
+    /// <param name="categoryName">The name of the category.</param>
     /// <param name="page">The page number for pagination (default is 1).</param>
     /// <param name="pageSize">The number of items per page (default is 10).</param>
     /// <param name="orderBy">Sorting criteria, e.g., "price desc, title asc".</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A collection of products within the specified category.</returns>
-    Task<IEnumerable<Product>> GetByCategoryAsync(string category, int page, int pageSize, string orderBy, CancellationToken cancellationToken = default);
+    /// <returns>
+    /// A tuple containing:
+    /// - A collection of products within the specified category.
+    /// - Total number of items.
+    /// - Current page.
+    /// - Total number of pages.
+    /// </returns>
+    Task<(IEnumerable<Product> Products, int TotalItems, int CurrentPage, int TotalPages)>
+        GetByCategoryAsync(string categoryName, int page, int pageSize, string orderBy, CancellationToken cancellationToken = default);
 }

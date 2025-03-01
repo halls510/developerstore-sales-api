@@ -17,7 +17,6 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.Title).IsRequired().HasMaxLength(200);
         builder.Property(p => p.Price).HasColumnType("decimal(18,2)").IsRequired();
         builder.Property(p => p.Description).HasMaxLength(1000);
-        builder.Property(p => p.Category).HasMaxLength(100);
         builder.Property(p => p.Image).HasMaxLength(500);
 
         builder.OwnsOne(p => p.Rating, rating =>
@@ -25,5 +24,13 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
             rating.Property(r => r.Rate).HasColumnType("decimal(3,2)");
             rating.Property(r => r.Count).IsRequired();
         });
+
+        builder.Property(p => p.CategoryId)
+           .IsRequired();
+
+        builder.HasOne(p => p.Category)
+            .WithMany(c => c.Products)
+            .HasForeignKey(p => p.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

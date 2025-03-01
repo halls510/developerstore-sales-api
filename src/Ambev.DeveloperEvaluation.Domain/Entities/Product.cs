@@ -30,12 +30,6 @@ public class Product : BaseEntity
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the category of the product.
-    /// Must be a valid category string.
-    /// </summary>
-    public string Category { get; set; } = string.Empty;
-
-    /// <summary>
     /// Gets or sets the image URL of the product.
     /// </summary>
     public string Image { get; set; } = string.Empty;
@@ -55,6 +49,16 @@ public class Product : BaseEntity
     /// Gets the date and time of the last update to the product's information.
     /// </summary>
     public DateTime? UpdatedAt { get; set; }
+
+    /// <summary>
+    /// Foreign key for the Category.
+    /// </summary>
+    public Guid CategoryId { get; set; }
+
+    /// <summary>
+    /// Navigation property for the Category.
+    /// </summary>
+    public Category Category { get; set; } = null!;
 
     /// <summary>
     /// Initializes a new instance of the Product class.
