@@ -13,28 +13,18 @@ public class Cart : BaseEntity
     public Guid UserId { get; set; } // External Identity for User
 
     /// <summary>
-    /// Gets or sets the date when the cart was created.
+    /// Gets or sets the user’s full name at the time of cart creation.
+    /// This field is denormalized to preserve the original user information.
+    /// </summary>
+    public string UserName { get; set; } = string.Empty; // Denormalized user name
+
+    /// <summary>
+    /// Gets or sets the creation date of the cart.
     /// </summary>
     public DateTime Date { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// Gets or sets the list of products in the cart.
+    /// Gets or sets the list of items in the cart.
     /// </summary>
-    public List<CartItem> Products { get; set; } = new();
-}
-
-/// <summary>
-/// Represents a product inside a shopping cart.
-/// </summary>
-public class CartItem
-{
-    /// <summary>
-    /// Gets or sets the external product identifier.
-    /// </summary>
-    public Guid ProductId { get; set; } // External Identity for Product
-
-    /// <summary>
-    /// Gets or sets the quantity of the product.
-    /// </summary>
-    public int Quantity { get; set; }
+    public List<CartItem> Items { get; set; } = new(); // Relacionamento 1:N com CartItem
 }

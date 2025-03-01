@@ -10,7 +10,7 @@ public class SaleItem : BaseEntity
     /// <summary>
     /// Gets or sets the sale identifier (foreign key).
     /// </summary>
-    public Guid SaleId { get; set; }  // 🔹 Corrigindo para referência correta na chave composta
+    public Guid SaleId { get; set; }  
 
     /// <summary>
     /// Gets or sets the external product identifier.
