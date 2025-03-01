@@ -26,13 +26,13 @@ public class CartRepository : ICartRepository
     public async Task<Cart?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _context.Carts
-            .Include(c => c.Products)
+            .Include(c => c.Items)
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
     public async Task<IEnumerable<Cart>> GetAllAsync(int page, int pageSize, string orderBy, CancellationToken cancellationToken = default)
     {
-        var query = _context.Carts.Include(c => c.Products).AsQueryable();
+        var query = _context.Carts.Include(c => c.Items).AsQueryable();
 
         if (!string.IsNullOrEmpty(orderBy))
         {
@@ -59,7 +59,7 @@ public class CartRepository : ICartRepository
             throw new KeyNotFoundException("Cart not found.");
 
         _context.Entry(existingCart).CurrentValues.SetValues(cart);
-        existingCart.Products = cart.Products;
+        existingCart.Items = cart.Items;
         await _context.SaveChangesAsync(cancellationToken);
         return existingCart;
     }
@@ -85,7 +85,7 @@ public class CartRepository : ICartRepository
     {
         return await _context.Carts
             .Where(c => c.UserId == userId)
-            .Include(c => c.Products)
+            .Include(c => c.Items)
             .ToListAsync(cancellationToken);
     }
 }
