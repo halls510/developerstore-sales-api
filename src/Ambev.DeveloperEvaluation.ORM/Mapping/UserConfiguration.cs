@@ -44,5 +44,37 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             });
         });
 
+        // Índice para busca e ordenação por nome
+        builder.HasIndex(u => new { u.Firstname, u.Lastname })
+            .HasDatabaseName("idx_users_name");
+
+        // Índice para ordenação por username
+        builder.HasIndex(u => u.Username)
+            .HasDatabaseName("idx_users_username");
+
+        // Índice único para busca rápida por email
+        builder.HasIndex(u => u.Email)
+            .IsUnique()
+            .HasDatabaseName("idx_users_email");
+
+        // Índice para ordenação por data de criação
+        builder.HasIndex(u => u.CreatedAt)
+            .HasDatabaseName("idx_users_created_at");
+
+        // Índice para status (ativos primeiro)
+        builder.HasIndex(u => u.Status)
+            .HasDatabaseName("idx_users_status");
+
+        // Índice para ordenar por função (Admin, Manager, Customer)
+        builder.HasIndex(u => u.Role)
+            .HasDatabaseName("idx_users_role");
+
+        // Índice para busca por cidade e rua
+        builder.HasIndex(u => new { u.Address.City, u.Address.Street })
+            .HasDatabaseName("idx_users_address");
+
+        // Índice para ordenação por localização geográfica
+        builder.HasIndex(u => new { u.Address.Geolocation.Lat, u.Address.Geolocation.Long })
+            .HasDatabaseName("idx_users_geolocation");
     }
 }
