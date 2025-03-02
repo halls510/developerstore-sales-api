@@ -27,4 +27,26 @@ public class Cart : BaseEntity
     /// Gets or sets the list of items in the cart.
     /// </summary>
     public List<CartItem> Items { get; set; } = new(); // Relacionamento 1:N com CartItem
+
+    /// <summary>
+    /// Gets or sets the status of the cart.
+    /// Indicates whether the cart is active, completed, or cancelled.
+    /// </summary>
+    public CartStatus Status { get; set; } = CartStatus.Active;
+
+    /// <summary>
+    /// Gets or sets the total price of the cart.
+    /// This value is computed based on the total of all cart items.
+    /// </summary>
+    public decimal TotalPrice => Items.Sum(item => item.Total);
+}
+
+/// <summary>
+/// Represents the possible statuses of a shopping cart.
+/// </summary>
+public enum CartStatus
+{
+    Active,     // Carrinho ainda em uso
+    Completed,  // Venda finalizada
+    Cancelled   // Carrinho cancelado ou abandonado
 }

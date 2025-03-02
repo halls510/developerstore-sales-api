@@ -17,10 +17,18 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
         builder.Property(c => c.UserName).IsRequired().HasMaxLength(100);
         builder.Property(c => c.Date).IsRequired();
 
+        builder.Property(c => c.Status)
+           .IsRequired()
+           .HasConversion<string>() // Armazena como string no banco de dados
+           .HasMaxLength(20);
+
         // Relacionamento 1:N com CartItem
         builder.HasMany(c => c.Items)
                .WithOne()
                .HasForeignKey(ci => ci.CartId)
                .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(c => c.Status)
+            .HasDatabaseName("idx_carts_status");
     }
 }
