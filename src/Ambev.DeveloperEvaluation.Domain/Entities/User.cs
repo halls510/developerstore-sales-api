@@ -8,11 +8,25 @@ namespace Ambev.DeveloperEvaluation.Domain.Entities;
 
 
 /// <summary>
-/// Represents a user in the system with authentication and profile information.
-/// This entity follows domain-driven design principles and includes business rules validation.
+/// Represents a product in the system.
 /// </summary>
 public class User : BaseEntity, IUser
 {
+    /// <summary>
+    /// Gets or sets the user's first name.
+    /// </summary>
+    public string Firstname { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the user's last name.
+    /// </summary>
+    public string Lastname { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the user's address.
+    /// </summary>
+    public Address Address { get; set; } = new Address();  // Adicionando o Address
+
     /// <summary>
     /// Gets the user's full name.
     /// Must not be null or empty and should contain both first and last names.
@@ -42,7 +56,7 @@ public class User : BaseEntity, IUser
     /// Gets the user's role in the system.
     /// Determines the user's permissions and access levels.
     /// </summary>
-    public UserRole Role { get;     set; }
+    public UserRole Role { get; set; }
 
     /// <summary>
     /// Gets the user's current status.

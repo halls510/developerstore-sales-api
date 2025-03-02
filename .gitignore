@@ -398,3 +398,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/src/Ambev.DeveloperEvaluation.WebApi/appsettings.json
+/src/Ambev.DeveloperEvaluation.WebApi/appsettings.Development.json
+/.env

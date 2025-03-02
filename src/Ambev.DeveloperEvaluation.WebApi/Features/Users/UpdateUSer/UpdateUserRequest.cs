@@ -1,12 +1,12 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 
-namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.CreateUser;
+namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.UpdateUser;
 
 /// <summary>
-/// Represents a request to create a new user in the system.
+/// Represents a request to update an existing user in the system.
 /// </summary>
-public class CreateUserRequest
+public class UpdateUserRequest
 {
     /// <summary>
     /// Gets or sets the email address. Must be a valid email format.
@@ -28,13 +28,13 @@ public class CreateUserRequest
     /// </summary>
     public NameRequest Name { get; set; } = new NameRequest();
 
-    /// <summary>
+     /// <summary>
     /// Gets or sets the phone number in format (XX) XXXXX-XXXX.
     /// </summary>
-    public string Phone { get; set; } = string.Empty; 
+    public string Phone { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the initial status of the user account.
+    /// Gets or sets the current status of the user account.
     /// </summary>
     public UserStatus Status { get; set; }
 

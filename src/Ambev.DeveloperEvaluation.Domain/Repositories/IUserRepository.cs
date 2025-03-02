@@ -32,6 +32,14 @@ public interface IUserRepository
     Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Updates an existing user in the repository.
+    /// </summary>
+    /// <param name="user">The user with updated information.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The updated user.</returns>
+    Task<User> UpdateAsync(User user, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Deletes a user from the repository
     /// </summary>
     /// <param name="id">The unique identifier of the user to delete</param>

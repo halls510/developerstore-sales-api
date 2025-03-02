@@ -8,7 +8,9 @@ using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.WebApi.Middleware;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using Serilog;
+using System.Reflection;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
 
@@ -25,6 +27,17 @@ public class Program
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
+
+            // Configurar Swagger            
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "API Vendas", Version = "v1" });
+
+                // Configurar o caminho do arquivo XML gerado pelo .NET
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                options.IncludeXmlComments(xmlPath);              
+            });
 
             builder.AddBasicHealthChecks();
             builder.Services.AddSwaggerGen();
@@ -53,12 +66,23 @@ public class Program
             builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
             var app = builder.Build();
+
+            // Rodar migrations automaticamente ao iniciar
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                dbContext.Database.Migrate();
+            }
+
             app.UseMiddleware<ValidationExceptionMiddleware>();
 
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "API Vendas V1");
+                });
             }
 
             app.UseHttpsRedirection();

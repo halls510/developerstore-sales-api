@@ -39,7 +39,15 @@ public class JwtTokenGenerator : IJwtTokenGenerator
     public string GenerateToken(IUser user)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.ASCII.GetBytes(_configuration["Jwt:SecretKey"]);
+
+        var secretKey = _configuration["Jwt:SecretKey"];
+
+        if (string.IsNullOrEmpty(secretKey))
+        {
+            throw new ArgumentNullException("Jwt:SecretKey", "A chave secreta do JWT não pode ser nula ou vazia.");
+        }
+
+        var key = Encoding.ASCII.GetBytes(secretKey);
 
         var claims = new[]
         {
