@@ -24,5 +24,15 @@ public class SaleItemConfiguration : IEntityTypeConfiguration<SaleItem>
                .WithMany(s => s.Items)
                .HasForeignKey(si => si.SaleId)
                .OnDelete(DeleteBehavior.Cascade);
+
+        // Adicionando o campo Status ao banco de dados
+        builder.Property(si => si.Status)
+            .IsRequired()
+            .HasConversion<string>() // Armazena como string no banco de dados
+            .HasMaxLength(20);
+
+        // Índice para otimizar buscas por status dos itens
+        builder.HasIndex(si => si.Status)
+            .HasDatabaseName("idx_saleitems_status");
     }
 }

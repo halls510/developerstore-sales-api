@@ -43,7 +43,19 @@ public class Sale : BaseEntity
     public List<SaleItem> Items { get; set; } = new();
 
     /// <summary>
-    /// Indicates whether the sale was canceled.
+    /// Gets or sets the sale status.
     /// </summary>
-    public bool IsCanceled { get; set; } = false;
+    public SaleStatus Status { get; set; } = SaleStatus.Pending;
+}
+
+/// <summary>
+/// Defines possible statuses of a sale.
+/// </summary>
+public enum SaleStatus
+{
+    Pending,   // Venda criada, mas ainda não confirmada
+    Confirmed, // Venda confirmada pelo sistema de pagamento
+    Shipped,   // Venda enviada para entrega
+    Delivered, // Cliente recebeu os produtos
+    Cancelled  // Venda cancelada
 }

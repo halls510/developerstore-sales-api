@@ -16,17 +16,26 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
         builder.HasKey(s => s.Id);
         builder.Property(s => s.Id).HasColumnType("uuid").HasDefaultValueSql("gen_random_uuid()");
 
-        builder.Property(s => s.SaleNumber).IsRequired().HasMaxLength(20);
+        builder.Property(s => s.SaleNumber).IsRequired().HasMaxLength(100);
         builder.Property(s => s.SaleDate).IsRequired();
         builder.Property(s => s.CustomerId).IsRequired();
         builder.Property(s => s.CustomerName).IsRequired().HasMaxLength(100);
         builder.Property(s => s.TotalValue).IsRequired().HasColumnType("decimal(18,2)");
-        builder.Property(s => s.Branch).IsRequired().HasMaxLength(50);
-        builder.Property(s => s.IsCanceled).IsRequired();
+        builder.Property(s => s.Branch).IsRequired().HasMaxLength(50);        
 
         builder.HasMany(s => s.Items)
             .WithOne()
             .HasForeignKey("SaleId")
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Adicionando o campo Status ao banco de dados
+        builder.Property(s => s.Status)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
+        // Índice para otimizar buscas por status
+        builder.HasIndex(s => s.Status)
+            .HasDatabaseName("idx_sales_status");
     }
 }

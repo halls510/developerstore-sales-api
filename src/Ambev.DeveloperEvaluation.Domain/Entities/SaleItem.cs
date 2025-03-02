@@ -41,4 +41,19 @@ public class SaleItem : BaseEntity
     /// Gets the total price for this item (Quantity * UnitPrice - Discount).
     /// </summary>
     public decimal Total => (Quantity * UnitPrice) - Discount;
+
+    /// <summary>
+    /// Gets or sets the status of the sale item.
+    /// </summary>
+    public SaleItemStatus Status { get; set; } = SaleItemStatus.Active;
+}
+
+/// <summary>
+/// Defines possible statuses of a sale item.
+/// </summary>
+public enum SaleItemStatus
+{
+    Active,      // Item ativo na venda
+    Cancelled,   // Item cancelado pelo cliente
+    Returned     // Item devolvido após a compra
 }
