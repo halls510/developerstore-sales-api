@@ -37,10 +37,18 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             address.Property(a => a.Number).IsRequired();
             address.Property(a => a.Zipcode).IsRequired().HasMaxLength(20);
 
+            // Criando índice dentro da propriedade Owned
+            address.HasIndex(a => new { a.City, a.Street })
+                .HasDatabaseName("idx_users_address");
+
             address.OwnsOne(a => a.Geolocation, geo =>
             {
                 geo.Property(g => g.Lat).IsRequired().HasMaxLength(50);
                 geo.Property(g => g.Long).IsRequired().HasMaxLength(50);
+
+                // Criando índice dentro da propriedade Owned
+                geo.HasIndex(g => new { g.Lat, g.Long })
+                    .HasDatabaseName("idx_users_geolocation");
             });
         });
 
@@ -67,14 +75,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         // Índice para ordenar por função (Admin, Manager, Customer)
         builder.HasIndex(u => u.Role)
-            .HasDatabaseName("idx_users_role");
-
-        // Índice para busca por cidade e rua
-        builder.HasIndex(u => new { u.Address.City, u.Address.Street })
-            .HasDatabaseName("idx_users_address");
-
-        // Índice para ordenação por localização geográfica
-        builder.HasIndex(u => new { u.Address.Geolocation.Lat, u.Address.Geolocation.Long })
-            .HasDatabaseName("idx_users_geolocation");
+            .HasDatabaseName("idx_users_role");    
     }
 }
