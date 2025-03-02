@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.WebApi.Common;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.UpdateUser;
 
@@ -41,13 +42,4 @@ public class UpdateUserResponse
     /// The current status of the user.
     /// </summary>
     public UserStatus Status { get; set; }
-}
-
-/// <summary>
-/// Represents the response structure for user name.
-/// </summary>
-public class NameResponse
-{
-    public string Firstname { get; set; } = string.Empty;
-    public string Lastname { get; set; } = string.Empty;
 }
