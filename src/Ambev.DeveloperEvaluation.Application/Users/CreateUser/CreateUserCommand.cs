@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Common.Validation;
+using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using MediatR;
 
@@ -29,6 +30,11 @@ public class CreateUserCommand : IRequest<CreateUserResult>
     /// Gets or sets the last name of the user.
     /// </summary>
     public string Lastname { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the address of the user.
+    /// </summary>
+    public Address Address { get; set; } = new Address();
 
     /// <summary>
     /// Gets or sets the username of the user to be created.

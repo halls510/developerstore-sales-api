@@ -1,5 +1,6 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.WebApi.Common;
+using System.Text.Json.Serialization;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.CreateUser;
 
@@ -29,17 +30,24 @@ public class CreateUserRequest
     public NameRequest Name { get; set; } = new NameRequest();
 
     /// <summary>
+    /// Gets or sets the user's address.
+    /// </summary>
+    public AddressRequest Address { get; set; } = new AddressRequest();
+
+    /// <summary>
     /// Gets or sets the phone number in format (XX) XXXXX-XXXX.
     /// </summary>
-    public string Phone { get; set; } = string.Empty; 
+    public string Phone { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the initial status of the user account.
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public UserStatus Status { get; set; }
 
     /// <summary>
     /// Gets or sets the role assigned to the user.
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public UserRole Role { get; set; }
 }
