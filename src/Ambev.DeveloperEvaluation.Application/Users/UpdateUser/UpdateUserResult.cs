@@ -5,9 +5,9 @@
 /// </summary>
 public class UpdateUserResult
 {
-    public Guid Id { get; }
+    public int Id { get; }
 
-    public UpdateUserResult(Guid id)
+    public UpdateUserResult(int id)
     {
         Id = id;
     }

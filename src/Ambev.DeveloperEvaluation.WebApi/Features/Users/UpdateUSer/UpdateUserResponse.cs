@@ -11,7 +11,7 @@ public class UpdateUserResponse
     /// <summary>
     /// The unique identifier of the updated user.
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// The user's email address.

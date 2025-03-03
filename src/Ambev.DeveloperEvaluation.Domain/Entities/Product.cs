@@ -53,7 +53,7 @@ public class Product : BaseEntity
     /// <summary>
     /// Foreign key for the Category.
     /// </summary>
-    public Guid CategoryId { get; set; }
+    public int CategoryId { get; set; }
 
     /// <summary>
     /// Navigation property for the Category.

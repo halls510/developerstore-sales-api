@@ -11,7 +11,7 @@ public class CreateUserResponse
     /// <summary>
     /// The unique identifier of the created user
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// The user's email address

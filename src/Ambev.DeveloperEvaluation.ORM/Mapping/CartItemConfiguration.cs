@@ -11,7 +11,7 @@ public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
         builder.ToTable("CartItems");
 
         builder.HasKey(ci => ci.Id);
-        builder.Property(ci => ci.Id).HasColumnType("uuid").HasDefaultValueSql("gen_random_uuid()");
+        builder.Property(u => u.Id).HasColumnType("integer").ValueGeneratedOnAdd();
 
         builder.Property(ci => ci.CartId).IsRequired();
         builder.Property(ci => ci.ProductId).IsRequired();

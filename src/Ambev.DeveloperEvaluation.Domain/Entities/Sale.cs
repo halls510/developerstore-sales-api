@@ -20,7 +20,7 @@ public class Sale : BaseEntity
     /// <summary>
     /// Gets or sets the external user identifier for the client who made the purchase.
     /// </summary>
-    public Guid CustomerId { get; set; } // External Identity for Customer
+    public int CustomerId { get; set; } // External Identity for Customer
 
     /// <summary>
     /// Gets or sets the denormalized customer name.

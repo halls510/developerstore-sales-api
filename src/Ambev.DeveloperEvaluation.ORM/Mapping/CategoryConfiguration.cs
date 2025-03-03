@@ -14,9 +14,7 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.ToTable("Categories");
 
         builder.HasKey(c => c.Id);
-        builder.Property(c => c.Id)
-            .HasColumnType("uuid")
-            .HasDefaultValueSql("gen_random_uuid()");
+        builder.Property(u => u.Id).HasColumnType("integer").ValueGeneratedOnAdd();
 
         builder.Property(c => c.Name)
             .IsRequired()

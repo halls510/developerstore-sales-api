@@ -23,7 +23,7 @@ public class CartRepository : ICartRepository
         return cart;
     }
 
-    public async Task<Cart?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Cart?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Carts
             .Include(c => c.Items)
@@ -64,7 +64,7 @@ public class CartRepository : ICartRepository
         return existingCart;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         var cart = await GetByIdAsync(id, cancellationToken);
         if (cart == null)
@@ -81,7 +81,7 @@ public class CartRepository : ICartRepository
     /// <param name="userId">The unique identifier of the user.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A collection of carts belonging to the specified user.</returns>
-    public async Task<IEnumerable<Cart>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<Cart>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default)
     {
         return await _context.Carts
             .Where(c => c.UserId == userId)

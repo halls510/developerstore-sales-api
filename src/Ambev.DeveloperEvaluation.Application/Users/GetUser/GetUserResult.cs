@@ -11,7 +11,7 @@ public class GetUserResult
     /// <summary>
     /// The unique identifier of the user
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// The user's email address

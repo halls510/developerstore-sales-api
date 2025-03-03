@@ -35,7 +35,7 @@ public class CategoryRepository : ICategoryRepository
     /// <param name="id">The unique identifier of the category.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The category entity if found, null otherwise.</returns>
-    public async Task<Category?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Categories
             .Include(c => c.Products) // Includes related products in the query.
@@ -78,7 +78,7 @@ public class CategoryRepository : ICategoryRepository
     /// <param name="id">The unique identifier of the category to delete.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>True if the category was deleted, false if not found.</returns>
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         var category = await GetByIdAsync(id, cancellationToken);
         if (category == null)

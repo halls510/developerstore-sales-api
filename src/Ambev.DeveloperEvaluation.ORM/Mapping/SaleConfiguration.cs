@@ -13,8 +13,8 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
     {
         builder.ToTable("Sales");
 
-        builder.HasKey(s => s.Id);
-        builder.Property(s => s.Id).HasColumnType("uuid").HasDefaultValueSql("gen_random_uuid()");
+        builder.HasKey(s => s.Id);        
+        builder.Property(u => u.Id).HasColumnType("integer").ValueGeneratedOnAdd();
 
         builder.Property(s => s.SaleNumber).IsRequired().HasMaxLength(100);
         builder.Property(s => s.SaleDate).IsRequired();

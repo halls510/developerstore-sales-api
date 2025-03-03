@@ -26,7 +26,7 @@ public class ProductRepository : IProductRepository
     public async Task<Product> CreateAsync(Product product, CancellationToken cancellationToken = default)
     {
         // Se nenhuma categoria for definida, usa a categoria padrão
-        if (product.CategoryId == Guid.Empty)
+        if (product.CategoryId == 0)
         {
             product.CategoryId = Category.DefaultCategoryId;
         }
@@ -47,7 +47,7 @@ public class ProductRepository : IProductRepository
     /// <summary>
     /// Retrieves a product by its unique identifier.
     /// </summary>
-    public async Task<Product?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Product?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Products
             .Include(p => p.Category)
@@ -106,7 +106,7 @@ public class ProductRepository : IProductRepository
     /// <summary>
     /// Deletes a product from the database.
     /// </summary>
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         var product = await GetByIdAsync(id, cancellationToken);
         if (product == null)

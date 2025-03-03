@@ -21,7 +21,7 @@ public interface ICategoryRepository
     /// <param name="id">The unique identifier of the category.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The category entity if found, null otherwise.</returns>
-    Task<Category?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves all categories from the repository, ordered by name.
@@ -45,5 +45,5 @@ public interface ICategoryRepository
     /// <param name="id">The unique identifier of the category to delete.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>True if the category was deleted, false if not found.</returns>
-    Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
 }
