@@ -173,29 +173,7 @@ public class UserRepository : IUserRepository
         );
 
         return query.Provider.CreateQuery<User>(orderByExpression);
-    }
-
-
-    ///// <summary>
-    ///// Aplica ordenação genérica a um IQueryable.
-    ///// </summary>
-    ///// <param name="query">Consulta base.</param>
-    ///// <param name="propertyName">Nome da propriedade para ordenar.</param>
-    ///// <param name="isAscending">Direção da ordenação.</param>
-    ///// <returns>Consulta ordenada.</returns>
-    //private IQueryable<User> ApplyOrder(IQueryable<User> query, string propertyName, bool isAscending)
-    //{
-    //    var param = Expression.Parameter(typeof(User), "u");
-    //    var property = Expression.Property(param, propertyName);
-    //    var lambda = Expression.Lambda(property, param);
-
-    //    string methodName = isAscending ? "OrderBy" : "OrderByDescending";
-    //    var orderByExpression = Expression.Call(typeof(Queryable), methodName,
-    //        new Type[] { typeof(User), property.Type },
-    //        query.Expression, Expression.Quote(lambda));
-
-    //    return query.Provider.CreateQuery<User>(orderByExpression);
-    //}
+    }    
 
     /// <summary>
     /// Obtém a contagem total de usuários no banco de dados.

@@ -35,7 +35,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Features\Products\ListProducts\" />
+		<Folder Include="Features\Products\ListProductsByCategory\" />
 		<Folder Include="Features\Users\GetUser\" />
 	</ItemGroup>
 

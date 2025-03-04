@@ -55,4 +55,24 @@ public interface ICategoryRepository
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>True if the category was deleted, false if not found.</returns>
     Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a paginated list of categories with optional sorting.
+    /// </summary>
+    /// <param name="page">The page number for pagination (starting from 1).</param>
+    /// <param name="size">The number of categories per page.</param>
+    /// <param name="orderBy">
+    /// Sorting criteria in the format "field asc" or "field desc".
+    /// Multiple fields can be separated by commas (e.g., "name asc, id desc").
+    /// </param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation if needed.</param>
+    /// <returns>A task representing the asynchronous operation, containing a paginated list of categories.</returns>
+    Task<List<Category>> GetCategoriesAsync(int page, int size, string? orderBy, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retrieves the total count of categories available in the database.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation if needed.</param>
+    /// <returns>A task representing the asynchronous operation, containing the total number of categories.</returns>
+    Task<int> CountCategoriesAsync(CancellationToken cancellationToken);
 }

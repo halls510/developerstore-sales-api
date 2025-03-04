@@ -1,11 +1,15 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Products.CreateProduct;
 using Ambev.DeveloperEvaluation.Application.Products.DeleteProduct;
 using Ambev.DeveloperEvaluation.Application.Products.GetProduct;
+using Ambev.DeveloperEvaluation.Application.Products.ListCategories;
+using Ambev.DeveloperEvaluation.Application.Products.ListProducts;
 using Ambev.DeveloperEvaluation.Application.Products.UpdateProduct;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.CreateProduct;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.DeleteProduct;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.GetProduct;
+using Ambev.DeveloperEvaluation.WebApi.Features.Products.ListCategories;
+using Ambev.DeveloperEvaluation.WebApi.Features.Products.ListProducts;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.UpdateProduct;
 using AutoMapper;
 using MediatR;
@@ -32,7 +36,50 @@ public class ProductsController : BaseController
     {
         _mediator = mediator;
         _mapper = mapper;
-    }   
+    }
+
+    /// <summary>
+    /// Retrieves a paginated list of products with optional filters and ordering.
+    /// </summary>
+    /// <param name="_page">Page number for pagination (default: 1)</param>
+    /// <param name="_size">Number of items per page (default: 10)</param>
+    /// <param name="_order">Ordering of results (e.g., "title asc, category desc")</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of products</returns>
+    [HttpGet]
+    [ProducesResponseType(typeof(PaginatedList<GetProductResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ListProducts(
+        [FromQuery] int _page = 1,
+        [FromQuery] int _size = 10,
+        [FromQuery] string? _order = null,
+        CancellationToken cancellationToken = default)
+    {
+        var request = new ListProductsRequest
+        {
+            Page = _page,
+            Size = _size,
+            OrderBy = _order
+        };
+
+        var validator = new ListProductsRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        var command = _mapper.Map<ListProductsCommand>(request);
+        var response = await _mediator.Send(command, cancellationToken);
+
+        var paginatedList = new PaginatedList<GetProductResponse>(
+            _mapper.Map<List<GetProductResponse>>(response.Products),
+            response.TotalItems,
+            response.CurrentPage,
+            response.PageSize
+         );
+
+        return OkPaginated(paginatedList);
+    }
 
     /// <summary>
     /// Creates a new product
@@ -151,5 +198,48 @@ public class ProductsController : BaseController
             Message = "Product deleted successfully",
             Data = _mapper.Map<DeleteProductResponse>(response)
         });
+    }
+
+    /// <summary>
+    /// Retrieves a paginated list of categories with optional ordering.
+    /// </summary>
+    /// <param name="_page">Page number for pagination (default: 1)</param>
+    /// <param name="_size">Number of items per page (default: 10)</param>
+    /// <param name="_order">Ordering of results (e.g., "name asc")</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of categories</returns>
+    [HttpGet("categories")]
+    [ProducesResponseType(typeof(PaginatedList<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ListCategories(
+        [FromQuery] int _page = 1,
+        [FromQuery] int _size = 10,
+        [FromQuery] string? _order = null,
+        CancellationToken cancellationToken = default)
+    {
+        var request = new ListCategoriesRequest
+        {
+            Page = _page,
+            Size = _size,
+            OrderBy = _order
+        };
+
+        var validator = new ListCategoriesRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        var command = _mapper.Map<ListCategoriesCommand>(request);
+        var response = await _mediator.Send(command, cancellationToken);
+
+        var paginatedList = new PaginatedList<string>(
+            response.Categories,
+            response.TotalItems,
+            response.CurrentPage,
+            response.PageSize
+        );
+
+        return OkPaginated(paginatedList);
     }
 }

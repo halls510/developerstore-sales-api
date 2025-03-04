@@ -1,6 +1,7 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Ambev.DeveloperEvaluation.ORM.Repositories;
 
@@ -126,54 +127,79 @@ public class ProductRepository : IProductRepository
     }
 
     /// <summary>
-    /// Retrieves all unique product categories.
+    /// Retrieves a paginated list of products with optional sorting.
     /// </summary>
-    public async Task<IEnumerable<string>> GetAllCategoriesAsync(CancellationToken cancellationToken = default)
+    public async Task<List<Product>> GetProductsAsync(int page, int size, string? orderBy, CancellationToken cancellationToken)
     {
-        return await _context.Categories
-            .Select(c => c.Name)
-            .Distinct()
+        var query = _context.Products.Include(p => p.Category).AsQueryable();
+
+        // Apply sorting if provided
+        if (!string.IsNullOrWhiteSpace(orderBy))
+        {
+            query = ApplySorting(query, orderBy);
+        }
+        else
+        {
+            // Default sorting by ID ascending
+            query = query.OrderBy(p => p.Id);
+        }
+
+        return await query
+            .Skip((page - 1) * size)
+            .Take(size)
             .ToListAsync(cancellationToken);
     }
 
     /// <summary>
-    /// Retrieves products by category name with pagination and sorting.
+    /// Applies dynamic sorting based on a string format "field asc, field2 desc".
     /// </summary>
-    public async Task<(IEnumerable<Product>, int, int, int)> GetByCategoryAsync(string categoryName, int page, int pageSize, string orderBy, CancellationToken cancellationToken = default)
+    private IQueryable<Product> ApplySorting(IQueryable<Product> query, string orderBy)
     {
-        var category = await _context.Categories
-            .FirstOrDefaultAsync(c => c.Name == categoryName, cancellationToken);
+        var orderingParams = orderBy.Split(',')
+            .Select(o => o.Trim().Split(' '))
+            .Where(o => o.Length > 0)
+            .Select(o => new { Field = o[0], IsAscending = o.Length < 2 || o[1].ToLower() == "asc" });
 
-        if (category == null)
+        foreach (var param in orderingParams)
         {
-            return (Enumerable.Empty<Product>(), 0, 1, 1);
+            query = ApplyOrder(query, param.Field, param.IsAscending);
         }
 
-        var query = _context.Products
-            .Where(p => p.CategoryId == category.Id)
-            .Include(p => p.Category)
-            .AsQueryable();
+        return query;
+    }
 
-        int totalItems = await query.CountAsync(cancellationToken);
-        int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+    /// <summary>
+    /// Applies generic sorting to an IQueryable, including nested properties.
+    /// </summary>
+    private IQueryable<Product> ApplyOrder(IQueryable<Product> query, string propertyPath, bool isAscending)
+    {
+        var param = Expression.Parameter(typeof(Product), "p");
+        Expression property = param;
 
-        if (!string.IsNullOrEmpty(orderBy))
+        foreach (var prop in propertyPath.Split('.'))
         {
-            query = orderBy.ToLower() switch
-            {
-                "price asc" => query.OrderBy(p => p.Price),
-                "price desc" => query.OrderByDescending(p => p.Price),
-                "title asc" => query.OrderBy(p => p.Title),
-                "title desc" => query.OrderByDescending(p => p.Title),
-                _ => query
-            };
+            property = Expression.Property(property, prop);
         }
 
-        var products = await query
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
+        var lambda = Expression.Lambda(property, param);
+        string methodName = isAscending ? "OrderBy" : "OrderByDescending";
 
-        return (products, totalItems, page, totalPages);
+        var orderByExpression = Expression.Call(
+            typeof(Queryable),
+            methodName,
+            new Type[] { typeof(Product), property.Type },
+            query.Expression,
+            Expression.Quote(lambda)
+        );
+
+        return query.Provider.CreateQuery<Product>(orderByExpression);
+    }
+
+    /// <summary>
+    /// Retrieves the total count of products in the database.
+    /// </summary>
+    public async Task<int> CountProductsAsync(CancellationToken cancellationToken)
+    {
+        return await _context.Products.CountAsync(cancellationToken);
     }
 }
