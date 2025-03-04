@@ -1,22 +1,24 @@
-﻿using AutoMapper;
+﻿using Ambev.DeveloperEvaluation.Application.Common;
+using Ambev.DeveloperEvaluation.Application.Users.UpdateUser;
 using Ambev.DeveloperEvaluation.Domain.Entities;
-using Ambev.DeveloperEvaluation.Application.Common;
-using Ambev.DeveloperEvaluation.Application.Users.CreateUser;
+using AutoMapper;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Ambev.DeveloperEvaluation.Application.Users.UpdateUser;
+namespace Ambev.DeveloperEvaluation.Application.Users.DeleteUser;
 
-/// <summary>
-/// Profile for mapping between User entity and UpdateUserResponse.
-/// </summary>
-public class UpdateUserProfile : Profile
+public class DeleteUserProfile : Profile
 {
     /// <summary>
-    /// Initializes the mappings for UpdateUser operation.
+    /// Initializes the mappings for DeleteUser operation.
     /// </summary>
-    public UpdateUserProfile()
+    public DeleteUserProfile()
     {
-        CreateMap<UpdateUserCommand, User>();
-        CreateMap<User, UpdateUserResult>()
+        CreateMap<DeleteUserCommand, User>();
+        CreateMap<User, DeleteUserResult>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => new NameResult
             {
                 Firstname = src.Firstname,

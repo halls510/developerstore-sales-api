@@ -56,6 +56,9 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, UpdateUserRe
             user.Password = _passwordHasher.HashPassword(command.Password);
         }
 
+        // Marcar a data de atualização
+        user.UpdatedAt = DateTime.UtcNow;
+
         var updatedUser = await _userRepository.UpdateAsync(user, cancellationToken);
         var result = _mapper.Map<UpdateUserResult>(updatedUser);
         return result;

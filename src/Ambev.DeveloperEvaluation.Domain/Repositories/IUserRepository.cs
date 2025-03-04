@@ -46,4 +46,19 @@ public interface IUserRepository
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>True if the user was deleted, false if not found</returns>
     Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a paginated list of users with optional sorting.
+    /// </summary>
+    /// <param name="page">The page number for pagination (starting from 1).</param>
+    /// <param name="size">The number of users per page.</param>
+    /// <param name="orderBy">
+    /// Sorting criteria in the format "field asc" or "field desc". 
+    /// Multiple fields can be separated by commas (e.g., "username asc, email desc").
+    /// </param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation if needed.</param>
+    /// <returns>A task representing the asynchronous operation, containing a paginated list of users.</returns>
+    Task<List<User>> GetUsersAsync(int page, int size, string? orderBy, CancellationToken cancellationToken);
+
+    Task<int> CountUsersAsync(CancellationToken cancellationToken);
 }

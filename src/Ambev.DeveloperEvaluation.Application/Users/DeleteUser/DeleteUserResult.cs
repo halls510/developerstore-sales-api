@@ -1,21 +1,12 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Common;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 
-namespace Ambev.DeveloperEvaluation.Application.Users.CreateUser;
+namespace Ambev.DeveloperEvaluation.Application.Users.DeleteUser;
 
-/// <summary>
-/// Represents the response returned after successfully creating a new user.
-/// </summary>
-/// <remarks>
-/// This response contains the unique identifier of the newly created user,
-/// which can be used for subsequent operations or reference.
-/// </remarks>
-public class CreateUserResult
-{
-    /// <summary>
-    /// Gets or sets the unique identifier of the newly created user.
-    /// </summary>
-    /// <value>A int that uniquely identifies the created user in the system.</value>
+public class DeleteUserResult
+{ /// <summary>
+  /// The unique identifier of the user
+  /// </summary>
     public int Id { get; set; }
 
     /// <summary>

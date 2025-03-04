@@ -18,7 +18,6 @@ public class GetUserHandler : IRequestHandler<GetUserCommand, GetUserResult>
     /// </summary>
     /// <param name="userRepository">The user repository</param>
     /// <param name="mapper">The AutoMapper instance</param>
-    /// <param name="validator">The validator for GetUserCommand</param>
     public GetUserHandler(
         IUserRepository userRepository,
         IMapper mapper)

@@ -1,5 +1,6 @@
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.WebApi.Common;
+using System.Text.Json.Serialization;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.GetUser;
 
@@ -29,6 +30,11 @@ public class GetUserResponse
     public NameResponse Name { get; set; } = new NameResponse();
 
     /// <summary>
+    /// The user's address.
+    /// </summary>
+    public AddressResponse Address { get; set; } = new AddressResponse();
+
+    /// <summary>
     /// The user's phone number
     /// </summary>
     public string Phone { get; set; } = string.Empty;
@@ -36,10 +42,12 @@ public class GetUserResponse
     /// <summary>
     /// The user's role in the system
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public UserRole Role { get; set; }
 
     /// <summary>
     /// The current status of the user
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public UserStatus Status { get; set; }
 }

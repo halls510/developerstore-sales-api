@@ -38,12 +38,12 @@ services:
       timeout: 3s
       retries: 5
 
-  ambev.developerevaluation.cache:
-    container_name: ambev_developer_evaluation_cache 
-    image: redis:7.4.1-alpine     
-    command: redis-server --requirepass ${REDIS_PASSWORD:-example_password}
-    environment:
-       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-developer}
-       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-example_password}
-    ports:
-       - "6379"
+  # ambev.developerevaluation.cache:
+  #   container_name: ambev_developer_evaluation_cache 
+  #   image: redis:7.4.1-alpine     
+  #   command: redis-server --requirepass ${REDIS_PASSWORD:-example_password}
+  #   environment:
+  #      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-developer}
+  #      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-example_password}
+  #   ports:
+  #      - "6379"

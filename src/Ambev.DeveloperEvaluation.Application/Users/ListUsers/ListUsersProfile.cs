@@ -1,21 +1,17 @@
-using AutoMapper;
+﻿using Ambev.DeveloperEvaluation.Application.Common;
+using Ambev.DeveloperEvaluation.Application.Users.GetUser;
 using Ambev.DeveloperEvaluation.Domain.Entities;
-using Ambev.DeveloperEvaluation.Application.Users.CreateUser;
-using Ambev.DeveloperEvaluation.Application.Common;
+using AutoMapper;
 
-namespace Ambev.DeveloperEvaluation.Application.Users.GetUser;
+namespace Ambev.DeveloperEvaluation.Application.Users.ListUsers;
 
-/// <summary>
-/// Profile for mapping between User entity and GetUserResponse
-/// </summary>
-public class GetUserProfile : Profile
+public class ListUsersProfile : Profile
 {
     /// <summary>
-    /// Initializes the mappings for GetUser operation
+    /// Initializes the mappings for ListUsers operation
     /// </summary>
-    public GetUserProfile()
+    public ListUsersProfile()
     {
-        CreateMap<GetUserCommand, User>();
         CreateMap<User, GetUserResult>()
            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => new NameResult
            {

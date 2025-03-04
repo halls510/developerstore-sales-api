@@ -71,10 +71,11 @@ public class Program
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<DefaultContext>();
-                dbContext.Database.Migrate();
+                dbContext.Database.Migrate();               
             }
 
             app.UseMiddleware<ValidationExceptionMiddleware>();
+            app.UseMiddleware<NotFoundExceptionMiddleware>();
 
             if (app.Environment.IsDevelopment())
             {

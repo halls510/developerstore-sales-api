@@ -1,21 +1,17 @@
-﻿using Ambev.DeveloperEvaluation.Application.Common;
-using Ambev.DeveloperEvaluation.Domain.Enums;
+﻿using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.WebApi.Common;
+using System.Text.Json.Serialization;
 
-namespace Ambev.DeveloperEvaluation.Application.Users.CreateUser;
+namespace Ambev.DeveloperEvaluation.WebApi.Features.Users.DeleteUser;
 
 /// <summary>
-/// Represents the response returned after successfully creating a new user.
+/// API response model for CreateUser operation
 /// </summary>
-/// <remarks>
-/// This response contains the unique identifier of the newly created user,
-/// which can be used for subsequent operations or reference.
-/// </remarks>
-public class CreateUserResult
+public class DeleteUserResponse
 {
     /// <summary>
-    /// Gets or sets the unique identifier of the newly created user.
+    /// The unique identifier of the created user
     /// </summary>
-    /// <value>A int that uniquely identifies the created user in the system.</value>
     public int Id { get; set; }
 
     /// <summary>
@@ -31,12 +27,12 @@ public class CreateUserResult
     /// <summary>
     /// The user's full name as an object.
     /// </summary>
-    public NameResult Name { get; set; } = new NameResult();
+    public NameResponse Name { get; set; } = new NameResponse();
 
     /// <summary>
     /// The user's address.
     /// </summary>
-    public AddressResult Address { get; set; } = new AddressResult();
+    public AddressResponse Address { get; set; } = new AddressResponse();
 
     /// <summary>
     /// The user's phone number
@@ -46,10 +42,12 @@ public class CreateUserResult
     /// <summary>
     /// The user's role in the system
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public UserRole Role { get; set; }
 
     /// <summary>
     /// The current status of the user
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public UserStatus Status { get; set; }
 }
