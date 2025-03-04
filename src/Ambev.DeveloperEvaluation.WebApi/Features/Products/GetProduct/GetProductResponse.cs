@@ -1,8 +1,13 @@
-﻿using Ambev.DeveloperEvaluation.WebApi.Common;
+using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.WebApi.Common;
+using System.Text.Json.Serialization;
 
-namespace Ambev.DeveloperEvaluation.WebApi.Features.Products.UpdateProduct;
+namespace Ambev.DeveloperEvaluation.WebApi.Features.Products.GetProduct;
 
-public class UpdateProductResponse
+/// <summary>
+/// API response model for GetProduct operation
+/// </summary>
+public class GetProductResponse
 {
     /// <summary>
     /// The unique identifier of the created product
