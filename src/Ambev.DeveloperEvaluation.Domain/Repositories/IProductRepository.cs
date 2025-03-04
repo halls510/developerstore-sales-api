@@ -83,4 +83,14 @@ public interface IProductRepository
     /// <param name="cancellationToken">A cancellation token to cancel the operation if needed.</param>
     /// <returns>A task representing the asynchronous operation, containing the total number of products.</returns>
     Task<int> CountProductsAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retrieves a paginated list of products filtered by category with optional sorting.
+    /// </summary>
+    Task<List<Product>> GetProductsByCategoryAsync(string categoryName, int page, int size, string? orderBy, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retrieves the total count of products filtered by category.
+    /// </summary>
+    Task<int> CountProductsByCategoryAsync(string categoryName, CancellationToken cancellationToken);
 }

@@ -202,4 +202,40 @@ public class ProductRepository : IProductRepository
     {
         return await _context.Products.CountAsync(cancellationToken);
     }
+
+    /// <summary>
+    /// Retrieves a paginated list of products filtered by category with optional sorting.
+    /// </summary>
+    public async Task<List<Product>> GetProductsByCategoryAsync(string categoryName, int page, int size, string? orderBy, CancellationToken cancellationToken)
+    {
+        var query = _context.Products
+            .Include(p => p.Category)
+            .Where(p => p.Category.Name == categoryName)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(orderBy))
+        {
+            query = ApplySorting(query, orderBy);
+        }
+        else
+        {
+            query = query.OrderBy(p => p.Id);
+        }
+
+        return await query
+            .Skip((page - 1) * size)
+            .Take(size)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Retrieves the total count of products filtered by category.
+    /// </summary>
+    public async Task<int> CountProductsByCategoryAsync(string categoryName, CancellationToken cancellationToken)
+    {
+        return await _context.Products
+            .Include(p => p.Category)
+            .Where(p => p.Category.Name == categoryName)
+            .CountAsync(cancellationToken);
+    }
 }

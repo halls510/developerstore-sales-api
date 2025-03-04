@@ -3,6 +3,7 @@ using Ambev.DeveloperEvaluation.Application.Products.DeleteProduct;
 using Ambev.DeveloperEvaluation.Application.Products.GetProduct;
 using Ambev.DeveloperEvaluation.Application.Products.ListCategories;
 using Ambev.DeveloperEvaluation.Application.Products.ListProducts;
+using Ambev.DeveloperEvaluation.Application.Products.ListProductsByCategory;
 using Ambev.DeveloperEvaluation.Application.Products.UpdateProduct;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.CreateProduct;
@@ -10,6 +11,7 @@ using Ambev.DeveloperEvaluation.WebApi.Features.Products.DeleteProduct;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.GetProduct;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.ListCategories;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.ListProducts;
+using Ambev.DeveloperEvaluation.WebApi.Features.Products.ListProductsByCategory;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.UpdateProduct;
 using AutoMapper;
 using MediatR;
@@ -235,6 +237,46 @@ public class ProductsController : BaseController
 
         var paginatedList = new PaginatedList<string>(
             response.Categories,
+            response.TotalItems,
+            response.CurrentPage,
+            response.PageSize
+        );
+
+        return OkPaginated(paginatedList);
+    }
+
+    /// <summary>
+    /// Retrieves a paginated list of products in a specific category.
+    /// </summary>
+    [HttpGet("category/{category}")]
+    [ProducesResponseType(typeof(PaginatedList<GetProductResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GetProductsByCategory(
+        [FromRoute] string category,
+        [FromQuery] int _page = 1,
+        [FromQuery] int _size = 10,
+        [FromQuery] string? _order = null,
+        CancellationToken cancellationToken = default)
+    {
+        var request = new ListProductsByCategoryRequest
+        {
+            CategoryName = category,
+            Page = _page,
+            Size = _size,
+            OrderBy = _order
+        };
+
+        var validator = new ListProductsByCategoryRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        var command = _mapper.Map<ListProductsByCategoryCommand>(request);
+        var response = await _mediator.Send(command, cancellationToken);
+
+        var paginatedList = new PaginatedList<GetProductResponse>(
+            _mapper.Map<List<GetProductResponse>>(response.Products),
             response.TotalItems,
             response.CurrentPage,
             response.PageSize
