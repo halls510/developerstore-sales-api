@@ -1,16 +1,11 @@
 ﻿using Ambev.DeveloperEvaluation.WebApi.Common;
-using System.Text.Json.Serialization;
 
-namespace Ambev.DeveloperEvaluation.WebApi.Features.Products.CreateProduct;
+namespace Ambev.DeveloperEvaluation.WebApi.Features.Products.UpdateProduct;
 
-/// <summary>
-/// Represents a request to create a new product in the system.
-/// </summary>
-public class CreateProductResponse
-{
-    /// <summary>
-    /// The unique identifier of the created product
-    /// </summary>
+public class UpdateProductResponse
+{  /// <summary>
+   /// The unique identifier of the created product
+   /// </summary>
     public int Id { get; set; }
 
     /// <summary>

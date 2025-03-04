@@ -19,7 +19,6 @@
     <Folder Include="Products\DeleteProduct\" />
     <Folder Include="Products\GetProduct\" />
     <Folder Include="Products\ListProducts\" />
-    <Folder Include="Products\UpdateProduct\" />
   </ItemGroup>
 
 </Project>
