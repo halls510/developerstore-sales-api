@@ -71,7 +71,9 @@ public class Program
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<DefaultContext>();
-                dbContext.Database.Migrate();               
+                //dbContext.Database.Migrate();               
+
+                dbContext.Database.EnsureCreated();
             }
 
             app.UseMiddleware<ValidationExceptionMiddleware>();

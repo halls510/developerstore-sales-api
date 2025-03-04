@@ -24,6 +24,15 @@ public interface ICategoryRepository
     Task<Category?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a category by its name
+    /// </summary>
+    /// <param name="name">The name of the category.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The category entity if found, null otherwise.</returns
+    /// <returns></returns>
+    Task<Category?> GetByNameAsync(string name, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves all categories from the repository, ordered by name.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

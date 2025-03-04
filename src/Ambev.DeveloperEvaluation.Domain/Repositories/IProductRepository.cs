@@ -24,6 +24,14 @@ public interface IProductRepository
     Task<Product?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a product by its title
+    /// </summary>
+    /// <param name="title">The title of the product.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The product if found, null otherwise.</returns>
+    Task<Product?> GetByTitleAsync(string title, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves all products with pagination and sorting.
     /// </summary>
     /// <param name="page">The page number for pagination (default is 1).</param>

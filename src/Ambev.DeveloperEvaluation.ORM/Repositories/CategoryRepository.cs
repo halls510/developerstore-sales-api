@@ -43,6 +43,17 @@ public class CategoryRepository : ICategoryRepository
     }
 
     /// <summary>
+    /// Retrieves a category by its name.
+    /// </summary>
+    /// <param name="name">The name of the category.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The category entity if found, null otherwise.</returns>
+    public async Task<Category?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+    {
+        return await _context.Categories.FirstOrDefaultAsync(c => c.Name == name, cancellationToken);
+    }
+
+    /// <summary>
     /// Retrieves all categories from the database, ordered by name.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>

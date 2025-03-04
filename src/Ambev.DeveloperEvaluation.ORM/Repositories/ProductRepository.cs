@@ -55,6 +55,14 @@ public class ProductRepository : IProductRepository
     }
 
     /// <summary>
+    /// Retrieves a product by its title.
+    /// </summary>
+    public async Task<Product?> GetByTitleAsync(string title, CancellationToken cancellationToken = default)
+    {
+        return await _context.Products.Include(p => p.Category).FirstOrDefaultAsync(p => p.Title == title, cancellationToken);
+    }
+
+    /// <summary>
     /// Retrieves all products with pagination and sorting.
     /// </summary>
     public async Task<(IEnumerable<Product>, int, int, int)> GetAllAsync(int page, int pageSize, string orderBy, CancellationToken cancellationToken = default)
