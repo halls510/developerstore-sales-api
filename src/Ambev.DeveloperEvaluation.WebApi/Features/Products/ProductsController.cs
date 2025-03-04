@@ -43,25 +43,28 @@ public class ProductsController : BaseController
     /// <summary>
     /// Retrieves a paginated list of products with optional filters and ordering.
     /// </summary>
-    /// <param name="_page">Page number for pagination (default: 1)</param>
-    /// <param name="_size">Number of items per page (default: 10)</param>
-    /// <param name="_order">Ordering of results (e.g., "title asc, category desc")</param>
+    /// <param name="_page">Page number for pagination (default: 1) (optional)</param>
+    /// <param name="_size">Number of items per page (default: 10) (optional)</param>
+    /// <param name="_order">Ordering of results (e.g., "title asc, category desc") (optional)</param>
+    /// <param name="filters">Filtering parameters (optional, e.g., "category=men's clothing","title=Fjallraven*").</param>    
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of products</returns>
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<GetProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ListProducts(
-        [FromQuery] int _page = 1,
-        [FromQuery] int _size = 10,
+        [FromQuery] int? _page = null,
+        [FromQuery] int? _size = null,
         [FromQuery] string? _order = null,
+        [FromQuery] Dictionary<string, string[]>? filters = null,
         CancellationToken cancellationToken = default)
     {
         var request = new ListProductsRequest
         {
-            Page = _page,
-            Size = _size,
-            OrderBy = _order
+            Page = _page ?? 1,
+            Size = _size ?? 10,
+            OrderBy = _order,
+            Filters = filters ?? new Dictionary<string, string[]>()
         };
 
         var validator = new ListProductsRequestValidator();
@@ -248,6 +251,15 @@ public class ProductsController : BaseController
     /// <summary>
     /// Retrieves a paginated list of products in a specific category.
     /// </summary>
+    /// <param name="category">The category name used to filter products.</param>
+    /// <param name="_page">Page number for pagination (default: 1).</param>
+    /// <param name="_size">Number of items per page (default: 10).</param>
+    /// <param name="_order">Optional sorting criteria (e.g., "title asc, price desc").</param>
+    /// <param name="cancellationToken">Cancellation token for async operation control.</param>
+    /// <returns>
+    /// Returns a paginated list of products within the specified category.
+    /// If validation fails, returns a 400 Bad Request response with error details.
+    /// </returns>
     [HttpGet("category/{category}")]
     [ProducesResponseType(typeof(PaginatedList<GetProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]

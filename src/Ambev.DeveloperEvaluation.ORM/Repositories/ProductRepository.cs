@@ -1,6 +1,7 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace Ambev.DeveloperEvaluation.ORM.Repositories;
@@ -129,9 +130,26 @@ public class ProductRepository : IProductRepository
     /// <summary>
     /// Retrieves a paginated list of products with optional sorting.
     /// </summary>
-    public async Task<List<Product>> GetProductsAsync(int page, int size, string? orderBy, CancellationToken cancellationToken)
+    public async Task<List<Product>> GetProductsAsync(int page, int size, string? orderBy, Dictionary<string, string[]>? filters, CancellationToken cancellationToken)
     {
         var query = _context.Products.Include(p => p.Category).AsQueryable();
+    
+        // Aplica filtros
+        if (filters != null && filters.Any())
+        {
+            foreach (var filter in filters)
+            {
+                if (filter.Key == "category") // Filtrar pelo nome da categoria
+                {
+                    //query = query.Where(p => EF.Functions.Like(p.Category.Name, filter.Value.Replace("*", "%")));
+                    query = query.Where(BuildPredicate<Product>("Category.Name", filter.Value));
+                }
+                else
+                {
+                    query = query.Where(BuildPredicate<Product>(filter.Key, filter.Value));
+                }
+            }
+        }
 
         // Apply sorting if provided
         if (!string.IsNullOrWhiteSpace(orderBy))
@@ -198,9 +216,29 @@ public class ProductRepository : IProductRepository
     /// <summary>
     /// Retrieves the total count of products in the database.
     /// </summary>
-    public async Task<int> CountProductsAsync(CancellationToken cancellationToken)
+    public async Task<int> CountProductsAsync(Dictionary<string, string[]>? filters, CancellationToken cancellationToken)
     {
-        return await _context.Products.CountAsync(cancellationToken);
+        //return await _context.Products.CountAsync(cancellationToken);
+        var query = _context.Products.AsQueryable();
+
+        // Aplica filtros
+        if (filters != null && filters.Any())
+        {
+            foreach (var filter in filters)
+            {
+                if (filter.Key == "category") // Filtrar pelo nome da categoria
+                {
+                    //query = query.Where(p => EF.Functions.Like(p.Category.Name, filter.Value.Replace("*", "%")));
+                    query = query.Where(BuildPredicate<Product>("Category.Name", filter.Value));
+                }
+                else
+                {
+                    query = query.Where(BuildPredicate<Product>(filter.Key, filter.Value));
+                }
+            }
+        }
+
+        return await query.CountAsync(cancellationToken);
     }
 
     /// <summary>
@@ -237,5 +275,50 @@ public class ProductRepository : IProductRepository
             .Include(p => p.Category)
             .Where(p => p.Category.Name == categoryName)
             .CountAsync(cancellationToken);
+    }
+
+
+    private static Expression<Func<T, bool>> BuildPredicate<T>(string property, string[] values)
+    {
+        var param = Expression.Parameter(typeof(T), "x");
+
+        bool isMin = property.StartsWith("_min");
+        bool isMax = property.StartsWith("_max");
+        string propertyName = isMin || isMax ? property.Substring(4) : property;
+
+        // Divide as propriedades aninhadas (ex: "Category.Name")
+        Expression prop = param;
+        foreach (var propPart in propertyName.Split('.'))
+        {
+            prop = Expression.Property(prop, propPart);
+        }
+
+        Expression? body = null;
+
+        foreach (var val in values)
+        {
+            var trimmedValue = val.Trim('*');
+            var convertedValue = Convert.ChangeType(trimmedValue, prop.Type);
+            var constant = Expression.Constant(convertedValue);
+
+            Expression condition;
+            if (val.StartsWith("*") && val.EndsWith("*")) // Contém
+                condition = Expression.Call(prop, "Contains", Type.EmptyTypes, constant);
+            else if (val.StartsWith("*")) // Termina com
+                condition = Expression.Call(prop, "EndsWith", Type.EmptyTypes, constant);
+            else if (val.EndsWith("*")) // Começa com
+                condition = Expression.Call(prop, "StartsWith", Type.EmptyTypes, constant);
+            else if (isMin) // Valor mínimo
+                condition = Expression.GreaterThanOrEqual(prop, constant);
+            else if (isMax) // Valor máximo
+                condition = Expression.LessThanOrEqual(prop, constant);
+            else // Igualdade normal
+                condition = Expression.Equal(prop, constant);
+
+            // Se houver múltiplos valores no mesmo campo, aplicar OR entre eles
+            body = body == null ? condition : Expression.OrElse(body, condition);
+        }
+
+        return Expression.Lambda<Func<T, bool>>(body ?? Expression.Constant(true), param);
     }
 }

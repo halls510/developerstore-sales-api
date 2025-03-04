@@ -20,15 +20,15 @@ public class ListProductsHandler : IRequestHandler<ListProductsCommand, ListProd
     }
 
     public async Task<ListProductsResult> Handle(ListProductsCommand command, CancellationToken cancellationToken)
-    {       
+    {
         var validator = new ListProductsCommandValidator();
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
 
         if (!validationResult.IsValid)
             throw new FluentValidation.ValidationException(validationResult.Errors);
 
-        var Products = await _productRepository.GetProductsAsync(command.Page, command.Size, command.OrderBy, cancellationToken);
-        var totalProducts = await _productRepository.CountProductsAsync(cancellationToken);
+        var Products = await _productRepository.GetProductsAsync(command.Page, command.Size, command.OrderBy, command.Filters, cancellationToken);
+        var totalProducts = await _productRepository.CountProductsAsync(command.Filters, cancellationToken);
 
         return new ListProductsResult
         {
