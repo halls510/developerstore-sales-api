@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <Folder Include="Carts\DeleteCart\" />
-    <Folder Include="Carts\GetCart\" />
     <Folder Include="Carts\ListCarts\" />
     <Folder Include="Carts\UpdateCart\" />
   </ItemGroup>
