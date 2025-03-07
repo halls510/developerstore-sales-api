@@ -1,7 +1,9 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
+using Ambev.DeveloperEvaluation.Application.Carts.DeleteCart;
 using Ambev.DeveloperEvaluation.Application.Carts.GetCart;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
+using Ambev.DeveloperEvaluation.WebApi.Features.Carts.DeleteCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCart;
 using AutoMapper;
 using MediatR;
@@ -82,6 +84,36 @@ public class CartsController : BaseController
             Success = true,
             Message = "Cart retrieved successfully",
             Data = _mapper.Map<GetCartResponse>(response)
+        });
+    }
+
+    /// <summary>
+    /// Deletes a cart by their ID
+    /// </summary>
+    /// <param name="id">The unique identifier of the cart to delete</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success response if the cart was deleted</returns>
+    [HttpDelete("{id}")]
+    [ProducesResponseType(typeof(ApiResponseWithData<DeleteCartResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteCart([FromRoute] int id, CancellationToken cancellationToken)
+    {
+        var request = new DeleteCartRequest { Id = id };
+        var validator = new DeleteCartRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        var command = _mapper.Map<DeleteCartCommand>(request.Id);
+        var response = await _mediator.Send(command, cancellationToken);
+
+        return Ok(new ApiResponseWithData<DeleteCartResponse>
+        {
+            Success = true,
+            Message = "Cart deleted successfully",
+            Data = _mapper.Map<DeleteCartResponse>(response)
         });
     }
 }
