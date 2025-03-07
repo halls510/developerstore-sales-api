@@ -170,7 +170,7 @@ public class ProductsController : BaseController
         return Ok(new ApiResponseWithData<GetProductResponse>
         {
             Success = true,
-            Message = "User retrieved successfully",
+            Message = "Product retrieved successfully",
             Data = _mapper.Map<GetProductResponse>(response)
         });
     }
