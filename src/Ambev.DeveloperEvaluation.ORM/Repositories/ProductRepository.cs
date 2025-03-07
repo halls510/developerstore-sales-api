@@ -45,6 +45,18 @@ public class ProductRepository : IProductRepository
         return product;
     }
 
+    /// <summary>
+    /// Checks if a list of products exist by their IDs.
+    /// </summary>
+    /// <param name="productIds">List of product IDs.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of existing products.</returns>
+    public async Task<List<Product>> GetByIdsAsync(List<int> productIds, CancellationToken cancellationToken = default)
+    {
+        return await _context.Products
+            .Where(p => productIds.Contains(p.Id))
+            .ToListAsync(cancellationToken);
+    }
 
     /// <summary>
     /// Retrieves a product by its unique identifier.

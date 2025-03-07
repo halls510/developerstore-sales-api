@@ -8,6 +8,14 @@ namespace Ambev.DeveloperEvaluation.Domain.Repositories;
 public interface IUserRepository
 {
     /// <summary>
+    /// Checks if a user exists by their unique identifier
+    /// </summary>
+    /// <param name="id">The unique identifier of the user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>True if the user exists, false otherwise</returns>
+    Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Creates a new user in the repository
     /// </summary>
     /// <param name="user">The user to create</param>

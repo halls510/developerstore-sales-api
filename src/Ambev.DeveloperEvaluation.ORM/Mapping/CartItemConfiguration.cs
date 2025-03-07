@@ -15,7 +15,7 @@ public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
 
         builder.Property(ci => ci.CartId).IsRequired();
         builder.Property(ci => ci.ProductId).IsRequired();
-        builder.Property(ci => ci.ProductName).IsRequired().HasMaxLength(100);
+        builder.Property(ci => ci.ProductName).IsRequired().HasMaxLength(200);
         builder.Property(ci => ci.UnitPrice).HasColumnType("decimal(18,2)").IsRequired();
         builder.Property(ci => ci.Quantity).IsRequired();
 

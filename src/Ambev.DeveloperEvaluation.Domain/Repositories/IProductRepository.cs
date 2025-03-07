@@ -16,6 +16,14 @@ public interface IProductRepository
     Task<Product> CreateAsync(Product product, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Checks if a list of products exist by their IDs.
+    /// </summary>
+    /// <param name="productIds">List of product IDs.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of existing products.</returns>
+    Task<List<Product>> GetByIdsAsync(List<int> productIds, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves a product by its unique identifier.
     /// </summary>
     /// <param name="id">The unique identifier of the product.</param>

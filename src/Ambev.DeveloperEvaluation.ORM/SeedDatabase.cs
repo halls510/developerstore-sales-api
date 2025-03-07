@@ -13,50 +13,50 @@ public static class SeedDatabase
                 new User
                 {
                     Id = 1,
-                    Firstname = "Admin",
-                    Lastname = "User",
-                    Username = "admin",
-                    Email = "admin@example.com",
-                    Phone = "(11) 99999-9999",
-                    Password = "Admin@123",
-                    Role = UserRole.Admin,
+                    Firstname = "John",
+                    Lastname = "Doe",
+                    Username = "johndoe",
+                    Email = "john.doe@example.com",
+                    Phone = "+12125551234",
+                    Password = "Secure@123",
+                    Role = UserRole.Customer,
                     Status = UserStatus.Active,
                     CreatedAt = DateTime.UtcNow,
                     Address = new Address
                     {
-                        City = "São Paulo",
-                        Street = "Avenida Paulista",
-                        Number = 1000,
-                        Zipcode = "01310-100",
+                        City = "New York",
+                        Street = "5th Avenue",
+                        Number = 123,
+                        Zipcode = "10001",
                         Geolocation = new Geolocation
                         {
-                            Lat = "-23.561684",
-                            Long = "-46.656139"
+                            Lat = "40.7128",
+                            Long = "-74.0060"
                         }
                     }
                 },
                 new User
                 {
                     Id = 2,
-                    Firstname = "João",
-                    Lastname = "Silva",
-                    Username = "joaosilva",
-                    Email = "joao@example.com",
-                    Phone = "(11) 98888-8888",
-                    Password = "Joao@123",
+                    Firstname = "Jane",
+                    Lastname = "Smith",
+                    Username = "janesmith",
+                    Email = "jane.smith@example.com",
+                    Phone = "+5511987654321",
+                    Password = "Pass@Word1",
                     Role = UserRole.Customer,
-                    Status = UserStatus.Active,
+                    Status = UserStatus.Inactive,
                     CreatedAt = DateTime.UtcNow,
                     Address = new Address
                     {
-                        City = "Rio de Janeiro",
-                        Street = "Rua do Comércio",
-                        Number = 50,
-                        Zipcode = "20010-020",
+                        City = "São Paulo",
+                        Street = "Avenida Paulista",
+                        Number = 987,
+                        Zipcode = "01310-000",
                         Geolocation = new Geolocation
                         {
-                            Lat = "-22.906847",
-                            Long = "-43.172896"
+                            Lat = "-23.5611",
+                            Long = "-46.6564"
                         }
                     }
                 }
@@ -66,56 +66,16 @@ public static class SeedDatabase
         }
 
         var users = context.Users.ToList();
-        var existingCategories = context.Categories.ToList();
-
-        var categoriesToAdd = new List<Category>
-        {
-            new Category { Id = 2, Name = "Eletrônicos" },
-            new Category { Id = 3, Name = "Livros" },
-            new Category { Id = 4, Name = "Moda" },
-            new Category { Id = 5, Name = "Alimentos" }
-        };
-
-        categoriesToAdd = categoriesToAdd
-            .Where(c => !existingCategories.Any(ec => ec.Name == c.Name))
-            .ToList();
-
-        if (categoriesToAdd.Any())
-        {
-            context.Categories.AddRange(categoriesToAdd);
-            context.SaveChanges();
-        }
-
         if (!context.Products.Any())
         {
-            var categoriesList = context.Categories.ToList();
-
             var productsInsert = new[]
             {
-                new Product
-                {
-                    Id = 1,
-                    Title = "Smartphone 5G",
-                    Price = 3999.99m,
-                    Description = "Smartphone de última geração com tecnologia 5G e câmera ultra-wide.",
-                    Image = "https://example.com/images/smartphone.jpg",
-                    CreatedAt = DateTime.UtcNow,
-                    CategoryId = categoriesList[0].Id,
-                    Rating = new Rating { Rate = 4.8, Count = 120 }
-                },
-                new Product
-                {
-                    Id = 2,
-                    Title = "Notebook Gamer",
-                    Price = 7599.99m,
-                    Description = "Notebook potente com placa de vídeo dedicada para jogos.",
-                    Image = "https://example.com/images/notebook.jpg",
-                    CreatedAt = DateTime.UtcNow,
-                    CategoryId = categoriesList[0].Id,
-                    Rating = new Rating { Rate = 4.5, Count = 95 }
-                }
+                new Product { Id = 1, Title = "Product 1", Price = 10.00m, Description = "Description for product 1", CreatedAt = DateTime.UtcNow },
+                new Product { Id = 2, Title = "Product 2", Price = 15.00m, Description = "Description for product 2", CreatedAt = DateTime.UtcNow },
+                new Product { Id = 3, Title = "Product 3", Price = 20.00m, Description = "Description for product 3", CreatedAt = DateTime.UtcNow },
+                new Product { Id = 4, Title = "Product 4", Price = 25.00m, Description = "Description for product 4", CreatedAt = DateTime.UtcNow },
+                new Product { Id = 5, Title = "Product 5", Price = 30.00m, Description = "Description for product 5", CreatedAt = DateTime.UtcNow }
             };
-
             context.Products.AddRange(productsInsert);
             context.SaveChanges();
         }
@@ -132,7 +92,12 @@ public static class SeedDatabase
                     UserId = users[0].Id,
                     UserName = $"{users[0].Firstname} {users[0].Lastname}",
                     Date = DateTime.UtcNow,
-                    Status = CartStatus.Active
+                    Status = CartStatus.Active,
+                    Items = new List<CartItem>
+                    {
+                        new CartItem { CartId = 1, ProductId = 1, Quantity = 2, UnitPrice = 10.00m },
+                        new CartItem { CartId = 1, ProductId = 2, Quantity = 3, UnitPrice = 15.00m }
+                    }
                 },
                 new Cart
                 {
@@ -140,7 +105,13 @@ public static class SeedDatabase
                     UserId = users[1].Id,
                     UserName = $"{users[1].Firstname} {users[1].Lastname}",
                     Date = DateTime.UtcNow,
-                    Status = CartStatus.Completed
+                    Status = CartStatus.Completed,
+                    Items = new List<CartItem>
+                    {
+                        new CartItem { CartId = 2, ProductId = 3, Quantity = 1, UnitPrice = 20.00m },
+                        new CartItem { CartId = 2, ProductId = 4, Quantity = 2, UnitPrice = 25.00m },
+                        new CartItem { CartId = 2, ProductId = 5, Quantity = 3, UnitPrice = 30.00m }
+                    }
                 }
             };
             context.Carts.AddRange(carts);

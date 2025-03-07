@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Common;
+using Ambev.DeveloperEvaluation.Domain.Enums;
 
 namespace Ambev.DeveloperEvaluation.Domain.Entities;
 
@@ -39,14 +40,4 @@ public class Cart : BaseEntity
     /// This value is computed based on the total of all cart items.
     /// </summary>
     public decimal TotalPrice => Items.Sum(item => item.Total);
-}
-
-/// <summary>
-/// Represents the possible statuses of a shopping cart.
-/// </summary>
-public enum CartStatus
-{
-    Active,     // Carrinho ainda em uso
-    Completed,  // Venda finalizada
-    Cancelled   // Carrinho cancelado ou abandonado
 }

@@ -22,6 +22,17 @@ public class UserRepository : IUserRepository
     }
 
     /// <summary>
+    /// Checks if a user exists by their unique identifier
+    /// </summary>
+    /// <param name="id">The unique identifier of the user</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>True if the user exists, false otherwise</returns>
+    public async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Users.AnyAsync(u => u.Id == id, cancellationToken);
+    }
+
+    /// <summary>
     /// Creates a new user in the database
     /// </summary>
     /// <param name="user">The user to create</param>
