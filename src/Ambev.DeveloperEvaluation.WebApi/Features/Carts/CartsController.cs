@@ -1,10 +1,12 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.Application.Carts.DeleteCart;
 using Ambev.DeveloperEvaluation.Application.Carts.GetCart;
+using Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.DeleteCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCart;
+using Ambev.DeveloperEvaluation.WebApi.Features.Carts.UpdateCart;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -54,6 +56,37 @@ public class CartsController : BaseController
             Success = true,
             Message = "Cart created successfully",
             Data = _mapper.Map<CreateCartResponse>(response)
+        });
+    }
+
+    /// <summary>
+    /// Updates an existing cart
+    /// </summary>
+    /// <param name="id">The unique identifier of the cart to update</param>
+    /// <param name="request">The cart update request</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The updated cart details</returns>
+    [HttpPut("{id}")]
+    [ProducesResponseType(typeof(ApiResponseWithData<UpdateCartResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateCart([FromRoute] int id, [FromBody] UpdateCartRequest request, CancellationToken cancellationToken)
+    {
+        var validator = new UpdateCartRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        var command = _mapper.Map<UpdateCartCommand>(request);
+        command.Id = id;
+        var response = await _mediator.Send(command, cancellationToken);
+
+        return Ok(new ApiResponseWithData<UpdateCartResponse>
+        {
+            Success = true,
+            Message = "Cart updated successfully",
+            Data = _mapper.Map<UpdateCartResponse>(response)
         });
     }
 
