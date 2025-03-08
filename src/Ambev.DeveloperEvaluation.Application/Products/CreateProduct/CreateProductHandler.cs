@@ -3,8 +3,7 @@ using MediatR;
 using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
-using System.Threading;
-using System.Threading.Tasks;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 
 namespace Ambev.DeveloperEvaluation.Application.Products.CreateProduct;
 
@@ -46,7 +45,7 @@ public class CreateProductHandler : IRequestHandler<CreateProductCommand, Create
 
         var existingProduct = await _productRepository.GetByTitleAsync(command.Title, cancellationToken);
         if (existingProduct != null)
-            throw new InvalidOperationException($"Product with title '{command.Title}' already exists");
+            throw new BusinessRuleException($"Product with title '{command.Title}' already exists");
 
         // Check if category exists, if not create it
         var category = await _categoryRepository.GetByNameAsync(command.CategoryName, cancellationToken);

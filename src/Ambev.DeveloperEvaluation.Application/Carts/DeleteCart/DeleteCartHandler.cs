@@ -2,6 +2,7 @@ using AutoMapper;
 using MediatR;
 using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.DeleteCart;
 
@@ -42,11 +43,11 @@ public class DeleteCartHandler : IRequestHandler<DeleteCartCommand, DeleteCartRe
 
         var cart = await _cartRepository.GetByIdAsync(request.Id, cancellationToken);
         if (cart == null)
-            throw new KeyNotFoundException($"Cart with ID {request.Id} not found");
+            throw new ResourceNotFoundException("Cart not found", $"Cart with ID {request.Id} not found");
 
         var success = await _cartRepository.DeleteAsync(request.Id, cancellationToken);
         if (!success)
-            throw new KeyNotFoundException($"Cart with ID {request.Id} not found");
+            throw new ResourceNotFoundException("Cart not found", $"Cart with ID {request.Id} not found");
         
         return _mapper.Map<DeleteCartResult>(cart);
     }

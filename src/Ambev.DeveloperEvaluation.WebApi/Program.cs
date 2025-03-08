@@ -77,8 +77,7 @@ public class Program
                 SeedDatabase.Initialize(dbContext);
             }
 
-            app.UseMiddleware<ValidationExceptionMiddleware>();
-            app.UseMiddleware<NotFoundExceptionMiddleware>();
+            app.UseMiddleware<GlobalExceptionMiddleware>();
 
             if (app.Environment.IsDevelopment())
             {

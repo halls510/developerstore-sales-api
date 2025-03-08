@@ -3,6 +3,7 @@ using MediatR;
 using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
 
@@ -44,7 +45,7 @@ public class CreateCartHandler : IRequestHandler<CreateCartCommand, CreateCartRe
         // Buscar nome do usuário
         var user = await _userRepository.GetByIdAsync(command.UserId, cancellationToken);
         if (user == null)
-            throw new KeyNotFoundException("User does not exist.");
+            throw new ResourceNotFoundException("User not found", "User does not exist.");
 
         // Buscar produtos e validar
         var productIds = command.Items.Select(i => i.ProductId).ToList();
@@ -56,7 +57,7 @@ public class CreateCartHandler : IRequestHandler<CreateCartCommand, CreateCartRe
         // Verificar se há produtos que não existem
         var missingProducts = productIds.Except(productDict.Keys).ToList();
         if (missingProducts.Any())
-            throw new KeyNotFoundException($"The following product(s) do not exist: {string.Join(", ", missingProducts)}");
+            throw new ResourceNotFoundException("Product not found", $"The following product(s) do not exist: {string.Join(", ", missingProducts)}");
 
         // Criar entidade Cart com nome do usuário
         var cart = _mapper.Map<Cart>(command);

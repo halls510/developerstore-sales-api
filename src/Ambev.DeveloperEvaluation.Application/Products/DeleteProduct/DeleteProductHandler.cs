@@ -2,6 +2,7 @@ using AutoMapper;
 using MediatR;
 using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 
 namespace Ambev.DeveloperEvaluation.Application.Products.DeleteProduct;
 
@@ -42,11 +43,11 @@ public class DeleteProductHandler : IRequestHandler<DeleteProductCommand, Delete
 
         var user = await _productRepository.GetByIdAsync(request.Id, cancellationToken);
         if (user == null)
-            throw new KeyNotFoundException($"User with ID {request.Id} not found");
+            throw new ResourceNotFoundException("Product not found", $"Product with ID {request.Id} not found");
 
         var success = await _productRepository.DeleteAsync(request.Id, cancellationToken);
         if (!success)
-            throw new KeyNotFoundException($"User with ID {request.Id} not found");
+            throw new ResourceNotFoundException("Product not found", $"Product with ID {request.Id} not found");
         
         return _mapper.Map<DeleteProductResult>(user);
     }

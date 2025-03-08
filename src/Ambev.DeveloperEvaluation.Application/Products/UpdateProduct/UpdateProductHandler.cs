@@ -1,8 +1,10 @@
-﻿using AutoMapper;
+﻿
+using AutoMapper;
 using MediatR;
 using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 
 namespace Ambev.DeveloperEvaluation.Application.Products.UpdateProduct;
 
@@ -38,7 +40,7 @@ public class UpdateProductHandler : IRequestHandler<UpdateProductCommand, Update
 
         var existingProduct = await _productRepository.GetByIdAsync(command.Id, cancellationToken);
         if (existingProduct == null)
-            throw new KeyNotFoundException($"Product with ID {command.Id} not found.");
+            throw new ResourceNotFoundException("Product not found", $"Product with ID {command.Id} not found.");
 
         // Check if category exists, if not create it
         var category = await _categoryRepository.GetByNameAsync(command.CategoryName, cancellationToken);

@@ -2,6 +2,7 @@ using AutoMapper;
 using MediatR;
 using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.GetCart;
 
@@ -42,7 +43,7 @@ public class GetCartHandler : IRequestHandler<GetCartCommand, GetCartResult>
 
         var user = await _cartRepository.GetByIdAsync(request.Id, cancellationToken);
         if (user == null)
-            throw new KeyNotFoundException($"Cart with ID {request.Id} not found");
+            throw new ResourceNotFoundException("Cart not found", $"Cart with ID {request.Id} not found");
 
         return _mapper.Map<GetCartResult>(user);
     }

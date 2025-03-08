@@ -3,6 +3,7 @@ using MediatR;
 using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
 
@@ -44,16 +45,16 @@ public class UpdateCartHandler : IRequestHandler<UpdateCartCommand, UpdateCartRe
         // Buscar o carrinho existente
         var existingCart = await _cartRepository.GetByIdAsync(command.Id, cancellationToken);
         if (existingCart == null)
-            throw new KeyNotFoundException("Cart does not exist.");
+            throw new ResourceNotFoundException("Cart not found","Cart does not exist.");
 
         // O UserId do carrinho não pode ser alterado
         if (command.UserId != existingCart.UserId)
-            throw new InvalidOperationException("User ID cannot be changed.");
+            throw new BusinessRuleException("User ID cannot be changed.");
 
         // Buscar usuário
         var user = await _userRepository.GetByIdAsync(existingCart.UserId, cancellationToken);
         if (user == null)
-            throw new KeyNotFoundException("User does not exist.");
+            throw new ResourceNotFoundException("User not found","User does not exist.");
 
         // Buscar produtos e validar
         var productIds = command.Items.Select(i => i.ProductId).ToList();
@@ -65,8 +66,8 @@ public class UpdateCartHandler : IRequestHandler<UpdateCartCommand, UpdateCartRe
         // Verificar se há produtos que não existem no banco de dados
         var missingProducts = productIds.Except(productDict.Keys).ToList();
         if (missingProducts.Any())
-            throw new KeyNotFoundException($"The following product(s) do not exist: {string.Join(", ", missingProducts)}");
-
+            throw new ResourceNotFoundException("Product not found",$"The following product(s) do not exist: {string.Join(", ", missingProducts)}");
+            
         // Criar nova lista de itens com os produtos enviados na requisição
         var updatedItems = command.Items.Select(item =>
         {
