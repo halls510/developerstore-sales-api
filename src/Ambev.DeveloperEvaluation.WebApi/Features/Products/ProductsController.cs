@@ -112,6 +112,36 @@ public class ProductsController : BaseController
             Message = "Product created successfully",
             Data = _mapper.Map<CreateProductResponse>(response)
         });
+    }   
+
+    /// <summary>
+    /// Retrieves a product by their ID
+    /// </summary>
+    /// <param name="id">The unique identifier of the product</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The product details if found</returns>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(ApiResponseWithData<GetProductResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetProduct([FromRoute] int id, CancellationToken cancellationToken)
+    {
+        var request = new GetProductRequest { Id = id };
+        var validator = new GetProductRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        var command = _mapper.Map<GetProductCommand>(request.Id);
+        var response = await _mediator.Send(command, cancellationToken);
+
+        return Ok(new ApiResponseWithData<GetProductResponse>
+        {
+            Success = true,
+            Message = "Product retrieved successfully",
+            Data = _mapper.Map<GetProductResponse>(response)
+        });
     }
 
     /// <summary>
@@ -142,36 +172,6 @@ public class ProductsController : BaseController
             Success = true,
             Message = "Product updated successfully",
             Data = _mapper.Map<UpdateProductResponse>(response)
-        });
-    }
-
-    /// <summary>
-    /// Retrieves a product by their ID
-    /// </summary>
-    /// <param name="id">The unique identifier of the product</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>The product details if found</returns>
-    [HttpGet("{id}")]
-    [ProducesResponseType(typeof(ApiResponseWithData<GetProductResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetProduct([FromRoute] int id, CancellationToken cancellationToken)
-    {
-        var request = new GetProductRequest { Id = id };
-        var validator = new GetProductRequestValidator();
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
-
-        if (!validationResult.IsValid)
-            return BadRequest(validationResult.Errors);
-
-        var command = _mapper.Map<GetProductCommand>(request.Id);
-        var response = await _mediator.Send(command, cancellationToken);
-
-        return Ok(new ApiResponseWithData<GetProductResponse>
-        {
-            Success = true,
-            Message = "Product retrieved successfully",
-            Data = _mapper.Map<GetProductResponse>(response)
         });
     }
 
