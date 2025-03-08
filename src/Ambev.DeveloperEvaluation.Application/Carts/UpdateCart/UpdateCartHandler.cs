@@ -76,8 +76,8 @@ public class UpdateCartHandler : IRequestHandler<UpdateCartCommand, UpdateCartRe
             {
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
-                ProductName = product.Title,
-                UnitPrice = product.Price
+                ProductName = product?.Title ?? "Unknown Product",
+                UnitPrice = product?.Price ?? 0
             };
         }).ToList();
 

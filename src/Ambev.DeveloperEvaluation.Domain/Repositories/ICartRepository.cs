@@ -56,4 +56,14 @@ public interface ICartRepository
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A collection of carts belonging to the specified user.</returns>
     Task<IEnumerable<Cart>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a paginated list of carts with optional sorting.
+    /// </summary>
+    Task<List<Cart>> GetCartsAsync(int page, int size, string? orderBy, Dictionary<string, string[]>? filters, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retrieves the total count of Carts in the database.
+    /// </summary>
+    Task<int> CountCartsAsync(Dictionary<string, string[]>? filters, CancellationToken cancellationToken);
 }
