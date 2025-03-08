@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -78,7 +79,7 @@ public class UserRepository : IUserRepository
     {
         var existingUser = await GetByIdAsync(user.Id, cancellationToken);
         if (existingUser == null)
-            throw new KeyNotFoundException("User not found.");
+            throw new ResourceNotFoundException("User not found", $"User with ID {user.Id} not found.");
 
         _context.Entry(existingUser).CurrentValues.SetValues(user);
         await _context.SaveChangesAsync(cancellationToken);
