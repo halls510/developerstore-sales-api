@@ -12,7 +12,6 @@ using Ambev.DeveloperEvaluation.Application.Users.UpdateUser;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.UpdateUser;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.ListUsers;
 using Ambev.DeveloperEvaluation.Application.Users.ListUsers;
-using Ambev.DeveloperEvaluation.Domain.Entities;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Users;
 
@@ -49,16 +48,18 @@ public class UsersController : BaseController
     [ProducesResponseType(typeof(PaginatedList<GetUserResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ListUsers(
-        [FromQuery] int _page = 1,
-        [FromQuery] int _size = 10,
+                [FromQuery] int? _page = null,
+        [FromQuery] int? _size = null,
         [FromQuery] string? _order = null,
+        [FromQuery] Dictionary<string, string[]>? filters = null,
         CancellationToken cancellationToken = default)
     {
         var request = new ListUsersRequest
         {
-            Page = _page,
-            Size = _size,
-            OrderBy = _order
+            Page = _page ?? 1,
+            Size = _size ?? 10,
+            OrderBy = _order,
+            Filters = filters ?? new Dictionary<string, string[]>()
         };
 
         var validator = new ListUsersRequestValidator();

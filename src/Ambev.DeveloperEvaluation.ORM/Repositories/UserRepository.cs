@@ -102,44 +102,134 @@ public class UserRepository : IUserRepository
         return true;
     }
 
+    ///// <summary>
+    ///// Retrieves a paginated list of users with optional sorting.
+    ///// </summary>
+    ///// <param name="page">The page number for pagination (starting from 1).</param>
+    ///// <param name="size">The number of users per page.</param>
+    ///// <param name="orderBy">
+    ///// Sorting criteria in the format "field asc" or "field desc". 
+    ///// Multiple fields can be separated by commas (e.g., "username asc, email desc").
+    ///// </param>
+    ///// <param name="cancellationToken">A cancellation token to cancel the operation if needed.</param>
+    ///// <returns>A paginated list of users.</returns>
+    //public async Task<List<User>> GetUsersAsync(int page, int size, string? orderBy, CancellationToken cancellationToken)
+    //{
+    //    var query = _context.Users.AsQueryable();
+
+    //    // Aplica ordenação se fornecida
+    //    if (!string.IsNullOrWhiteSpace(orderBy))
+    //    {
+    //        query = ApplySorting(query, orderBy);
+    //    }
+    //    else
+    //    {
+    //        // Ordenação padrão por ID ascendente
+    //        query = query.OrderBy(u => u.Id);
+    //    }
+
+    //    return await query
+    //        .Skip((page - 1) * size) // Pula os registros das páginas anteriores
+    //        .Take(size) // Retorna apenas os registros da página atual
+    //        .ToListAsync(cancellationToken);
+    //}
+
+    ///// <summary>
+    ///// Aplica ordenação dinâmica baseada em uma string no formato "campo asc, campo2 desc".
+    ///// </summary>
+    ///// <param name="query">Consulta base.</param>
+    ///// <param name="orderBy">String de ordenação.</param>
+    ///// <returns>Consulta ordenada.</returns>
+    //private IQueryable<User> ApplySorting(IQueryable<User> query, string orderBy)
+    //{
+    //    var orderingParams = orderBy.Split(',')
+    //        .Select(o => o.Trim().Split(' '))
+    //        .Where(o => o.Length > 0)
+    //        .Select(o => new { Field = o[0], IsAscending = o.Length < 2 || o[1].ToLower() == "asc" });
+
+    //    foreach (var param in orderingParams)
+    //    {
+    //        query = ApplyOrder(query, param.Field, param.IsAscending);
+    //    }
+
+    //    return query;
+    //}
+
+    ///// <summary>
+    ///// Aplica ordenação genérica a um IQueryable, incluindo propriedades aninhadas.
+    ///// </summary>
+    ///// <param name="query">Consulta base.</param>
+    ///// <param name="propertyPath">Nome da propriedade para ordenar (suporta propriedades aninhadas, como "Address.City").</param>
+    ///// <param name="isAscending">Direção da ordenação.</param>
+    ///// <returns>Consulta ordenada.</returns>
+    //private IQueryable<User> ApplyOrder(IQueryable<User> query, string propertyPath, bool isAscending)
+    //{
+    //    var param = Expression.Parameter(typeof(User), "u");
+    //    Expression property = param;
+
+    //    foreach (var prop in propertyPath.Split('.'))
+    //    {
+    //        property = Expression.Property(property, prop);
+    //    }
+
+    //    var lambda = Expression.Lambda(property, param);
+    //    string methodName = isAscending ? "OrderBy" : "OrderByDescending";
+
+    //    var orderByExpression = Expression.Call(
+    //        typeof(Queryable),
+    //        methodName,
+    //        new Type[] { typeof(User), property.Type },
+    //        query.Expression,
+    //        Expression.Quote(lambda)
+    //    );
+
+    //    return query.Provider.CreateQuery<User>(orderByExpression);
+    //}    
+
+    ///// <summary>
+    ///// Obtém a contagem total de usuários no banco de dados.
+    ///// </summary>
+    //public async Task<int> CountUsersAsync(CancellationToken cancellationToken)
+    //{
+    //    return await _context.Users.CountAsync(cancellationToken);
+    //}
+
     /// <summary>
     /// Retrieves a paginated list of users with optional sorting.
     /// </summary>
-    /// <param name="page">The page number for pagination (starting from 1).</param>
-    /// <param name="size">The number of users per page.</param>
-    /// <param name="orderBy">
-    /// Sorting criteria in the format "field asc" or "field desc". 
-    /// Multiple fields can be separated by commas (e.g., "username asc, email desc").
-    /// </param>
-    /// <param name="cancellationToken">A cancellation token to cancel the operation if needed.</param>
-    /// <returns>A paginated list of users.</returns>
-    public async Task<List<User>> GetUsersAsync(int page, int size, string? orderBy, CancellationToken cancellationToken)
+    public async Task<List<User>> GetUsersAsync(int page, int size, string? orderBy, Dictionary<string, string[]>? filters, CancellationToken cancellationToken)
     {
         var query = _context.Users.AsQueryable();
 
-        // Aplica ordenação se fornecida
+        // Aplica filtros
+        if (filters != null && filters.Any())
+        {
+            foreach (var filter in filters)
+            {
+                query = query.Where(BuildPredicate<User>(filter.Key, filter.Value));
+            }
+        }
+
+        // Apply sorting if provided
         if (!string.IsNullOrWhiteSpace(orderBy))
         {
             query = ApplySorting(query, orderBy);
         }
         else
         {
-            // Ordenação padrão por ID ascendente
-            query = query.OrderBy(u => u.Id);
+            // Default sorting by ID ascending
+            query = query.OrderBy(p => p.Id);
         }
 
         return await query
-            .Skip((page - 1) * size) // Pula os registros das páginas anteriores
-            .Take(size) // Retorna apenas os registros da página atual
+            .Skip((page - 1) * size)
+            .Take(size)
             .ToListAsync(cancellationToken);
     }
 
     /// <summary>
-    /// Aplica ordenação dinâmica baseada em uma string no formato "campo asc, campo2 desc".
+    /// Applies dynamic sorting based on a string format "field asc, field2 desc".
     /// </summary>
-    /// <param name="query">Consulta base.</param>
-    /// <param name="orderBy">String de ordenação.</param>
-    /// <returns>Consulta ordenada.</returns>
     private IQueryable<User> ApplySorting(IQueryable<User> query, string orderBy)
     {
         var orderingParams = orderBy.Split(',')
@@ -156,15 +246,11 @@ public class UserRepository : IUserRepository
     }
 
     /// <summary>
-    /// Aplica ordenação genérica a um IQueryable, incluindo propriedades aninhadas.
+    /// Applies generic sorting to an IQueryable, including nested properties.
     /// </summary>
-    /// <param name="query">Consulta base.</param>
-    /// <param name="propertyPath">Nome da propriedade para ordenar (suporta propriedades aninhadas, como "Address.City").</param>
-    /// <param name="isAscending">Direção da ordenação.</param>
-    /// <returns>Consulta ordenada.</returns>
     private IQueryable<User> ApplyOrder(IQueryable<User> query, string propertyPath, bool isAscending)
     {
-        var param = Expression.Parameter(typeof(User), "u");
+        var param = Expression.Parameter(typeof(User), "p");
         Expression property = param;
 
         foreach (var prop in propertyPath.Split('.'))
@@ -184,13 +270,69 @@ public class UserRepository : IUserRepository
         );
 
         return query.Provider.CreateQuery<User>(orderByExpression);
-    }    
+    }
 
     /// <summary>
-    /// Obtém a contagem total de usuários no banco de dados.
+    /// Retrieves the total count of Users in the database.
     /// </summary>
-    public async Task<int> CountUsersAsync(CancellationToken cancellationToken)
+    public async Task<int> CountUsersAsync(Dictionary<string, string[]>? filters, CancellationToken cancellationToken)
     {
-        return await _context.Users.CountAsync(cancellationToken);
+        //return await _context.Users.CountAsync(cancellationToken);
+        var query = _context.Users.AsQueryable();
+
+        // Aplica filtros
+        if (filters != null && filters.Any())
+        {
+            foreach (var filter in filters)
+            {
+                query = query.Where(BuildPredicate<User>(filter.Key, filter.Value));
+            }
+        }
+
+        return await query.CountAsync(cancellationToken);
+    }
+
+    private static Expression<Func<T, bool>> BuildPredicate<T>(string property, string[] values)
+    {
+        var param = Expression.Parameter(typeof(T), "x");
+
+        bool isMin = property.StartsWith("_min");
+        bool isMax = property.StartsWith("_max");
+        string propertyName = isMin || isMax ? property.Substring(4) : property;
+
+        // Divide as propriedades aninhadas (ex: "Category.Name")
+        Expression prop = param;
+        foreach (var propPart in propertyName.Split('.'))
+        {
+            prop = Expression.Property(prop, propPart);
+        }
+
+        Expression? body = null;
+
+        foreach (var val in values)
+        {
+            var trimmedValue = val.Trim('*');
+            var convertedValue = Convert.ChangeType(trimmedValue, prop.Type);
+            var constant = Expression.Constant(convertedValue);
+
+            Expression condition;
+            if (val.StartsWith("*") && val.EndsWith("*")) // Contém
+                condition = Expression.Call(prop, "Contains", Type.EmptyTypes, constant);
+            else if (val.StartsWith("*")) // Termina com
+                condition = Expression.Call(prop, "EndsWith", Type.EmptyTypes, constant);
+            else if (val.EndsWith("*")) // Começa com
+                condition = Expression.Call(prop, "StartsWith", Type.EmptyTypes, constant);
+            else if (isMin) // Valor mínimo
+                condition = Expression.GreaterThanOrEqual(prop, constant);
+            else if (isMax) // Valor máximo
+                condition = Expression.LessThanOrEqual(prop, constant);
+            else // Igualdade normal
+                condition = Expression.Equal(prop, constant);
+
+            // Se houver múltiplos valores no mesmo campo, aplicar OR entre eles
+            body = body == null ? condition : Expression.OrElse(body, condition);
+        }
+
+        return Expression.Lambda<Func<T, bool>>(body ?? Expression.Constant(true), param);
     }
 }

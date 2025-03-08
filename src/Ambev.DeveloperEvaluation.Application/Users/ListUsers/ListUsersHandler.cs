@@ -30,8 +30,8 @@ public class ListUsersHandler : IRequestHandler<ListUsersCommand, ListUsersResul
         if (!validationResult.IsValid)
             throw new FluentValidation.ValidationException(validationResult.Errors);
 
-        var users = await _userRepository.GetUsersAsync(command.Page, command.Size, command.OrderBy, cancellationToken);
-        var totalUsers = await _userRepository.CountUsersAsync(cancellationToken);
+        var users = await _userRepository.GetUsersAsync(command.Page, command.Size, command.OrderBy,command.Filters, cancellationToken);
+        var totalUsers = await _userRepository.CountUsersAsync(command.Filters,cancellationToken);
 
         return new ListUsersResult
         {
