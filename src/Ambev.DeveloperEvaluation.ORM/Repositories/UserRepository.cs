@@ -40,9 +40,9 @@ public class UserRepository : IUserRepository
     /// <returns>The created user</returns>
     public async Task<User> CreateAsync(User user, CancellationToken cancellationToken = default)
     {
-        await _context.Users.AddAsync(user, cancellationToken);
+        var entry = await _context.Users.AddAsync(user, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
-        return user;
+        return entry.Entity; // Retorna o objeto com ID gerado
     }
 
     /// <summary>
