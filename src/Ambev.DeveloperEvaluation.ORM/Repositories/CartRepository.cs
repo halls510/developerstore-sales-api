@@ -173,8 +173,7 @@ public class CartRepository : ICartRepository
     /// </summary>
     public async Task<int> CountCartsAsync(Dictionary<string, string[]>? filters, CancellationToken cancellationToken)
     {
-        //return await _context.Carts.CountAsync(cancellationToken);
-        var query = _context.Carts.AsQueryable();
+        var query = _context.Carts.Include(p => p.Items).AsQueryable();
 
         // Aplica filtros
         if (filters != null && filters.Any())
@@ -188,6 +187,104 @@ public class CartRepository : ICartRepository
         return await query.CountAsync(cancellationToken);
     }
 
+    //private static Expression<Func<T, bool>> BuildPredicate<T>(string property, string[] values)
+    //{
+    //    var param = Expression.Parameter(typeof(T), "x");
+
+    //    bool isMin = property.StartsWith("_min");
+    //    bool isMax = property.StartsWith("_max");
+    //    string propertyName = isMin || isMax ? property.Substring(4) : property;
+
+    //    // Substituir "products" por "items" no nome do filtro
+    //    propertyName = propertyName.Replace("products", "Items");
+
+    //    // Substitui "." por "_" para aceitar os dois formatos
+    //    propertyName = propertyName.Replace(".", "_");
+
+    //    // Divide propriedades aninhadas (ex: "products_productId" ou "Items.ProductId")
+    //    var properties = propertyName.Split('_');
+
+    //    Expression prop = param;
+    //    Type currentType = typeof(T);
+
+    //    for (int i = 0; i < properties.Length; i++)
+    //    {
+    //        string propPart = properties[i];
+
+    //        var propInfo = currentType.GetProperty(propPart);
+    //        if (propInfo == null)
+    //        {
+    //            throw new InvalidOperationException($"Propriedade '{propPart}' não encontrada em {currentType.Name}");
+    //        }
+
+    //        // **Se a propriedade é uma coleção (List<T>), preparamos para Any()**
+    //        if (propInfo.PropertyType.IsGenericType && propInfo.PropertyType.GetGenericTypeDefinition() == typeof(List<>))
+    //        {
+    //            var elementType = propInfo.PropertyType.GetGenericArguments().First(); // Tipo dos elementos da coleção (CartItem)
+    //            var collectionParam = Expression.Parameter(elementType, "i");
+
+    //            // **Atualiza currentType para acessar corretamente os campos do item da coleção (CartItem)**
+    //            currentType = elementType;
+
+    //            // **Verifica se há mais propriedades para acessar dentro da coleção**
+    //            if (i + 1 < properties.Length)
+    //            {
+    //                string nestedProperty = properties[i + 1]; // Exemplo: "ProductId"
+
+    //                var nestedPropInfo = currentType.GetProperty(nestedProperty);
+    //                if (nestedPropInfo == null)
+    //                {
+    //                    throw new InvalidOperationException($"Propriedade '{nestedProperty}' não encontrada em {currentType.Name}");
+    //                }
+
+    //                var collectionProp = Expression.Property(collectionParam, nestedProperty);
+
+    //                Expression? body = null;
+
+    //                // **Agora processamos corretamente os valores dentro da coleção**
+    //                foreach (var val in values)
+    //                {
+    //                    var trimmedValue = val.Trim('*');
+    //                    var convertedValue = Convert.ChangeType(trimmedValue, collectionProp.Type);
+    //                    var constant = Expression.Constant(convertedValue);
+
+    //                    Expression condition;
+    //                    if (val.StartsWith("*") && val.EndsWith("*")) // Contém
+    //                        condition = Expression.Call(collectionProp, "Contains", Type.EmptyTypes, constant);
+    //                    else if (val.StartsWith("*")) // Termina com
+    //                        condition = Expression.Call(collectionProp, "EndsWith", Type.EmptyTypes, constant);
+    //                    else if (val.EndsWith("*")) // Começa com
+    //                        condition = Expression.Call(collectionProp, "StartsWith", Type.EmptyTypes, constant);
+    //                    else if (isMin) // Valor mínimo
+    //                        condition = Expression.GreaterThanOrEqual(collectionProp, constant);
+    //                    else if (isMax) // Valor máximo
+    //                        condition = Expression.LessThanOrEqual(collectionProp, constant);
+    //                    else // Igualdade normal
+    //                        condition = Expression.Equal(collectionProp, constant);
+
+    //                    // Se houver múltiplos valores no mesmo campo, aplicar OR entre eles
+    //                    body = body == null ? condition : Expression.OrElse(body, condition);
+    //                }
+
+    //                var anyLambda = Expression.Lambda(body ?? Expression.Constant(true), collectionParam);
+    //                return Expression.Lambda<Func<T, bool>>(
+    //                    Expression.Call(typeof(Enumerable), "Any", new Type[] { elementType }, Expression.Property(param, propPart), anyLambda),
+    //                    param
+    //                );
+    //            }
+    //        }
+    //        else
+    //        {
+    //            // **Caminho normal para acessar propriedades diretas**
+    //            prop = Expression.Property(prop, propPart);
+    //            currentType = propInfo.PropertyType; // **Atualiza para a nova propriedade**
+    //        }
+    //    }
+
+    //    throw new InvalidOperationException("A estrutura do filtro não foi reconhecida.");
+    //}
+
+
     private static Expression<Func<T, bool>> BuildPredicate<T>(string property, string[] values)
     {
         var param = Expression.Parameter(typeof(T), "x");
@@ -196,39 +293,102 @@ public class CartRepository : ICartRepository
         bool isMax = property.StartsWith("_max");
         string propertyName = isMin || isMax ? property.Substring(4) : property;
 
-        // Divide as propriedades aninhadas (ex: "Category.Name")
+        // Converte o nome do filtro para minúsculas
+        propertyName = propertyName.ToLower();
+
+        // Substituir "products" por "items" no nome do filtro
+        propertyName = propertyName.Replace("products", "items");
+
+        // Substitui "." por "_" para aceitar os dois formatos
+        propertyName = propertyName.Replace(".", "_");
+
+        // Divide propriedades aninhadas (ex: "products_productid" ou "items.productid")
+        var properties = propertyName.Split('_');
+
         Expression prop = param;
-        foreach (var propPart in propertyName.Split('.'))
+        Type currentType = typeof(T);
+
+        for (int i = 0; i < properties.Length; i++)
         {
-            prop = Expression.Property(prop, propPart);
+            string propPart = properties[i];
+
+            // Encontra a propriedade correspondente ignorando case (case-insensitive)
+            var propInfo = currentType.GetProperties()
+                                      .FirstOrDefault(p => p.Name.ToLower() == propPart);
+
+            if (propInfo == null)
+            {
+                throw new InvalidOperationException($"Propriedade '{propPart}' não encontrada em {currentType.Name}");
+            }
+
+            // **Se a propriedade é uma coleção (List<T>), preparamos para Any()**
+            if (propInfo.PropertyType.IsGenericType && propInfo.PropertyType.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                var elementType = propInfo.PropertyType.GetGenericArguments().First(); // Tipo dos elementos da coleção (CartItem)
+                var collectionParam = Expression.Parameter(elementType, "i");
+
+                // **Atualiza currentType para acessar corretamente os campos do item da coleção (CartItem)**
+                currentType = elementType;
+
+                // **Verifica se há mais propriedades para acessar dentro da coleção**
+                if (i + 1 < properties.Length)
+                {
+                    string nestedProperty = properties[i + 1]; // Exemplo: "productid"
+
+                    // Encontra a propriedade ignorando case (case-insensitive)
+                    var nestedPropInfo = currentType.GetProperties()
+                                                    .FirstOrDefault(p => p.Name.ToLower() == nestedProperty);
+
+                    if (nestedPropInfo == null)
+                    {
+                        throw new InvalidOperationException($"Propriedade '{nestedProperty}' não encontrada em {currentType.Name}");
+                    }
+
+                    var collectionProp = Expression.Property(collectionParam, nestedPropInfo.Name);
+
+                    Expression? body = null;
+
+                    // **Agora processamos corretamente os valores dentro da coleção**
+                    foreach (var val in values)
+                    {
+                        var trimmedValue = val.Trim('*');
+                        var convertedValue = Convert.ChangeType(trimmedValue, collectionProp.Type);
+                        var constant = Expression.Constant(convertedValue);
+
+                        Expression condition;
+                        if (val.StartsWith("*") && val.EndsWith("*")) // Contém
+                            condition = Expression.Call(collectionProp, "Contains", Type.EmptyTypes, constant);
+                        else if (val.StartsWith("*")) // Termina com
+                            condition = Expression.Call(collectionProp, "EndsWith", Type.EmptyTypes, constant);
+                        else if (val.EndsWith("*")) // Começa com
+                            condition = Expression.Call(collectionProp, "StartsWith", Type.EmptyTypes, constant);
+                        else if (isMin) // Valor mínimo
+                            condition = Expression.GreaterThanOrEqual(collectionProp, constant);
+                        else if (isMax) // Valor máximo
+                            condition = Expression.LessThanOrEqual(collectionProp, constant);
+                        else // Igualdade normal
+                            condition = Expression.Equal(collectionProp, constant);
+
+                        // Se houver múltiplos valores no mesmo campo, aplicar OR entre eles
+                        body = body == null ? condition : Expression.OrElse(body, condition);
+                    }
+
+                    var anyLambda = Expression.Lambda(body ?? Expression.Constant(true), collectionParam);
+                    return Expression.Lambda<Func<T, bool>>(
+                        Expression.Call(typeof(Enumerable), "Any", new Type[] { elementType }, Expression.Property(param, propInfo.Name), anyLambda),
+                        param
+                    );
+                }
+            }
+            else
+            {
+                // **Caminho normal para acessar propriedades diretas**
+                prop = Expression.Property(prop, propInfo.Name);
+                currentType = propInfo.PropertyType; // **Atualiza para a nova propriedade**
+            }
         }
 
-        Expression? body = null;
-
-        foreach (var val in values)
-        {
-            var trimmedValue = val.Trim('*');
-            var convertedValue = Convert.ChangeType(trimmedValue, prop.Type);
-            var constant = Expression.Constant(convertedValue);
-
-            Expression condition;
-            if (val.StartsWith("*") && val.EndsWith("*")) // Contém
-                condition = Expression.Call(prop, "Contains", Type.EmptyTypes, constant);
-            else if (val.StartsWith("*")) // Termina com
-                condition = Expression.Call(prop, "EndsWith", Type.EmptyTypes, constant);
-            else if (val.EndsWith("*")) // Começa com
-                condition = Expression.Call(prop, "StartsWith", Type.EmptyTypes, constant);
-            else if (isMin) // Valor mínimo
-                condition = Expression.GreaterThanOrEqual(prop, constant);
-            else if (isMax) // Valor máximo
-                condition = Expression.LessThanOrEqual(prop, constant);
-            else // Igualdade normal
-                condition = Expression.Equal(prop, constant);
-
-            // Se houver múltiplos valores no mesmo campo, aplicar OR entre eles
-            body = body == null ? condition : Expression.OrElse(body, condition);
-        }
-
-        return Expression.Lambda<Func<T, bool>>(body ?? Expression.Constant(true), param);
+        throw new InvalidOperationException("A estrutura do filtro não foi reconhecida.");
     }
+
 }
