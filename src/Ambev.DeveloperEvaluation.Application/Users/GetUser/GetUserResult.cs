@@ -1,5 +1,5 @@
+using Ambev.DeveloperEvaluation.Application.Common;
 using Ambev.DeveloperEvaluation.Domain.Enums;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Ambev.DeveloperEvaluation.Application.Users.GetUser;
 
@@ -11,7 +11,7 @@ public class GetUserResult
     /// <summary>
     /// The unique identifier of the user
     /// </summary>
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     /// The user's email address
@@ -29,6 +29,11 @@ public class GetUserResult
     public NameResult Name { get; set; } = new NameResult();
 
     /// <summary>
+    /// The user's address.
+    /// </summary>
+    public AddressResult Address { get; set; } = new AddressResult();
+
+    /// <summary>
     /// The user's phone number
     /// </summary>
     public string Phone { get; set; } = string.Empty;   
@@ -42,13 +47,4 @@ public class GetUserResult
     /// The current status of the user
     /// </summary>
     public UserStatus Status { get; set; }
-}
-
-/// <summary>
-/// Represents the user's name structure in the result model.
-/// </summary>
-public class NameResult
-{
-    public string Firstname { get; set; } = string.Empty;
-    public string Lastname { get; set; } = string.Empty;
 }

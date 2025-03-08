@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace Ambev.DeveloperEvaluation.ORM.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class ChangeIdGuidToInt : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,8 +16,9 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                 name: "Carts",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    UserId = table.Column<int>(type: "integer", nullable: false),
                     UserName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
@@ -30,7 +32,8 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                 name: "Categories",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
@@ -42,10 +45,11 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                 name: "Sales",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     SaleNumber = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     SaleDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CustomerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CustomerId = table.Column<int>(type: "integer", nullable: false),
                     CustomerName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     TotalValue = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     Branch = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
@@ -60,7 +64,8 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Firstname = table.Column<string>(type: "character varying(24)", maxLength: 24, nullable: false),
                     Lastname = table.Column<string>(type: "character varying(24)", maxLength: 24, nullable: false),
                     Address_City = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
@@ -87,9 +92,10 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                 name: "CartItems",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    CartId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ProductId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    CartId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
                     ProductName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     UnitPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false)
@@ -109,7 +115,8 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                 name: "Products",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Price = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
                     Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
@@ -118,7 +125,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                     Rating_Count = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CategoryId = table.Column<Guid>(type: "uuid", nullable: false, defaultValue: new Guid("00000000-0000-0000-0000-000000000001"))
+                    CategoryId = table.Column<int>(type: "integer", nullable: false, defaultValue: 1)
                 },
                 constraints: table =>
                 {
@@ -135,9 +142,10 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                 name: "SaleItems",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
-                    SaleId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ProductId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    SaleId = table.Column<int>(type: "integer", nullable: false),
+                    ProductId = table.Column<int>(type: "integer", nullable: false),
                     ProductName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     UnitPrice = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
@@ -158,7 +166,7 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
             migrationBuilder.InsertData(
                 table: "Categories",
                 columns: new[] { "Id", "Name" },
-                values: new object[] { new Guid("00000000-0000-0000-0000-000000000001"), "Sem Categoria" });
+                values: new object[] { 1, "Sem Categoria" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_CartItems_CartId",

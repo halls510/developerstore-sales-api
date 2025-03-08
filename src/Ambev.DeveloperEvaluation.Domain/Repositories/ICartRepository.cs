@@ -21,7 +21,7 @@ public interface ICartRepository
     /// <param name="id">The unique identifier of the cart.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The cart if found, null otherwise.</returns>
-    Task<Cart?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<Cart?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves all carts with optional pagination and sorting.
@@ -47,7 +47,7 @@ public interface ICartRepository
     /// <param name="id">The unique identifier of the cart to delete.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>True if the cart was deleted, false if not found.</returns>
-    Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves all carts associated with a specific user.
@@ -55,5 +55,15 @@ public interface ICartRepository
     /// <param name="userId">The unique identifier of the user.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A collection of carts belonging to the specified user.</returns>
-    Task<IEnumerable<Cart>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Cart>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a paginated list of carts with optional sorting.
+    /// </summary>
+    Task<List<Cart>> GetCartsAsync(int page, int size, string? orderBy, Dictionary<string, string[]>? filters, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Retrieves the total count of Carts in the database.
+    /// </summary>
+    Task<int> CountCartsAsync(Dictionary<string, string[]>? filters, CancellationToken cancellationToken);
 }

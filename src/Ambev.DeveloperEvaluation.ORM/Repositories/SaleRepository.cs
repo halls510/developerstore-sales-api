@@ -23,7 +23,7 @@ public class SaleRepository : ISaleRepository
         return sale;
     }
 
-    public async Task<Sale?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Sale?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Sales
             .Include(s => s.Items)
@@ -64,7 +64,7 @@ public class SaleRepository : ISaleRepository
         return existingSale;
     }
 
-    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
         var sale = await GetByIdAsync(id, cancellationToken);
         if (sale == null)

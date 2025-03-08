@@ -4,6 +4,7 @@ using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Common.Security;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 
 namespace Ambev.DeveloperEvaluation.Application.Users.UpdateUser;
 
@@ -45,7 +46,7 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, UpdateUserRe
 
         var user = await _userRepository.GetByIdAsync(command.Id, cancellationToken);
         if (user == null)
-            throw new KeyNotFoundException($"User with ID {command.Id} not found.");
+            throw new ResourceNotFoundException("User not found",$"User with ID {command.Id} not found.");
 
         // Atualizar os dados do usuário
         _mapper.Map(command, user);
@@ -55,6 +56,9 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, UpdateUserRe
         {
             user.Password = _passwordHasher.HashPassword(command.Password);
         }
+
+        // Marcar a data de atualização
+        user.UpdatedAt = DateTime.UtcNow;
 
         var updatedUser = await _userRepository.UpdateAsync(user, cancellationToken);
         var result = _mapper.Map<UpdateUserResult>(updatedUser);

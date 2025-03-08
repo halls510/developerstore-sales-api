@@ -10,12 +10,12 @@ public class SaleItem : BaseEntity
     /// <summary>
     /// Gets or sets the sale identifier (foreign key).
     /// </summary>
-    public Guid SaleId { get; set; }  
+    public int SaleId { get; set; }  
 
     /// <summary>
     /// Gets or sets the external product identifier.
     /// </summary>
-    public Guid ProductId { get; set; } // External Identity for Product
+    public int ProductId { get; set; } // External Identity for Product
 
     /// <summary>
     /// Gets or sets the product name.

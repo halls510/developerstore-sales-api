@@ -10,12 +10,12 @@ public class CartItem : BaseEntity
     /// <summary>
     /// Gets or sets the associated cart ID.
     /// </summary>
-    public Guid CartId { get; set; } // Chave estrangeira para Cart
+    public int CartId { get; set; } // Chave estrangeira para Cart
 
     /// <summary>
     /// Gets or sets the external product identifier.
     /// </summary>
-    public Guid ProductId { get; set; } // External Identity for Product
+    public int ProductId { get; set; } // External Identity for Product
 
     /// <summary>
     /// Gets or sets the product name at the time of adding to cart.

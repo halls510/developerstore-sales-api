@@ -32,11 +32,11 @@ public class Program
             builder.Services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "API Vendas", Version = "v1" });
-
+                       
                 // Configurar o caminho do arquivo XML gerado pelo .NET
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                options.IncludeXmlComments(xmlPath);              
+                options.IncludeXmlComments(xmlPath);
             });
 
             builder.AddBasicHealthChecks();
@@ -71,10 +71,13 @@ public class Program
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<DefaultContext>();
-                dbContext.Database.Migrate();
+                //dbContext.Database.Migrate();               
+
+                dbContext.Database.EnsureCreated();
+                SeedDatabase.Initialize(dbContext);
             }
 
-            app.UseMiddleware<ValidationExceptionMiddleware>();
+            app.UseMiddleware<GlobalExceptionMiddleware>();
 
             if (app.Environment.IsDevelopment())
             {

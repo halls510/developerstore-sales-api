@@ -42,7 +42,7 @@ public class CreateUserHandlerTests
         var command = CreateUserHandlerTestData.GenerateValidCommand();
         var user = new User
         {
-            Id = Guid.NewGuid(),
+            Id = new Random().Next(1, 1000),
             Username = command.Username,
             Password = command.Password,
             Email = command.Email,
@@ -101,7 +101,7 @@ public class CreateUserHandlerTests
         const string hashedPassword = "h@shedPassw0rd";
         var user = new User
         {
-            Id = Guid.NewGuid(),
+            Id = new Random().Next(1, 1000),
             Username = command.Username,
             Password = command.Password,
             Email = command.Email,
@@ -135,7 +135,7 @@ public class CreateUserHandlerTests
         var command = CreateUserHandlerTestData.GenerateValidCommand();
         var user = new User
         {
-            Id = Guid.NewGuid(),
+            Id = new Random().Next(1, 1000),
             Username = command.Username,
             Password = command.Password,
             Email = command.Email,
