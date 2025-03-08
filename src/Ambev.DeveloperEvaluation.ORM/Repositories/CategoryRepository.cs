@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -77,7 +78,7 @@ public class CategoryRepository : ICategoryRepository
     {
         var existingCategory = await GetByIdAsync(category.Id, cancellationToken);
         if (existingCategory == null)
-            throw new KeyNotFoundException("Category not found.");
+            throw new ResourceNotFoundException("Category not found", $"Category with ID {category.Id} not found.");
 
         _context.Entry(existingCategory).CurrentValues.SetValues(category);
         await _context.SaveChangesAsync(cancellationToken);

@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -57,7 +58,7 @@ public class CartRepository : ICartRepository
     {
         var existingCart = await GetByIdAsync(cart.Id, cancellationToken);
         if (existingCart == null)
-            throw new KeyNotFoundException("Cart not found.");
+            throw new ResourceNotFoundException("Cart not found", $"Cart with ID {cart.Id} not found.");
 
         _context.Entry(existingCart).CurrentValues.SetValues(cart);
         existingCart.Items = cart.Items;
