@@ -187,9 +187,11 @@ public class UserRepository : IUserRepository
     /// Retrieves the total count of Users in the database.
     /// </summary>
     public async Task<int> CountUsersAsync(Dictionary<string, string[]>? filters, CancellationToken cancellationToken)
-    {
-        //return await _context.Users.CountAsync(cancellationToken);
-        var query = _context.Users.AsQueryable();
+    {        
+        var query = _context.Users
+                        .Include(p => p.Address)
+                        .ThenInclude(a => a.Geolocation)
+                        .AsQueryable();
 
         // Aplica filtros
         if (filters != null && filters.Any())
