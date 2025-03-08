@@ -40,9 +40,9 @@ public class ProductRepository : IProductRepository
             throw new KeyNotFoundException("Category not found.");
         }
 
-        await _context.Products.AddAsync(product, cancellationToken);
+        var entry = await _context.Products.AddAsync(product, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
-        return product;
+        return entry.Entity; // Retorna o objeto com ID gerado
     }
 
     /// <summary>
@@ -147,7 +147,7 @@ public class ProductRepository : IProductRepository
         var query = _context.Products
                         .Include(p => p.Category)
                         .AsQueryable();
-    
+
         // Aplica filtros
         if (filters != null && filters.Any())
         {
@@ -241,7 +241,7 @@ public class ProductRepository : IProductRepository
             foreach (var filter in filters)
             {
                 if (filter.Key == "category") // Filtrar pelo nome da categoria
-                {                    
+                {
                     query = query.Where(BuildPredicate<Product>("Category_Name", filter.Value));
                 }
                 else
@@ -288,7 +288,7 @@ public class ProductRepository : IProductRepository
             .Include(p => p.Category)
             .Where(p => p.Category.Name == categoryName)
             .CountAsync(cancellationToken);
-    }   
+    }
 
     private static Expression<Func<T, bool>> BuildPredicate<T>(string property, string[] values)
     {
