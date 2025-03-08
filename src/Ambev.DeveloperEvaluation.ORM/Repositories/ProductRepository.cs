@@ -144,7 +144,9 @@ public class ProductRepository : IProductRepository
     /// </summary>
     public async Task<List<Product>> GetProductsAsync(int page, int size, string? orderBy, Dictionary<string, string[]>? filters, CancellationToken cancellationToken)
     {
-        var query = _context.Products.Include(p => p.Category).AsQueryable();
+        var query = _context.Products
+                        .Include(p => p.Category)
+                        .AsQueryable();
     
         // Aplica filtros
         if (filters != null && filters.Any())
@@ -153,8 +155,7 @@ public class ProductRepository : IProductRepository
             {
                 if (filter.Key == "category") // Filtrar pelo nome da categoria
                 {
-                    //query = query.Where(p => EF.Functions.Like(p.Category.Name, filter.Value.Replace("*", "%")));
-                    query = query.Where(BuildPredicate<Product>("Category.Name", filter.Value));
+                    query = query.Where(BuildPredicate<Product>("Category_Name", filter.Value));
                 }
                 else
                 {
@@ -230,8 +231,9 @@ public class ProductRepository : IProductRepository
     /// </summary>
     public async Task<int> CountProductsAsync(Dictionary<string, string[]>? filters, CancellationToken cancellationToken)
     {
-        //return await _context.Products.CountAsync(cancellationToken);
-        var query = _context.Products.AsQueryable();
+        var query = _context.Products
+                        .Include(p => p.Category)
+                        .AsQueryable();
 
         // Aplica filtros
         if (filters != null && filters.Any())
@@ -239,9 +241,8 @@ public class ProductRepository : IProductRepository
             foreach (var filter in filters)
             {
                 if (filter.Key == "category") // Filtrar pelo nome da categoria
-                {
-                    //query = query.Where(p => EF.Functions.Like(p.Category.Name, filter.Value.Replace("*", "%")));
-                    query = query.Where(BuildPredicate<Product>("Category.Name", filter.Value));
+                {                    
+                    query = query.Where(BuildPredicate<Product>("Category_Name", filter.Value));
                 }
                 else
                 {
@@ -287,8 +288,7 @@ public class ProductRepository : IProductRepository
             .Include(p => p.Category)
             .Where(p => p.Category.Name == categoryName)
             .CountAsync(cancellationToken);
-    }
-
+    }   
 
     private static Expression<Func<T, bool>> BuildPredicate<T>(string property, string[] values)
     {
@@ -298,11 +298,14 @@ public class ProductRepository : IProductRepository
         bool isMax = property.StartsWith("_max");
         string propertyName = isMin || isMax ? property.Substring(4) : property;
 
-        // Divide as propriedades aninhadas (ex: "Category.Name")
+        // Substitui "." por "_" para aceitar os dois formatos
+        propertyName = propertyName.Replace(".", "_");
+
+        // Divide propriedades aninhadas (ex: "Address.City" ou "Address_City")
         Expression prop = param;
-        foreach (var propPart in propertyName.Split('.'))
+        foreach (var propPart in propertyName.Split('_')) // Substituímos "." por "_"
         {
-            prop = Expression.Property(prop, propPart);
+            prop = Expression.PropertyOrField(prop, propPart);
         }
 
         Expression? body = null;
