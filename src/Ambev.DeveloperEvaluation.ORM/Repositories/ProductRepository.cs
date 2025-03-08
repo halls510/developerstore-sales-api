@@ -1,8 +1,10 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Linq.Expressions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Ambev.DeveloperEvaluation.ORM.Repositories;
 
@@ -37,7 +39,7 @@ public class ProductRepository : IProductRepository
         var categoryExists = await _context.Categories.AnyAsync(c => c.Id == product.CategoryId, cancellationToken);
         if (!categoryExists)
         {
-            throw new KeyNotFoundException("Category not found.");
+            throw new ResourceNotFoundException("Category not found", $"Category with ID {product.CategoryId} not found.");
         }
 
         var entry = await _context.Products.AddAsync(product, cancellationToken);
@@ -112,12 +114,12 @@ public class ProductRepository : IProductRepository
     {
         var existingProduct = await GetByIdAsync(product.Id, cancellationToken);
         if (existingProduct == null)
-            throw new KeyNotFoundException("Product not found.");
+            throw new ResourceNotFoundException("Product not found", $"Product with ID {product.Id} not found.");
 
         var categoryExists = await _context.Categories.AnyAsync(c => c.Id == product.CategoryId, cancellationToken);
         if (!categoryExists)
         {
-            throw new KeyNotFoundException("Category not found.");
+            throw new ResourceNotFoundException("Category not found", $"Category with ID {product.CategoryId} not found."); ;
         }
 
         _context.Entry(existingProduct).CurrentValues.SetValues(product);
