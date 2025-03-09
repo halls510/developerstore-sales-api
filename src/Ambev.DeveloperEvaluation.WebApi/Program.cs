@@ -1,16 +1,27 @@
-using Ambev.DeveloperEvaluation.Application;
+﻿using Ambev.DeveloperEvaluation.Application;
+using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
+using Ambev.DeveloperEvaluation.Application.Sales.Events;
 using Ambev.DeveloperEvaluation.Common.HealthChecks;
 using Ambev.DeveloperEvaluation.Common.Logging;
 using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Common.Validation;
+using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Events;
 using Ambev.DeveloperEvaluation.IoC;
 using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.WebApi.Middleware;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Rebus.Bus;
+using Rebus.Config;
+using Rebus.Handlers;
+using Rebus.Routing.TypeBased;
+using Rebus.ServiceProvider;
+using Rebus.Transport.InMem;
 using Serilog;
 using System.Reflection;
+using System.Web;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
 
@@ -32,7 +43,7 @@ public class Program
             builder.Services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new OpenApiInfo { Title = "API Vendas", Version = "v1" });
-                       
+
                 // Configurar o caminho do arquivo XML gerado pelo .NET
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
@@ -65,13 +76,38 @@ public class Program
 
             builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
+            //Console.WriteLine("🔵 Registrando Handlers de Eventos...");
+            builder.Services.AutoRegisterHandlersFromAssembly(typeof(SaleCreatedEventHandler).Assembly);
+            builder.Services.AutoRegisterHandlersFromAssembly(typeof(SaleCancelledEventHandler).Assembly);
+            builder.Services.AutoRegisterHandlersFromAssembly(typeof(SaleModifiedEventHandler).Assembly);
+
+            var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "ambev.developerevaluation.rabbitmq";
+            var rabbitUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "admin";
+            var rabbitPass = Environment.GetEnvironmentVariable("RABBITMQ_PASS") ?? "admin";
+
+            // Codifica a senha para evitar problemas com caracteres especiais
+            var encodedUser = HttpUtility.UrlEncode(rabbitUser);
+            var encodedPass = HttpUtility.UrlEncode(rabbitPass);
+
+            var rabbitMqConnectionString = $"amqp://{encodedUser}:{encodedPass}@{rabbitHost}";
+
+            Console.WriteLine($"🔵 Conectando ao RabbitMQ: {rabbitMqConnectionString}");
+
+            builder.Services.AddRebus(config => config
+                .Transport(t => t.UseRabbitMq(rabbitMqConnectionString, "sales-create-queue"))
+                .Routing(r => r.TypeBased()
+                    .MapAssemblyOf<SaleCreatedEvent>("sales-create-queue")
+                    .MapAssemblyOf<SaleCancelledEvent>("sales-cancel-queue")
+                    .MapAssemblyOf<SaleModifiedEvent>("sales-update-queue"))
+                .Logging(l => l.Console()));                     
+           
             var app = builder.Build();
 
             // Rodar migrations automaticamente ao iniciar
             using (var scope = app.Services.CreateScope())
-            {
+            {                
                 var dbContext = scope.ServiceProvider.GetRequiredService<DefaultContext>();
-                //dbContext.Database.Migrate();               
+                //.Database.Migrate();
 
                 dbContext.Database.EnsureCreated();
                 SeedDatabase.Initialize(dbContext);
@@ -86,7 +122,7 @@ public class Program
                 {
                     options.SwaggerEndpoint("/swagger/v1/swagger.json", "API Vendas V1");
                 });
-            }
+            }                        
 
             app.UseHttpsRedirection();
 

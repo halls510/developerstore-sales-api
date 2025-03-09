@@ -1,18 +1,19 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.ORM;
 public static class SeedDatabase
 {
     public static void Initialize(DefaultContext context)
     {
+        // **Inserindo usuários SEM definir manualmente o ID**
         if (!context.Users.Any())
         {
             var usersInsert = new[]
             {
                 new User
                 {
-                    Id = 1,
                     Firstname = "John",
                     Lastname = "Doe",
                     Username = "johndoe",
@@ -37,7 +38,6 @@ public static class SeedDatabase
                 },
                 new User
                 {
-                    Id = 2,
                     Firstname = "Jane",
                     Lastname = "Smith",
                     Username = "janesmith",
@@ -61,59 +61,65 @@ public static class SeedDatabase
                     }
                 }
             };
+
             context.Users.AddRange(usersInsert);
             context.SaveChanges();
         }
 
+        // **Buscando os usuários com IDs gerados automaticamente**
         var users = context.Users.ToList();
+
+        // **Inserindo produtos SEM definir manualmente o ID**
         if (!context.Products.Any())
         {
             var productsInsert = new[]
             {
-                new Product { Id = 1, Title = "Product 1", Price = 10.00m, Description = "Description for product 1", CreatedAt = DateTime.UtcNow },
-                new Product { Id = 2, Title = "Product 2", Price = 15.00m, Description = "Description for product 2", CreatedAt = DateTime.UtcNow },
-                new Product { Id = 3, Title = "Product 3", Price = 20.00m, Description = "Description for product 3", CreatedAt = DateTime.UtcNow },
-                new Product { Id = 4, Title = "Product 4", Price = 25.00m, Description = "Description for product 4", CreatedAt = DateTime.UtcNow },
-                new Product { Id = 5, Title = "Product 5", Price = 30.00m, Description = "Description for product 5", CreatedAt = DateTime.UtcNow }
+                new Product { Title = "Product 1", Price = new Money(10.00m), Description = "Description for product 1", CreatedAt = DateTime.UtcNow },
+                new Product { Title = "Product 2", Price = new Money(15.00m), Description = "Description for product 2", CreatedAt = DateTime.UtcNow },
+                new Product { Title = "Product 3", Price = new Money(20.00m), Description = "Description for product 3", CreatedAt = DateTime.UtcNow },
+                new Product { Title = "Product 4", Price = new Money(25.00m), Description = "Description for product 4", CreatedAt = DateTime.UtcNow },
+                new Product { Title = "Product 5", Price = new Money(30.00m), Description = "Description for product 5", CreatedAt = DateTime.UtcNow }
             };
+
             context.Products.AddRange(productsInsert);
             context.SaveChanges();
         }
 
+        // **Buscando os produtos com IDs gerados automaticamente**
         var products = context.Products.ToList();
 
+        // **Inserindo carrinhos SEM definir manualmente o ID**
         if (!context.Carts.Any())
         {
             var carts = new[]
             {
                 new Cart
                 {
-                    Id = 1,
                     UserId = users[0].Id,
                     UserName = $"{users[0].Firstname} {users[0].Lastname}",
                     Date = DateTime.UtcNow,
                     Status = CartStatus.Active,
                     Items = new List<CartItem>
                     {
-                        new CartItem { CartId = 1, ProductId = 1, Quantity = 2, UnitPrice = 10.00m },
-                        new CartItem { CartId = 1, ProductId = 2, Quantity = 3, UnitPrice = 15.00m }
+                        new CartItem { ProductId = products[0].Id, Quantity = 2, UnitPrice = new Money(10.00m) },
+                        new CartItem { ProductId = products[1].Id, Quantity = 3, UnitPrice = new Money(15.00m) }
                     }
                 },
                 new Cart
                 {
-                    Id = 2,
                     UserId = users[1].Id,
                     UserName = $"{users[1].Firstname} {users[1].Lastname}",
                     Date = DateTime.UtcNow,
                     Status = CartStatus.Completed,
                     Items = new List<CartItem>
                     {
-                        new CartItem { CartId = 2, ProductId = 3, Quantity = 1, UnitPrice = 20.00m },
-                        new CartItem { CartId = 2, ProductId = 4, Quantity = 2, UnitPrice = 25.00m },
-                        new CartItem { CartId = 2, ProductId = 5, Quantity = 3, UnitPrice = 30.00m }
+                        new CartItem { ProductId = products[2].Id, Quantity = 1, UnitPrice = new Money(20.00m)  },
+                        new CartItem { ProductId = products[3].Id, Quantity = 2, UnitPrice = new Money(25.00m) },
+                        new CartItem { ProductId = products[4].Id, Quantity = 3, UnitPrice = new Money(30.00m) }
                     }
                 }
             };
+
             context.Carts.AddRange(carts);
             context.SaveChanges();
         }
