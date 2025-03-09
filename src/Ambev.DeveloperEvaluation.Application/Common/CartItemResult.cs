@@ -1,4 +1,6 @@
-﻿namespace Ambev.DeveloperEvaluation.Application.Common;
+﻿using Ambev.DeveloperEvaluation.Domain.ValueObjects;
+
+namespace Ambev.DeveloperEvaluation.Application.Common;
 
 public class CartItemResult
 {
@@ -27,7 +29,7 @@ public class CartItemResult
     /// Gets or sets the unit price of the product when added to the cart.
     /// This ensures that price changes do not affect historical cart entries.
     /// </summary>
-    public decimal UnitPrice { get; set; } 
+    public Money UnitPrice { get; set; } = new Money(0); // Agora é `Money`
 
     /// <summary>
     /// Gets or sets the quantity of the product.
@@ -37,5 +39,5 @@ public class CartItemResult
     /// <summary>
     /// Gets the total cost of the cart item.
     /// </summary>
-    public decimal Total { get; set; }
+    public Money Total => new Money(UnitPrice.Amount * Quantity); // Agora retorna um `Money`
 }

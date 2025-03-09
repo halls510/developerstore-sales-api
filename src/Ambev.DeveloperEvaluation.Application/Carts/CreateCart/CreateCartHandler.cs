@@ -4,6 +4,7 @@ using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
 
@@ -72,7 +73,7 @@ public class CreateCartHandler : IRequestHandler<CreateCartCommand, CreateCartRe
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
                 ProductName = product?.Title ?? "Unknown Product",
-                UnitPrice = product?.Price ?? 0
+                UnitPrice = product?.Price ?? new Money(0)
             };
         }).ToList();
 

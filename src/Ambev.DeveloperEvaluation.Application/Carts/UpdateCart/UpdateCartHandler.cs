@@ -4,6 +4,7 @@ using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
 
@@ -77,7 +78,7 @@ public class UpdateCartHandler : IRequestHandler<UpdateCartCommand, UpdateCartRe
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
                 ProductName = product?.Title ?? "Unknown Product",
-                UnitPrice = product?.Price ?? 0
+                UnitPrice = product?.Price ?? new Money(0)
             };
         }).ToList();
 

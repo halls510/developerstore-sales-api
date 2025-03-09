@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Common;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.Domain.Entities;
 
@@ -27,15 +28,22 @@ public class CartItem : BaseEntity
     /// Gets or sets the unit price of the product when added to the cart.
     /// This ensures that price changes do not affect historical cart entries.
     /// </summary>
-    public decimal UnitPrice { get; set; } // Denormalized price
+    public Money UnitPrice { get; set; } = new Money(0); // Agora é `Money`
 
     /// <summary>
     /// Gets or sets the quantity of the product.
     /// </summary>
     public int Quantity { get; set; }
 
+    // Campo privado para armazenar o `Total`
+    private Money _total = new Money(0);
+
     /// <summary>
     /// Gets the total cost of the cart item.
     /// </summary>
-    public decimal Total => UnitPrice * Quantity;
+    public Money Total
+    {
+        get => new Money(UnitPrice.Amount * Quantity); // Calculado dinamicamente
+        private set => _total = value; // Setter privado para o EF Core
+    }
 }
