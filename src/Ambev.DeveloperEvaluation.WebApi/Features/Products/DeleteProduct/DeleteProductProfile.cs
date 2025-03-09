@@ -17,18 +17,19 @@ public class DeleteProductProfile : Profile
     public DeleteProductProfile()
     {
         CreateMap<int, Application.Products.DeleteProduct.DeleteProductCommand>()
-            .ConstructUsing(id => new Application.Products.DeleteProduct.DeleteProductCommand(id));  
+            .ConstructUsing(id => new Application.Products.DeleteProduct.DeleteProductCommand(id));
 
-            CreateMap<DeleteProductResult, DeleteProductResponse>()
-              .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => new RatingResponse
-              {
-                  Rate = src.Rating.Rate,
-                  Count = src.Rating.Count
-              }))
-              .ReverseMap();
+        CreateMap<DeleteProductResult, DeleteProductResponse>()
+          .ForMember(dest => dest.Rating, opt => opt.MapFrom(src => new RatingResponse
+          {
+              Rate = src.Rating.Rate,
+              Count = src.Rating.Count
+          }))
+          .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price.Amount))
+          .ReverseMap();
 
-          CreateMap<RatingRequest, Rating>();
-          CreateMap<Rating, RatingResult>();
-          CreateMap<RatingResult, RatingResponse>();
+        CreateMap<RatingRequest, Rating>();
+        CreateMap<Rating, RatingResult>();
+        CreateMap<RatingResult, RatingResponse>();
     }
 }
