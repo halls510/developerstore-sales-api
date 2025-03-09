@@ -14,7 +14,7 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.ToTable("Categories");
 
         builder.HasKey(c => c.Id);
-        builder.Property(u => u.Id).HasColumnType("integer").ValueGeneratedOnAdd();
+        builder.Property(u => u.Id).UseIdentityAlwaysColumn().HasColumnType("integer");
 
         builder.Property(c => c.Name)
             .IsRequired()

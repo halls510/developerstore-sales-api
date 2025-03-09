@@ -14,9 +14,15 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.ToTable("Products");
 
         builder.HasKey(p => p.Id);
-        builder.Property(u => u.Id).HasColumnType("integer").ValueGeneratedOnAdd();
+        builder.Property(u => u.Id).UseIdentityAlwaysColumn().HasColumnType("integer");
         builder.Property(p => p.Title).IsRequired().HasMaxLength(200);
-        builder.Property(p => p.Price).HasColumnType("decimal(18,2)").IsRequired();
+        builder.OwnsOne(p => p.Price, price =>
+        {
+            price.Property(m => m.Amount)
+                .HasColumnName("Price")  // Nome da coluna no banco de dados
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+        });
         builder.Property(p => p.Description).HasMaxLength(1000);
         builder.Property(p => p.Image).HasMaxLength(500);
 

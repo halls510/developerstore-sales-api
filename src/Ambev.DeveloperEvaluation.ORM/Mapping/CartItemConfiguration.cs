@@ -11,13 +11,26 @@ public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
         builder.ToTable("CartItems");
 
         builder.HasKey(ci => ci.Id);
-        builder.Property(u => u.Id).HasColumnType("integer").ValueGeneratedOnAdd();
+        builder.Property(u => u.Id).UseIdentityAlwaysColumn().HasColumnType("integer");
 
         builder.Property(ci => ci.CartId).IsRequired();
         builder.Property(ci => ci.ProductId).IsRequired();
         builder.Property(ci => ci.ProductName).IsRequired().HasMaxLength(200);
-        builder.Property(ci => ci.UnitPrice).HasColumnType("decimal(18,2)").IsRequired();
         builder.Property(ci => ci.Quantity).IsRequired();
+        builder.OwnsOne(ci => ci.UnitPrice, unitPrice =>
+        {
+            unitPrice.Property(m => m.Amount)
+                .HasColumnName("UnitPrice")
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+        });
+        builder.OwnsOne(ci => ci.Total, total =>
+        {
+            total.Property(m => m.Amount)
+                .HasColumnName("Total")
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+        });
 
         builder.HasOne<Cart>()
                .WithMany(c => c.Items)
