@@ -12,12 +12,14 @@ using Ambev.DeveloperEvaluation.WebApi.Features.Carts.UpdateCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.GetProduct;
 using AutoMapper;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Carts;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class CartsController : BaseController
 {
     private readonly IMediator _mediator;

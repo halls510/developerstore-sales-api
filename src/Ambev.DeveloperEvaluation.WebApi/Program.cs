@@ -9,6 +9,7 @@ using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Events;
 using Ambev.DeveloperEvaluation.IoC;
 using Ambev.DeveloperEvaluation.ORM;
+using Ambev.DeveloperEvaluation.WebApi.Configurations;
 using Ambev.DeveloperEvaluation.WebApi.Middleware;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -39,19 +40,7 @@ public class Program
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
 
-            // Configurar Swagger            
-            builder.Services.AddSwaggerGen(options =>
-            {
-                options.SwaggerDoc("v1", new OpenApiInfo { Title = "API Vendas", Version = "v1" });
-
-                // Configurar o caminho do arquivo XML gerado pelo .NET
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                options.IncludeXmlComments(xmlPath);
-            });
-
-            builder.AddBasicHealthChecks();
-            builder.Services.AddSwaggerGen();
+            builder.AddBasicHealthChecks();           
 
             builder.Services.AddDbContext<DefaultContext>(options =>
                 options.UseNpgsql(
@@ -59,6 +48,9 @@ public class Program
                     b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.ORM")
                 )
             );
+
+            // Configuração do Swagger
+            builder.Services.AddSwaggerDocumentation();
 
             builder.Services.AddJwtAuthentication(builder.Configuration);
 
@@ -120,7 +112,7 @@ public class Program
                 app.UseSwagger();
                 app.UseSwaggerUI(options =>
                 {
-                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "API Vendas V1");
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "Sale API V1");
                 });
             }                        
 

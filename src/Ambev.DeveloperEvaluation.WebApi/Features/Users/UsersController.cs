@@ -12,6 +12,9 @@ using Ambev.DeveloperEvaluation.Application.Users.UpdateUser;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.UpdateUser;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.ListUsers;
 using Ambev.DeveloperEvaluation.Application.Users.ListUsers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
+using Ambev.DeveloperEvaluation.Domain.Enums;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Users;
 
@@ -20,6 +23,7 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features.Users;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class UsersController : BaseController
 {
     private readonly IMediator _mediator;
@@ -88,10 +92,41 @@ public class UsersController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created user details</returns>
     [HttpPost]
+    [AllowAnonymous] // Permite criação de usuários sem autenticação
     [ProducesResponseType(typeof(ApiResponseWithData<CreateUserResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
+        // Pega a Role do usuário autenticado (se existir)
+        var userRole = User.FindFirst("role")?.Value;
+
+        // Se o usuário autenticado for um Customer, ele NÃO pode criar usuários
+        if (!string.IsNullOrEmpty(userRole) && userRole.Equals("Customer", StringComparison.OrdinalIgnoreCase))
+        {
+            return Forbid(); // Retorna 403 Forbidden
+        }
+
+        // Se for Manager, ele só pode criar Customers
+        if (!string.IsNullOrEmpty(userRole) && userRole.Equals("Manager", StringComparison.OrdinalIgnoreCase))
+        {
+            if (request.Role != null && !request.Role.Equals(UserRole.Customer))
+            {
+                return BadRequest(new ApiResponse
+                {
+                    Success = false,
+                    Message = "Managers can only create Customer users."
+                });
+            }
+        }
+
+        // Se o usuário NÃO for Admin ou Manager, força que a Role do novo usuário seja "Customer"
+        if (string.IsNullOrEmpty(userRole) ||
+            (!userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) &&
+             !userRole.Equals("Manager", StringComparison.OrdinalIgnoreCase)))
+        {
+            request.Role = UserRole.Customer; // Força a criação apenas de Customer
+        }    
+
         var validator = new CreateUserRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
