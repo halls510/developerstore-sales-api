@@ -49,10 +49,11 @@ public class UsersController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of users</returns>
     [HttpGet]
+    [Authorize(Roles = "Admin,Manager")] // Apenas Admins e Managers podem listar usuários
     [ProducesResponseType(typeof(PaginatedList<GetUserResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ListUsers(
-                [FromQuery] int? _page = null,
+        [FromQuery] int? _page = null,
         [FromQuery] int? _size = null,
         [FromQuery] string? _order = null,
         [FromQuery] Dictionary<string, string[]>? filters = null,
@@ -100,16 +101,16 @@ public class UsersController : BaseController
         // Pega a Role do usuário autenticado (se existir)
         var userRole = User.FindFirst("role")?.Value;
 
-        // Se o usuário autenticado for um Customer, ele NÃO pode criar usuários
+        // Se for Customer autenticado, NÃO pode criar usuários
         if (!string.IsNullOrEmpty(userRole) && userRole.Equals("Customer", StringComparison.OrdinalIgnoreCase))
         {
-            return Forbid(); // Retorna 403 Forbidden
+            return Forbid(); // 403 Forbidden
         }
 
         // Se for Manager, ele só pode criar Customers
         if (!string.IsNullOrEmpty(userRole) && userRole.Equals("Manager", StringComparison.OrdinalIgnoreCase))
         {
-            if (request.Role != null && !request.Role.Equals(UserRole.Customer))
+            if (request.Role != null && request.Role != UserRole.Customer)
             {
                 return BadRequest(new ApiResponse
                 {
@@ -125,7 +126,7 @@ public class UsersController : BaseController
              !userRole.Equals("Manager", StringComparison.OrdinalIgnoreCase)))
         {
             request.Role = UserRole.Customer; // Força a criação apenas de Customer
-        }    
+        }
 
         var validator = new CreateUserRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -156,6 +157,17 @@ public class UsersController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetUser([FromRoute] int id, CancellationToken cancellationToken)
     {
+        var userRole = User.FindFirst("role")?.Value;
+        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+
+        // Se não for Admin ou Manager, só pode visualizar seu próprio perfil
+        if (!userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) &&
+            !userRole.Equals("Manager", StringComparison.OrdinalIgnoreCase) &&
+            userId != id)
+        {
+            return Forbid(); // 403 Forbidden
+        }
+
         var request = new GetUserRequest { Id = id };
         var validator = new GetUserRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -182,11 +194,31 @@ public class UsersController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated user details</returns>
     [HttpPut("{id}")]
+    [Authorize] // Apenas usuários autenticados podem atualizar usuários
     [ProducesResponseType(typeof(ApiResponseWithData<UpdateUserResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateUser([FromRoute] int id, [FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
     {
+        var userRole = User.FindFirst("role")?.Value;
+        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+
+        // Se não for Admin, só pode atualizar o próprio usuário
+        if (!userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) && userId != id)
+        {
+            return Forbid(); // 403 Forbidden
+        }
+
+        // Nenhum usuário pode alterar sua própria Role
+        if (userId == id && request.Role != null)
+        {
+            return BadRequest(new ApiResponse
+            {
+                Success = false,
+                Message = "Users cannot change their own role."
+            });
+        }
+
         var validator = new UpdateUserRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
@@ -217,6 +249,15 @@ public class UsersController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteUser([FromRoute] int id, CancellationToken cancellationToken)
     {
+        var userRole = User.FindFirst("role")?.Value;
+        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+
+        // Se não for Admin, só pode deletar a própria conta
+        if (!userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) && userId != id)
+        {
+            return Forbid(); // 403 Forbidden
+        }
+
         var request = new DeleteUserRequest { Id = id };
         var validator = new DeleteUserRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
