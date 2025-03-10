@@ -25,6 +25,7 @@ public class GetProductProfile : Profile
                 Rate = src.Rating.Rate,
                 Count = src.Rating.Count
             }))
+            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price.Amount))
             .ReverseMap();
 
         CreateMap<RatingRequest, Rating>();

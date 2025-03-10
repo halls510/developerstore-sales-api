@@ -3,6 +3,7 @@ using Ambev.DeveloperEvaluation.Common.Validation;
 using Ambev.DeveloperEvaluation.Domain.Common;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Domain.Validation;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.Domain.Entities;
 
@@ -18,10 +19,9 @@ public class Product : BaseEntity
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the price of the product.
-    /// Must be a positive decimal value.
+    /// Gets or sets the price of the product using Money value object.
     /// </summary>
-    public decimal Price { get; set; }
+    public Money Price { get; set; } = new Money(0);
 
     /// <summary>
     /// Gets or sets the product description.

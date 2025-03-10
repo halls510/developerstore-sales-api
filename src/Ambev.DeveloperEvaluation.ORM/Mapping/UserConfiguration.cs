@@ -12,7 +12,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.ToTable("Users");
 
         builder.HasKey(u => u.Id);
-        builder.Property(u => u.Id).HasColumnType("integer").ValueGeneratedOnAdd();
+        builder.Property(u => u.Id).UseIdentityAlwaysColumn().HasColumnType("integer");
 
         builder.Property(u => u.Firstname).IsRequired().HasMaxLength(24);
         builder.Property(u => u.Lastname).IsRequired().HasMaxLength(24);

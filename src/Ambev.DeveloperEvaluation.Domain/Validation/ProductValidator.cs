@@ -11,7 +11,7 @@ public class ProductValidator : AbstractValidator<Product>
             .NotEmpty().WithMessage("Title is required.")
             .Length(3, 200).WithMessage("Title must be between 3 and 200 characters.");
 
-        RuleFor(product => product.Price)
+        RuleFor(product => product.Price.Amount)
             .GreaterThan(0).WithMessage("Price must be greater than zero.");
 
         RuleFor(product => product.Description)

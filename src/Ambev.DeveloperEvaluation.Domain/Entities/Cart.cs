@@ -1,5 +1,6 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Common;
 using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.Domain.Entities;
 
@@ -35,9 +36,15 @@ public class Cart : BaseEntity
     /// </summary>
     public CartStatus Status { get; set; } = CartStatus.Active;
 
+    // Campo privado para armazenar `TotalPrice`
+    private Money _totalPrice = new Money(0);
+
     /// <summary>
     /// Gets or sets the total price of the cart.
-    /// This value is computed based on the total of all cart items.
     /// </summary>
-    public decimal TotalPrice => Items.Sum(item => item.Total);
+    public Money TotalPrice
+    {
+        get => new Money(Items.Sum(item => item.Total.Amount)); // Calculado dinamicamente
+        private set => _totalPrice = value; // Setter privado para o EF Core
+    }
 }

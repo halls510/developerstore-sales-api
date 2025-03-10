@@ -1,5 +1,6 @@
 ﻿using Ambev.DeveloperEvaluation.Common.Validation;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 using MediatR;
 
 namespace Ambev.DeveloperEvaluation.Application.Products.CreateProduct;
@@ -26,9 +27,9 @@ public class CreateProductCommand : IRequest<CreateProductResult>
     public string Title { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the price of the product.
+    /// Gets or sets the price of the product using Money value object.
     /// </summary>
-    public decimal Price { get; set; }
+    public Money Price { get; set; } = new Money(0);
 
     /// <summary>
     /// Gets or sets the description of the product.

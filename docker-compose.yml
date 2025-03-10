@@ -11,6 +11,9 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
+      - RABBITMQ_HOST=ambev.developerevaluation.rabbitmq
+      - RABBITMQ_USER=${RABBITMQ_USER:-developer}
+      - RABBITMQ_PASS=${RABBITMQ_PASSWORD:-example_password}
     ports:
       - "8080"
       - "8081"
@@ -20,11 +23,12 @@ services:
     depends_on:
       ambev.developerevaluation.database:
         condition: service_healthy 
+      ambev.developerevaluation.rabbitmq:
+        condition: service_healthy
 
   ambev.developerevaluation.database:
     container_name: ambev_developer_evaluation_database
     image: postgres:13
-
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-developer_evaluation}
       POSTGRES_USER: ${POSTGRES_USER:-developer}
@@ -36,6 +40,21 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-developer} -d ${POSTGRES_DB:-developer_evaluation}"]
       interval: 5s
       timeout: 3s
+      retries: 5
+  ambev.developerevaluation.rabbitmq:
+    container_name: ambev_developer_evaluation_rabbitmq
+    image: rabbitmq:3-management
+    restart: always
+    ports:
+      - "5672:5672"   # Porta de comunica��o do RabbitMQ (AMQP)
+      - "15672:15672" # Interface Web de administra��o
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-developer}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-example_password}
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
       retries: 5
 
   # ambev.developerevaluation.cache:

@@ -27,7 +27,7 @@ public class UpdateProductCommandValidator : AbstractValidator<UpdateProductComm
             .NotEmpty()
             .Length(3, 200);
 
-        RuleFor(product => product.Price)
+        RuleFor(product => product.Price.Amount)
             .GreaterThan(0);
 
         RuleFor(product => product.Description)

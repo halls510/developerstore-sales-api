@@ -3,6 +3,7 @@ using Ambev.DeveloperEvaluation.Application.Products.UpdateProduct;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.Application.Common;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Products.UpdateProduct;
 
@@ -23,6 +24,7 @@ public class UpdateProductProfile : Profile
                 Rate = src.Rating.Rate,
                 Count = src.Rating.Count
             }))
+            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => new Money(src.Price)))
             .ReverseMap();
 
         CreateMap<UpdateProductResult, UpdateProductResponse>()
@@ -30,7 +32,8 @@ public class UpdateProductProfile : Profile
             {
                 Rate = src.Rating.Rate,
                 Count = src.Rating.Count
-            }));
+            }))
+            .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Price.Amount));
 
         CreateMap<RatingRequest, Rating>();
         CreateMap<Rating, RatingResult>();

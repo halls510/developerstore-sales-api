@@ -11,7 +11,7 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
         builder.ToTable("Carts");
 
         builder.HasKey(c => c.Id);
-        builder.Property(u => u.Id).HasColumnType("integer").ValueGeneratedOnAdd();
+        builder.Property(u => u.Id).UseIdentityAlwaysColumn().HasColumnType("integer");
 
         builder.Property(c => c.UserId).IsRequired();
         builder.Property(c => c.UserName).IsRequired().HasMaxLength(100);
@@ -25,6 +25,14 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
            .IsRequired()
            .HasConversion<string>() // Armazena como string no banco de dados
            .HasMaxLength(20);
+
+        builder.OwnsOne(c => c.TotalPrice, total =>
+        {
+            total.Property(m => m.Amount)
+                .HasColumnName("TotalPrice")
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+        });
 
         // Relacionamento 1:N com CartItem
         builder.HasMany(c => c.Items)
