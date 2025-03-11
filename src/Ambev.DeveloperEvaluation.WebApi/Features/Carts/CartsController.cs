@@ -8,6 +8,7 @@ using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.DeleteCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCart;
+using Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCartById;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.ListCarts;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.UpdateCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.GetProduct;
@@ -156,7 +157,7 @@ public class CartsController : BaseController
     /// <returns>The cart details if found</returns>
     [HttpGet("{id}")]
     [Authorize(Roles = "Admin,Manager,Customer")] // Apenas usuários autenticados podem acessar carrinhos
-    [ProducesResponseType(typeof(ApiResponseWithData<GetCartResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponseWithData<GetCartByIdResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetCart([FromRoute] int id, CancellationToken cancellationToken)
@@ -185,11 +186,11 @@ public class CartsController : BaseController
             return Forbid(); // 403 Forbidden - Apenas Admins e Managers podem visualizar qualquer carrinho
         }
 
-        return Ok(new ApiResponseWithData<GetCartResponse>
+        return Ok(new ApiResponseWithData<GetCartByIdResponse>
         {
             Success = true,
             Message = "Cart retrieved successfully",
-            Data = _mapper.Map<GetCartResponse>(cart)
+            Data = _mapper.Map<GetCartByIdResponse>(cart)
         });
     }
 

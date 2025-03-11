@@ -1,11 +1,8 @@
-using Ambev.DeveloperEvaluation.WebApi.Common;
+﻿using Ambev.DeveloperEvaluation.WebApi.Common;
 
-namespace Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCart;
+namespace Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCartById;
 
-/// <summary>
-/// API response model for GetCart operation
-/// </summary>
-public class GetCartResponse
+public class GetCartByIdResponse
 {
     /// <summary>
     /// The unique identifier of the created cart

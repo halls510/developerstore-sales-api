@@ -15,8 +15,5 @@ public class GetCartByIdProfile : Profile
 
         // Mapeia CartItem para CartItemDto
         CreateMap<CartItem, CartItemDto>();
-
-        // Mapeia CartDto para GetCartResponse
-        CreateMap<CartDto, GetCartResponse>();
     }
 }
