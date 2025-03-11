@@ -4,6 +4,8 @@ using MediatR;
 using Ambev.DeveloperEvaluation.Application.Products.GetProduct;
 using Ambev.DeveloperEvaluation.Application.Carts.ListCarts;
 using Ambev.DeveloperEvaluation.Application.Carts.GetCart;
+using Ambev.DeveloperEvaluation.Domain.BusinessRules;
+using Ambev.DeveloperEvaluation.Domain.Entities;
 
 namespace Ambev.DeveloperEvaluation.Application.Products.ListCarts;
 
@@ -31,6 +33,9 @@ public class ListCartsHandler : IRequestHandler<ListCartsCommand, ListCartsResul
 
         var Carts = await _cartRepository.GetCartsAsync(command.Page, command.Size, command.OrderBy, command.Filters, cancellationToken);
         var totalCarts = await _cartRepository.CountCartsAsync(command.Filters, cancellationToken);
+
+        // Aplica regra: Removendo carrinhos cancelados da listagem
+        Carts = Carts.Where(cart => OrderRules.CanCartBeRetrieved(cart.Status, throwException: false)).ToList();
 
         return new ListCartsResult
         {

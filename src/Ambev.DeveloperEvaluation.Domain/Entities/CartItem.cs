@@ -35,25 +35,12 @@ public class CartItem : BaseEntity
     /// </summary>
     public int Quantity { get; set; }
 
-    // Campo privado para armazenar o `Total`
-    private Money _total = new Money(0);
 
     /// <summary>
     /// Gets the total cost of the cart item.
     /// O total é calculado e armazenado para ser persistido no banco de dados.
     /// </summary>
-    public Money Total
-    {
-        get => _total; // Retorna o valor salvo
-        private set => _total = value; // Setter privado para o EF Core
-    }
+    public Money Total { get; set; } = new Money(0);
 
-    /// <summary>
-    /// Atualiza o total do item do carrinho com base no preço unitário e quantidade.
-    /// Deve ser chamado sempre que o preço ou quantidade forem alterados.
-    /// </summary>
-    public void UpdateTotal()
-    {
-        _total = new Money(UnitPrice.Amount * Quantity);
-    }
+
 }

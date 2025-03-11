@@ -5,6 +5,7 @@ using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.ValueObjects;
+using Ambev.DeveloperEvaluation.Domain.BusinessRules;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
 
@@ -46,7 +47,10 @@ public class UpdateCartHandler : IRequestHandler<UpdateCartCommand, UpdateCartRe
         // Buscar o carrinho existente
         var existingCart = await _cartRepository.GetByIdAsync(command.Id, cancellationToken);
         if (existingCart == null)
-            throw new ResourceNotFoundException("Cart not found","Cart does not exist.");
+            throw new ResourceNotFoundException("Cart not found", "Cart does not exist.");
+
+        // Aplicar regra para evitar atualização de carrinhos finalizados
+        OrderRules.CanCartBeUpdated(existingCart.Status, throwException: true);
 
         // O UserId do carrinho não pode ser alterado
         if (command.UserId != existingCart.UserId)
@@ -55,7 +59,7 @@ public class UpdateCartHandler : IRequestHandler<UpdateCartCommand, UpdateCartRe
         // Buscar usuário
         var user = await _userRepository.GetByIdAsync(existingCart.UserId, cancellationToken);
         if (user == null)
-            throw new ResourceNotFoundException("User not found","User does not exist.");
+            throw new ResourceNotFoundException("User not found", "User does not exist.");
 
         // Buscar produtos e validar
         var productIds = command.Items.Select(i => i.ProductId).ToList();
@@ -67,18 +71,26 @@ public class UpdateCartHandler : IRequestHandler<UpdateCartCommand, UpdateCartRe
         // Verificar se há produtos que não existem no banco de dados
         var missingProducts = productIds.Except(productDict.Keys).ToList();
         if (missingProducts.Any())
-            throw new ResourceNotFoundException("Product not found",$"The following product(s) do not exist: {string.Join(", ", missingProducts)}");
-            
+            throw new ResourceNotFoundException("Product not found", $"The following product(s) do not exist: {string.Join(", ", missingProducts)}");
+
         // Criar nova lista de itens com os produtos enviados na requisição
         var updatedItems = command.Items.Select(item =>
         {
             var product = productDict[item.ProductId];
+
+            // Valida se a quantidade é permitida
+            if (!OrderRules.ValidateItemQuantity(item.Quantity))
+                throw new BusinessRuleException($"Product {product.Title} exceeds the allowed quantity limit.");
+
             return new CartItem
             {
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
                 ProductName = product?.Title ?? "Unknown Product",
-                UnitPrice = product?.Price ?? new Money(0)
+                UnitPrice = product?.Price ?? new Money(0),
+                //  Aplica desconto dinamicamente
+                Total = OrderRules.ApplyDiscount(item.Quantity, product?.Price ?? new Money(0)) * item.Quantity
+
             };
         }).ToList();
 

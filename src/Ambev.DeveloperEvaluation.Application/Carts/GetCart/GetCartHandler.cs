@@ -3,6 +3,8 @@ using MediatR;
 using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
+using Ambev.DeveloperEvaluation.Domain.BusinessRules;
+using Ambev.DeveloperEvaluation.Domain.Entities;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.GetCart;
 
@@ -41,10 +43,13 @@ public class GetCartHandler : IRequestHandler<GetCartCommand, GetCartResult>
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
-        var user = await _cartRepository.GetByIdAsync(request.Id, cancellationToken);
-        if (user == null)
+        var cart = await _cartRepository.GetByIdAsync(request.Id, cancellationToken);
+        if (cart == null)
             throw new ResourceNotFoundException("Cart not found", $"Cart with ID {request.Id} not found");
 
-        return _mapper.Map<GetCartResult>(user);
+        // Aplica a regra para verificar se pode ser recuperado
+        OrderRules.CanCartBeRetrieved(cart.Status, throwException: true);
+
+        return _mapper.Map<GetCartResult>(cart);
     }
 }

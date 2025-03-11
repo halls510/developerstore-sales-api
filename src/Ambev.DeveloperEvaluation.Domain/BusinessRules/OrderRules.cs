@@ -1,4 +1,5 @@
-﻿using Ambev.DeveloperEvaluation.Domain.Exceptions;
+﻿using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.Domain.BusinessRules;
@@ -61,6 +62,62 @@ public static class OrderRules
         if (!items.All(i => ValidateItemQuantity(i.Quantity)))
             throw new BusinessRuleException("Quantidade inválida em um ou mais itens do carrinho.");
     }
+
+    /// <summary>
+    /// Verifica se um carrinho pode ser deletado.
+    /// </summary>
+    /// <param name="status">Status do carrinho</param>
+    /// <param name="throwException">Se verdadeiro, lança uma exceção quando a regra for violada.</param>
+    /// <returns>Retorna verdadeiro se o carrinho puder ser deletado</returns>
+    public static bool CanCartBeDeleted(CartStatus status, bool throwException = true)
+    {
+        bool canDelete = status == CartStatus.Active || status == CartStatus.Cancelled;
+
+        if (!canDelete && throwException)
+        {
+            throw new BusinessRuleException("Only Active or Cancelled carts can be deleted.");
+        }
+
+        return canDelete;
+    }
+
+    /// <summary>
+    /// Verifica se um carrinho pode ser atualizado.
+    /// </summary>
+    /// <param name="status">Status do carrinho</param>
+    /// <param name="throwException">Se verdadeiro, lança uma exceção quando a regra for violada.</param>
+    /// <returns>Retorna verdadeiro se o carrinho puder ser atualizado</returns>
+    public static bool CanCartBeUpdated(CartStatus status, bool throwException = true)
+    {
+        bool canUpdate = status != CartStatus.CheckedOut && status != CartStatus.Completed;
+
+        if (!canUpdate && throwException)
+        {
+            throw new BusinessRuleException("Cart cannot be updated after checkout or completion.");
+        }
+
+        return canUpdate;
+    }
+
+    /// <summary>
+    /// Verifica se um carrinho pode ser recuperado com base no status.
+    /// </summary>
+    /// <param name="status">Status do carrinho</param>
+    /// <param name="throwException">Se verdadeiro, lança uma exceção quando a regra for violada.</param>
+    /// <returns>Retorna verdadeiro se o carrinho puder ser recuperado</returns>
+    public static bool CanCartBeRetrieved(CartStatus status, bool throwException = true)
+    {
+        bool canRetrieve = status is CartStatus.Active or CartStatus.CheckedOut or CartStatus.Completed;
+
+        if (!canRetrieve && throwException)
+        {
+            throw new BusinessRuleException("This cart cannot be retrieved due to its current status.");
+        }
+
+        return canRetrieve;
+    }
+
+
 
     /// <summary>
     /// Aplica todas as validações de negócio ao finalizar a venda.

@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts.Common;
+using Ambev.DeveloperEvaluation.Domain.BusinessRules;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using AutoMapper;
@@ -25,6 +26,9 @@ public class GetCartByIdHandler : IRequestHandler<GetCartByIdQuery, CartDto>
         var cart = await _cartRepository.GetByIdAsync(request.Id, cancellationToken);
         if (cart == null)
             throw new ResourceNotFoundException("Cart not found", $"Cart with ID {request.Id} not found");
+
+        // Aplica a regra para verificar se pode ser recuperado
+        OrderRules.CanCartBeRetrieved(cart.Status, throwException: true);
 
         return _mapper.Map<CartDto>(cart);
     }

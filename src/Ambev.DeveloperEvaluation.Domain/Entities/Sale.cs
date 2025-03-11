@@ -40,18 +40,9 @@ public class Sale : BaseEntity
     public List<SaleItem> Items { get; set; }
 
     /// <summary>
-    /// Campo privado para armazenar `TotalValue`
-    /// </summary>
-    private Money _totalValue = new Money(0);
-
-    /// <summary>
     /// Gets the total value of the sale.
     /// </summary>
-    public Money TotalValue
-    {
-        get => new Money(CalculateTotalPrice()); // Calculado dinamicamente
-        private set => _totalValue = value; // Setter privado para o EF Core
-    }
+    public Money TotalValue { get; set; }
 
     /// <summary>
     /// Gets or sets the sale status.

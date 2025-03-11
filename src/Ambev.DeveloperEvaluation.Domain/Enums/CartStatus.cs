@@ -5,7 +5,8 @@
 /// </summary>
 public enum CartStatus
 {
-    Active,     // Carrinho ainda em uso
-    Completed,  // Venda finalizada
-    Cancelled   // Carrinho cancelado ou abandonado
+    Active,      // O cliente ainda está adicionando itens
+    CheckedOut,  // O checkout foi realizado, criando uma venda
+    Completed,   // A venda foi concluída e o pedido foi processado
+    Cancelled    // O carrinho foi abandonado ou cancelado
 }

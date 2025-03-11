@@ -3,6 +3,8 @@ using MediatR;
 using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
+using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.Domain.BusinessRules;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.DeleteCart;
 
@@ -44,6 +46,9 @@ public class DeleteCartHandler : IRequestHandler<DeleteCartCommand, DeleteCartRe
         var cart = await _cartRepository.GetByIdAsync(request.Id, cancellationToken);
         if (cart == null)
             throw new ResourceNotFoundException("Cart not found", $"Cart with ID {request.Id} not found");
+
+        // Aplica a regra de negócio diretamente, lançando exceção se não puder ser deletado
+        OrderRules.CanCartBeDeleted(cart.Status, throwException: true);
 
         var success = await _cartRepository.DeleteAsync(request.Id, cancellationToken);
         if (!success)

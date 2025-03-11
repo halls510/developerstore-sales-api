@@ -1,11 +1,10 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Ambev.DeveloperEvaluation.Domain.BusinessRules;
 using AutoMapper;
 using MediatR;
-using System.Runtime.InteropServices;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.Checkout;
-
 
 /// <summary>
 /// Manipulador para processar o checkout do carrinho.
@@ -14,14 +13,12 @@ public class CheckoutHandler : IRequestHandler<CheckoutCommand, CheckoutResult>
 {
     private readonly ICartRepository _cartRepository;
     private readonly ISaleRepository _saleRepository;
-    private readonly SaleHandler _saleHandler;
     private readonly IMapper _mapper;
 
-    public CheckoutHandler(ICartRepository cartRepository, ISaleRepository saleRepository, SaleHandler saleHandler, IMapper mapper)
+    public CheckoutHandler(ICartRepository cartRepository, ISaleRepository saleRepository, IMapper mapper)
     {
         _cartRepository = cartRepository;
         _saleRepository = saleRepository;
-        _saleHandler = saleHandler;
         _mapper = mapper;
     }
 
@@ -32,18 +29,27 @@ public class CheckoutHandler : IRequestHandler<CheckoutCommand, CheckoutResult>
         if (cart == null)
             throw new Exception("Carrinho não encontrado.");
 
-        // Aplica regras de negócio antes do checkout
-        _saleHandler.ProcessSale(cart);
+        // Extrai os itens do carrinho para aplicar regras
+        var items = cart.Items.Select(i => (i.Quantity, i.UnitPrice)).ToList();
 
-        // Cria uma venda baseada no carrinho
+        // **Validações**
+        OrderRules.ValidateCartForCheckout(items); // Garante que o carrinho é válido
+
+        // **Aplica desconto e calcula total**
+        var total = OrderRules.CalculateTotal(items);
+
+        // **Atualiza o status do carrinho**
+        cart.MarkAsCheckedOut(); // Método para atualizar o status no domínio
+
+        // **Cria uma venda baseada no carrinho**
         var sale = _mapper.Map<Sale>(cart);
-        sale.SaleDate = DateTime.UtcNow;
+        sale.TotalValue = total; // Usa o total calculado
 
-        // Persiste a venda no banco de dados
+        // **Persiste a venda no banco de dados**
         var createdSale = await _saleRepository.CreateAsync(sale, cancellationToken);
 
-        // Remove o carrinho após a conversão
-        await _cartRepository.DeleteAsync(cart.Id, cancellationToken);
+        // **Atualiza o carrinho como finalizado**
+        await _cartRepository.UpdateAsync(cart, cancellationToken);
 
         return _mapper.Map<CheckoutResult>(createdSale);
     }
