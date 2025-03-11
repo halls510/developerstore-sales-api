@@ -2,21 +2,25 @@
 using Ambev.DeveloperEvaluation.Application.Sales.CancelSale;
 using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 using Ambev.DeveloperEvaluation.Application.Sales.GetSale;
+using Ambev.DeveloperEvaluation.Application.Sales.GetSaleById;
 using Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CancelItem;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CancelSale;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CreateSale;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetSale;
+using Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetSaleById;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.UpdateSale;
 using AutoMapper;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Sales;
 
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class SalesController : BaseController
 {
     private readonly IMediator _mediator;
@@ -69,26 +73,40 @@ public class SalesController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The sale details if found</returns>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(ApiResponseWithData<GetSaleResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponseWithData<GetSaleByIdResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetSale([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var request = new GetSaleRequest { Id = id };
-        var validator = new GetSaleRequestValidator();
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        var userRole = User.FindFirst("role")?.Value;
+        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
 
-        if (!validationResult.IsValid)
-            return BadRequest(validationResult.Errors);
+        // Obtém a venda pelo ID antes de retornar
+        var sale = await _mediator.Send(new GetSaleByIdQuery { Id = id }, cancellationToken);
 
-        var command = _mapper.Map<GetSaleCommand>(request.Id);
-        var response = await _mediator.Send(command, cancellationToken);
+        if (sale == null)
+        {
+            return NotFound(new ApiResponse
+            {
+                Success = false,
+                Message = "Sale not found."
+            });
+        }
 
-        return Ok(new ApiResponseWithData<GetSaleResponse>
+        // Se não for Admin ou Manager, o usuário só pode visualizar sua própria venda
+        bool isAdminOrManager = userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) ||
+                                userRole.Equals("Manager", StringComparison.OrdinalIgnoreCase);
+
+        if (!isAdminOrManager && sale.CustomerId != userId)
+        {
+            return Forbid(); // 403 Forbidden - Apenas Admins e Managers podem visualizar qualquer venda
+        }
+
+        return Ok(new ApiResponseWithData<GetSaleByIdResponse>
         {
             Success = true,
             Message = "Sale retrieved successfully",
-            Data = _mapper.Map<GetSaleResponse>(response)
+            Data = _mapper.Map<GetSaleByIdResponse>(sale)
         });
     }
 
@@ -100,11 +118,36 @@ public class SalesController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated sale details</returns>
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,Manager,Customer")] // Apenas usuários autenticados podem atualizar vendas
     [ProducesResponseType(typeof(ApiResponseWithData<UpdateSaleResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateSale([FromRoute] int id, [FromBody] UpdateSaleRequest request, CancellationToken cancellationToken)
     {
+        var userRole = User.FindFirst("role")?.Value;
+        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+
+        // Obtém a venda pelo ID antes de atualizar
+        var sale = await _mediator.Send(new GetSaleByIdQuery { Id = id }, cancellationToken);
+
+        if (sale == null)
+        {
+            return NotFound(new ApiResponse
+            {
+                Success = false,
+                Message = "Sale not found."
+            });
+        }
+
+        // Se não for Admin ou Manager, o usuário só pode atualizar sua própria venda
+        bool isAdminOrManager = userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) ||
+                                userRole.Equals("Manager", StringComparison.OrdinalIgnoreCase);
+
+        if (!isAdminOrManager && sale.CustomerId != userId)
+        {
+            return Forbid(); // 403 Forbidden - Apenas Admins e Managers podem modificar qualquer venda
+        }
+
         var validator = new UpdateSaleRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
@@ -130,11 +173,36 @@ public class SalesController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Success response if the sale was canceld</returns>
     [HttpPatch("{id}/cancel")]
+    [Authorize(Roles = "Admin,Manager,Customer")] // Apenas usuários autenticados podem cancelar vendas
     [ProducesResponseType(typeof(ApiResponseWithData<CancelSaleResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CancelSale([FromRoute] int id, CancellationToken cancellationToken)
     {
+        var userRole = User.FindFirst("role")?.Value;
+        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+
+        // Obtém a venda antes de cancelar
+        var sale = await _mediator.Send(new GetSaleByIdQuery { Id = id }, cancellationToken);
+
+        if (sale == null)
+        {
+            return NotFound(new ApiResponse
+            {
+                Success = false,
+                Message = "Sale not found."
+            });
+        }
+
+        // Se não for Admin ou Manager, o usuário só pode cancelar a própria venda
+        bool isAdminOrManager = userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) ||
+                                userRole.Equals("Manager", StringComparison.OrdinalIgnoreCase);
+
+        if (!isAdminOrManager && sale.CustomerId != userId)
+        {
+            return Forbid(); // 403 Forbidden - Apenas Admins e Managers podem cancelar qualquer venda
+        }
+
         var request = new CancelSaleRequest { SaleId = id };
         var validator = new CancelSaleRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
@@ -166,6 +234,30 @@ public class SalesController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CancelItem([FromRoute] int saleId, [FromRoute] int productId, CancellationToken cancellationToken)
     {
+        var userRole = User.FindFirst("role")?.Value;
+        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+
+        // Obtém a venda antes de cancelar o item
+        var sale = await _mediator.Send(new GetSaleByIdQuery { Id = saleId }, cancellationToken);
+
+        if (sale == null)
+        {
+            return NotFound(new ApiResponse
+            {
+                Success = false,
+                Message = "Sale not found."
+            });
+        }
+
+        // Se não for Admin ou Manager, o usuário só pode cancelar itens de sua própria venda
+        bool isAdminOrManager = userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) ||
+                                userRole.Equals("Manager", StringComparison.OrdinalIgnoreCase);
+
+        if (!isAdminOrManager && sale.CustomerId != userId)
+        {
+            return Forbid(); // 403 Forbidden - Apenas Admins e Managers podem cancelar qualquer item de venda
+        }      
+
         var request = new CancelItemRequest { SaleId = saleId, ProductId = productId };
         var validator = new CancelItemRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
