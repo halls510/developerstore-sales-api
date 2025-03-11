@@ -5,6 +5,7 @@ using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.ValueObjects;
+using Ambev.DeveloperEvaluation.Domain.BusinessRules;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
 
@@ -43,6 +44,16 @@ public class CreateCartHandler : IRequestHandler<CreateCartCommand, CreateCartRe
         if (!validationResult.IsValid)
             throw new ValidationException(validationResult.Errors);
 
+        if (!command.Items.All(i => OrderRules.ValidateItemQuantity(i.Quantity)))
+            throw new BusinessRuleException("Quantidade inválida para um ou mais produtos.");
+
+        foreach (var item in command.Items)
+        {
+            item.UnitPrice = OrderRules.ApplyDiscount(item.Quantity, item.UnitPrice);
+        }
+
+        var total = OrderRules.CalculateTotal(command.Items.Select(i => (i.Quantity, i.UnitPrice)));
+
         // Buscar nome do usuário
         var user = await _userRepository.GetByIdAsync(command.UserId, cancellationToken);
         if (user == null)
@@ -63,6 +74,7 @@ public class CreateCartHandler : IRequestHandler<CreateCartCommand, CreateCartRe
         // Criar entidade Cart com nome do usuário
         var cart = _mapper.Map<Cart>(command);
         cart.UserName = $"{user.Firstname} {user.Lastname}"; // Adiciona o nome do usuário ao cart
+        cart.TotalPrice = total;
 
         // Criar CartItems com nome e valor do produto
         cart.Items = command.Items.Select(item =>
@@ -75,7 +87,7 @@ public class CreateCartHandler : IRequestHandler<CreateCartCommand, CreateCartRe
                 ProductName = product?.Title ?? "Unknown Product",
                 UnitPrice = product?.Price ?? new Money(0)
             };
-        }).ToList();
+        }).ToList();  
 
         // Salvar no repositório
         var createdCart = await _cartRepository.CreateAsync(cart, cancellationToken);

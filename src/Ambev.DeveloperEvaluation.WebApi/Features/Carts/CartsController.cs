@@ -1,10 +1,12 @@
-﻿using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
+﻿using Ambev.DeveloperEvaluation.Application.Carts.Checkout;
+using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.Application.Carts.DeleteCart;
 using Ambev.DeveloperEvaluation.Application.Carts.GetCart;
 using Ambev.DeveloperEvaluation.Application.Carts.GetCartById;
 using Ambev.DeveloperEvaluation.Application.Carts.ListCarts;
 using Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
 using Ambev.DeveloperEvaluation.WebApi.Common;
+using Ambev.DeveloperEvaluation.WebApi.Features.Carts.Checkout;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.DeleteCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCart;
@@ -293,4 +295,46 @@ public class CartsController : BaseController
             Data = _mapper.Map<DeleteCartResponse>(response)
         });
     }
+
+    /// <summary>
+    /// Finaliza o checkout de um carrinho e converte em uma venda.
+    /// </summary>
+    /// <param name="cartId">O ID do carrinho a ser finalizado</param>
+    /// <param name="cancellationToken">Token de cancelamento</param>
+    /// <returns>Detalhes da venda gerada</returns>
+    [HttpPost("{cartId}/checkout")]
+    [Authorize(Roles = "Customer")] // Somente Customers podem finalizar compras
+    [ProducesResponseType(typeof(ApiResponseWithData<CheckoutResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Checkout([FromRoute] int cartId, CancellationToken cancellationToken)
+    {
+        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+
+        // Obtém o carrinho antes de processar o checkout
+        var cart = await _mediator.Send(new GetCartByIdQuery { Id = cartId }, cancellationToken);
+
+        if (cart == null || cart.CustomerId != userId)
+        {
+            return Forbid(); // 403 Forbidden - O usuário só pode fazer checkout do próprio carrinho
+        }
+
+        var request = new CheckoutRequest { CartId = cartId };
+        var validator = new CheckoutRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        var command = _mapper.Map<CheckoutCommand>(request);
+        var response = await _mediator.Send(command, cancellationToken);
+
+        return Ok(new ApiResponseWithData<CheckoutResponse>
+        {
+            Success = true,
+            Message = "Checkout realizado com sucesso!",
+            Data = _mapper.Map<CheckoutResponse>(response)
+        });
+    }
+
 }

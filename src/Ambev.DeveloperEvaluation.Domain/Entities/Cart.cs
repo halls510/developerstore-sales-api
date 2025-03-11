@@ -42,9 +42,5 @@ public class Cart : BaseEntity
     /// <summary>
     /// Gets or sets the total price of the cart.
     /// </summary>
-    public Money TotalPrice
-    {
-        get => new Money(Items.Sum(item => item.Total.Amount)); // Calculado dinamicamente
-        private set => _totalPrice = value; // Setter privado para o EF Core
-    }
+    public Money TotalPrice { get; set; }
 }
