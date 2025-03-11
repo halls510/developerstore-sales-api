@@ -13,18 +13,41 @@ public class GlobalExceptionMiddleware
     {
         _next = next;
         _logger = logger;
-    }
+    }    
 
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
             await _next(context);
+
+            // 🔹 Verifica se o status é 401 e retorna um JSON personalizado
+            if (context.Response.StatusCode == StatusCodes.Status401Unauthorized)
+            {
+                await HandleUnauthorizedAsync(context);
+            }
         }
         catch (Exception ex)
         {
             await HandleExceptionAsync(context, ex);
         }
+    }
+
+    private async Task HandleUnauthorizedAsync(HttpContext context)
+    {
+        _logger.LogWarning("Tentativa de acesso não autorizado detectada.");
+
+        context.Response.ContentType = "application/json";
+        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+
+        var errorResponse = new
+        {
+            type = "AuthenticationError",
+            error = "Unauthorized",
+            detail = "You must be authenticated to access this resource. Please provide a valid authentication token."
+        };
+
+        await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
     }
 
     private async Task HandleExceptionAsync(HttpContext context, Exception exception)

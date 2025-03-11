@@ -1,6 +1,4 @@
-﻿using Ambev.DeveloperEvaluation.Domain.ValueObjects;
-
-namespace Ambev.DeveloperEvaluation.Application.Common;
+﻿namespace Ambev.DeveloperEvaluation.Application.Common;
 
 public class SaleItemDto
 {

@@ -15,6 +15,7 @@ using Ambev.DeveloperEvaluation.WebApi.Features.Products.ListProductsByCategory;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.UpdateProduct;
 using AutoMapper;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Products;
@@ -24,6 +25,7 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features.Products;
 /// </summary>
 [Route("api/[controller]")]
 [ApiController]
+[Authorize]
 public class ProductsController : BaseController
 {
     private readonly IMediator _mediator;
@@ -50,6 +52,7 @@ public class ProductsController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of products</returns>
     [HttpGet]
+    [AllowAnonymous] // Qualquer pessoa pode visualizar produtos
     [ProducesResponseType(typeof(PaginatedList<GetProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ListProducts(
@@ -93,6 +96,7 @@ public class ProductsController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The created product details</returns>
     [HttpPost]
+    [Authorize(Roles = "Admin,Manager")] // Apenas Admins e Managers podem criar produtos
     [ProducesResponseType(typeof(ApiResponseWithData<CreateProductResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateProduct([FromBody] CreateProductRequest request, CancellationToken cancellationToken)
@@ -112,7 +116,7 @@ public class ProductsController : BaseController
             Message = "Product created successfully",
             Data = _mapper.Map<CreateProductResponse>(response)
         });
-    }   
+    }
 
     /// <summary>
     /// Retrieves a product by their ID
@@ -121,6 +125,7 @@ public class ProductsController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The product details if found</returns>
     [HttpGet("{id}")]
+    [AllowAnonymous] // Qualquer pessoa pode visualizar produtos
     [ProducesResponseType(typeof(ApiResponseWithData<GetProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -152,6 +157,7 @@ public class ProductsController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>The updated product details</returns>
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin,Manager")] // Apenas Admins e Managers podem atualizar produtos
     [ProducesResponseType(typeof(ApiResponseWithData<UpdateProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -182,6 +188,7 @@ public class ProductsController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Success response if the product was deleted</returns>
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin,Manager")] // Apenas Admins e Managers podem excluir produtos
     [ProducesResponseType(typeof(ApiResponseWithData<DeleteProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
@@ -214,6 +221,7 @@ public class ProductsController : BaseController
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of categories</returns>
     [HttpGet("categories")]
+    [AllowAnonymous] // Qualquer pessoa pode visualizar categorias
     [ProducesResponseType(typeof(PaginatedList<string>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ListCategories(
@@ -261,6 +269,7 @@ public class ProductsController : BaseController
     /// If validation fails, returns a 400 Bad Request response with error details.
     /// </returns>
     [HttpGet("category/{category}")]
+    [AllowAnonymous] // Qualquer pessoa pode visualizar produtos ´por categoria
     [ProducesResponseType(typeof(PaginatedList<GetProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetProductsByCategory(
