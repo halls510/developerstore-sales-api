@@ -2,9 +2,8 @@
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using AutoMapper;
 using MediatR;
-using System.ComponentModel.DataAnnotations;
 using FluentValidation;
-using Ambev.DeveloperEvaluation.Domain.Entities;
+using Microsoft.Extensions.Logging;
 
 namespace Ambev.DeveloperEvaluation.Application.Users.ListUsers;
 
@@ -15,23 +14,34 @@ public class ListUsersHandler : IRequestHandler<ListUsersCommand, ListUsersResul
 {
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
+    private readonly ILogger<ListUsersHandler> _logger;
 
-    public ListUsersHandler(IUserRepository userRepository, IMapper mapper)
+    public ListUsersHandler(IUserRepository userRepository, IMapper mapper, ILogger<ListUsersHandler> logger)
     {
         _userRepository = userRepository;
         _mapper = mapper;
+        _logger = logger;
     }
 
     public async Task<ListUsersResult> Handle(ListUsersCommand command, CancellationToken cancellationToken)
-    {       
+    {
+        _logger.LogInformation("Iniciando listagem de usuários - Página {Page}, Tamanho {Size}, Ordenação {OrderBy}",
+            command.Page, command.Size, command.OrderBy ?? "default");
+
         var validator = new ListUsersCommandValidator();
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
 
         if (!validationResult.IsValid)
-            throw new FluentValidation.ValidationException(validationResult.Errors);
+        {
+            _logger.LogWarning("Falha na validação do comando ListUsersCommand");
+            throw new ValidationException(validationResult.Errors);
+        }
 
-        var users = await _userRepository.GetUsersAsync(command.Page, command.Size, command.OrderBy,command.Filters, cancellationToken);
-        var totalUsers = await _userRepository.CountUsersAsync(command.Filters,cancellationToken);
+        _logger.LogInformation("Buscando usuários do banco de dados...");
+        var users = await _userRepository.GetUsersAsync(command.Page, command.Size, command.OrderBy, command.Filters, cancellationToken);
+        var totalUsers = await _userRepository.CountUsersAsync(command.Filters, cancellationToken);
+
+        _logger.LogInformation("Listagem de usuários concluída com {TotalUsers} usuários encontrados", users.Count);
 
         return new ListUsersResult
         {

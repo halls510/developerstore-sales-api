@@ -14,7 +14,6 @@ public class SaleCancelledEventHandler : IHandleMessages<SaleCancelledEvent>
     public SaleCancelledEventHandler(ILogger<SaleCancelledEventHandler> logger)
     {
         _logger = logger;
-        Console.WriteLine("🟢 SaleCancelledEventHandler registrado!");
     }
 
     public async Task Handle(SaleCancelledEvent message)

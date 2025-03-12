@@ -13,8 +13,7 @@ public class SaleCreatedEventHandler : IHandleMessages<SaleCreatedEvent>
 
     public SaleCreatedEventHandler(ILogger<SaleCreatedEventHandler> logger)
     {
-        _logger = logger;
-        Console.WriteLine("🟢 SaleCreatedEventHandler registrado!");
+        _logger = logger;        
     }
 
     public async Task Handle(SaleCreatedEvent message)

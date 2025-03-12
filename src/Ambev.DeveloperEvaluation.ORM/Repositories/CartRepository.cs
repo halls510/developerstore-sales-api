@@ -294,4 +294,17 @@ public class CartRepository : ICartRepository
         throw new InvalidOperationException("A estrutura do filtro não foi reconhecida.");
     }
 
+    /// <summary>
+    /// Verifica se um produto está presente em algum carrinho ativo.
+    /// </summary>
+    /// <param name="productId">O ID do produto.</param>
+    /// <param name="cancellationToken">Token de cancelamento.</param>
+    /// <returns>Verdadeiro se o produto estiver em um carrinho, falso caso contrário.</returns>
+    public async Task<bool> IsProductInAnyCartAsync(int productId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Carts
+            .AnyAsync(c => c.Items.Any(i => i.ProductId == productId), cancellationToken);
+    }
+
+
 }

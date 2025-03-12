@@ -304,4 +304,17 @@ public class SaleRepository : ISaleRepository
 
         throw new InvalidOperationException("A estrutura do filtro não foi reconhecida.");
     }
+
+    /// <summary>
+    /// Verifica se um produto está presente em alguma venda ativa.
+    /// </summary>
+    /// <param name="productId">O ID do produto.</param>
+    /// <param name="cancellationToken">Token de cancelamento.</param>
+    /// <returns>Verdadeiro se o produto estiver em uma venda, falso caso contrário.</returns>
+    public async Task<bool> IsProductInAnySaleAsync(int productId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Sales
+            .AnyAsync(s => s.Items.Any(i => i.ProductId == productId), cancellationToken);
+    }
+
 }

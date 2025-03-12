@@ -10,8 +10,7 @@ public class SaleModifiedEventHandler : IHandleMessages<SaleModifiedEvent>
 
     public SaleModifiedEventHandler(ILogger<SaleModifiedEventHandler> logger)
     {
-        _logger = logger;
-        Console.WriteLine("🟢 SaleModifiedEventHandler registrado!");
+        _logger = logger;        
     }
 
     public async Task Handle(SaleModifiedEvent message)
