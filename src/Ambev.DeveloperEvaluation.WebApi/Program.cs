@@ -1,11 +1,9 @@
 ﻿using Ambev.DeveloperEvaluation.Application;
-using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
 using Ambev.DeveloperEvaluation.Application.Sales.Events;
 using Ambev.DeveloperEvaluation.Common.HealthChecks;
 using Ambev.DeveloperEvaluation.Common.Logging;
 using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Common.Validation;
-using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Events;
 using Ambev.DeveloperEvaluation.IoC;
 using Ambev.DeveloperEvaluation.ORM;
@@ -13,15 +11,9 @@ using Ambev.DeveloperEvaluation.WebApi.Configurations;
 using Ambev.DeveloperEvaluation.WebApi.Middleware;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using Rebus.Bus;
 using Rebus.Config;
-using Rebus.Handlers;
 using Rebus.Routing.TypeBased;
-using Rebus.ServiceProvider;
-using Rebus.Transport.InMem;
 using Serilog;
-using System.Reflection;
 using System.Web;
 
 namespace Ambev.DeveloperEvaluation.WebApi;

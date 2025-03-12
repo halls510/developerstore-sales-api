@@ -91,34 +91,42 @@ public static class SeedDatabase
         // **Inserindo carrinhos SEM definir manualmente o ID**
         if (!context.Carts.Any())
         {
-            var carts = new[]
+            var carts = new List<Cart>();
+
+            var cart1Items = new List<CartItem>
             {
-                new Cart
-                {
-                    UserId = users[0].Id,
-                    UserName = $"{users[0].Firstname} {users[0].Lastname}",
-                    Date = DateTime.UtcNow,
-                    Status = CartStatus.Active,
-                    Items = new List<CartItem>
-                    {
-                        new CartItem { ProductId = products[0].Id, Quantity = 2, UnitPrice = new Money(10.00m) },
-                        new CartItem { ProductId = products[1].Id, Quantity = 3, UnitPrice = new Money(15.00m) }
-                    }
-                },
-                new Cart
-                {
-                    UserId = users[1].Id,
-                    UserName = $"{users[1].Firstname} {users[1].Lastname}",
-                    Date = DateTime.UtcNow,
-                    Status = CartStatus.Completed,
-                    Items = new List<CartItem>
-                    {
-                        new CartItem { ProductId = products[2].Id, Quantity = 1, UnitPrice = new Money(20.00m)  },
-                        new CartItem { ProductId = products[3].Id, Quantity = 2, UnitPrice = new Money(25.00m) },
-                        new CartItem { ProductId = products[4].Id, Quantity = 3, UnitPrice = new Money(30.00m) }
-                    }
-                }
+                new CartItem { ProductId = products[0].Id, Quantity = 2, UnitPrice = new Money(10.00m) },
+                new CartItem { ProductId = products[1].Id, Quantity = 3, UnitPrice = new Money(15.00m) }
             };
+            var cart1Total = cart1Items.Sum(i => i.Quantity * i.UnitPrice.Amount);
+
+            carts.Add(new Cart
+            {
+                UserId = users[0].Id,
+                UserName = $"{users[0].Firstname} {users[0].Lastname}",
+                Date = DateTime.UtcNow,
+                Status = CartStatus.Active,
+                Items = cart1Items,
+                TotalPrice = new Money(cart1Total)
+            });
+
+            var cart2Items = new List<CartItem>
+            {
+                new CartItem { ProductId = products[2].Id, Quantity = 1, UnitPrice = new Money(20.00m)  },
+                new CartItem { ProductId = products[3].Id, Quantity = 2, UnitPrice = new Money(25.00m) },
+                new CartItem { ProductId = products[4].Id, Quantity = 3, UnitPrice = new Money(30.00m) }
+            };
+            var cart2Total = cart2Items.Sum(i => i.Quantity * i.UnitPrice.Amount);
+
+            carts.Add(new Cart
+            {
+                UserId = users[1].Id,
+                UserName = $"{users[1].Firstname} {users[1].Lastname}",
+                Date = DateTime.UtcNow,
+                Status = CartStatus.Completed,
+                Items = cart2Items,
+                TotalPrice = new Money(cart2Total)
+            });
 
             context.Carts.AddRange(carts);
             context.SaveChanges();

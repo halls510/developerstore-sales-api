@@ -73,7 +73,7 @@ public class CheckoutHandler : IRequestHandler<CheckoutCommand, CheckoutResult>
 
         // 🔹 6️⃣ Persistir a venda no banco de dados
         var createdSale = await _saleRepository.CreateAsync(sale, cancellationToken);
-        _logger.LogInformation("Venda {SaleId} criada com sucesso para o usuário {UserId}", createdSale.Id, createdSale.UserId);
+        _logger.LogInformation("Venda {SaleId} criada com sucesso para o usuário {UserId}", createdSale.Id, createdSale.CustomerId);
 
         // 🔹 7️⃣ Atualizar o status do carrinho para "CheckedOut"
         cart.MarkAsCheckedOut();

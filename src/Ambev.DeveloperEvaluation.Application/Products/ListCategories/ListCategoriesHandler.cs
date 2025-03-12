@@ -23,7 +23,7 @@ public class ListCategoriesHandler : IRequestHandler<ListCategoriesCommand, List
 
     public async Task<ListCategoriesResult> Handle(ListCategoriesCommand command, CancellationToken cancellationToken)
     {       
-        ._logger.LogInformation("Listing categories with Page: {Page}, Size: {Size}, OrderBy: {OrderBy}", command.Page, command.Size, command.OrderBy);
+        _logger.LogInformation("Listing categories with Page: {Page}, Size: {Size}, OrderBy: {OrderBy}", command.Page, command.Size, command.OrderBy);
 
         var validator = new ListCategoriesCommandValidator();
         var validationResult = await validator.ValidateAsync(command, cancellationToken);
