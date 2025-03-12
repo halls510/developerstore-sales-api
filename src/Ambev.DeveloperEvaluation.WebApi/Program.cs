@@ -58,12 +58,7 @@ public class Program
                 );
             });
 
-            builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-
-            //Console.WriteLine("🔵 Registrando Handlers de Eventos...");
-            builder.Services.AutoRegisterHandlersFromAssembly(typeof(SaleCreatedEventHandler).Assembly);
-            builder.Services.AutoRegisterHandlersFromAssembly(typeof(SaleCancelledEventHandler).Assembly);
-            builder.Services.AutoRegisterHandlersFromAssembly(typeof(SaleModifiedEventHandler).Assembly);
+            builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));     
 
             var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "ambev.developerevaluation.rabbitmq";
             var rabbitUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "admin";
@@ -75,16 +70,18 @@ public class Program
 
             var rabbitMqConnectionString = $"amqp://{encodedUser}:{encodedPass}@{rabbitHost}";
 
-            Console.WriteLine($"🔵 Conectando ao RabbitMQ: {rabbitMqConnectionString}");
+            Console.WriteLine($"🔵 Conectando ao RabbitMQ: {rabbitMqConnectionString}");      
 
             builder.Services.AddRebus(config => config
-                .Transport(t => t.UseRabbitMq(rabbitMqConnectionString, "sales-create-queue"))
-                .Routing(r => r.TypeBased()
-                    .MapAssemblyOf<SaleCreatedEvent>("sales-create-queue")
-                    .MapAssemblyOf<SaleCancelledEvent>("sales-cancel-queue")
-                    .MapAssemblyOf<SaleModifiedEvent>("sales-update-queue"))
-                .Logging(l => l.Console()));                     
-           
+             .Transport(t => t.UseRabbitMq(rabbitMqConnectionString, "sales-exchange"))
+             .Routing(r => r.TypeBased()
+                 .Map<SaleCreatedEvent>("queue_sales_created")
+                 .Map<SaleModifiedEvent>("queue_sales_updated")
+                 .Map<SaleCancelledEvent>("queue_sales_cancelled")
+                 .Map<ItemCancelledEvent>("queue_sales_item_cancelled"))
+             .Logging(l => l.Console())
+            );
+
             var app = builder.Build();
 
             // Rodar migrations automaticamente ao iniciar
