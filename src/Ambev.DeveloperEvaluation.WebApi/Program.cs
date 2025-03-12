@@ -10,6 +10,7 @@ using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.WebApi.Configurations;
 using Ambev.DeveloperEvaluation.WebApi.Middleware;
 using MediatR;
+using Rebus;
 using Microsoft.EntityFrameworkCore;
 using Rebus.Config;
 using Rebus.Routing.TypeBased;
@@ -79,7 +80,7 @@ public class Program
                  .Map<SaleModifiedEvent>("queue_sales_updated")
                  .Map<SaleCancelledEvent>("queue_sales_cancelled")
                  .Map<ItemCancelledEvent>("queue_sales_item_cancelled"))
-             .Logging(l => l.Console())
+             .Logging(l => l.Serilog())
             );
 
             var app = builder.Build();
