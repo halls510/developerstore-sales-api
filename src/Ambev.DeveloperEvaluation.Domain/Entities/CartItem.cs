@@ -25,22 +25,25 @@ public class CartItem : BaseEntity
     public string ProductName { get; set; } = string.Empty; // Denormalized product name
 
     /// <summary>
+    /// Gets the discount applied.
+    /// </summary>
+    public Money Discount { get; set; } = new Money(0);
+
+    /// <summary>
     /// Gets or sets the unit price of the product when added to the cart.
     /// This ensures that price changes do not affect historical cart entries.
     /// </summary>
-    public Money UnitPrice { get; set; } = new Money(0); // Agora é `Money`
+    public Money UnitPrice { get; set; } = new Money(0); 
 
     /// <summary>
     /// Gets or sets the quantity of the product.
     /// </summary>
     public int Quantity { get; set; }
 
-
     /// <summary>
     /// Gets the total cost of the cart item.
     /// O total é calculado e armazenado para ser persistido no banco de dados.
     /// </summary>
     public Money Total { get; set; } = new Money(0);
-
 
 }

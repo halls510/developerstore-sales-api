@@ -47,13 +47,6 @@ public class CreateCartHandler : IRequestHandler<CreateCartCommand, CreateCartRe
         if (!command.Items.All(i => OrderRules.ValidateItemQuantity(i.Quantity)))
             throw new BusinessRuleException("Quantidade inválida para um ou mais produtos.");
 
-        foreach (var item in command.Items)
-        {
-            item.UnitPrice = OrderRules.ApplyDiscount(item.Quantity, item.UnitPrice);
-        }
-
-        var total = OrderRules.CalculateTotal(command.Items.Select(i => (i.Quantity, i.UnitPrice)));
-
         // Buscar nome do usuário
         var user = await _userRepository.GetByIdAsync(command.UserId, cancellationToken);
         if (user == null)
@@ -62,7 +55,7 @@ public class CreateCartHandler : IRequestHandler<CreateCartCommand, CreateCartRe
         // Buscar produtos e validar
         var productIds = command.Items.Select(i => i.ProductId).ToList();
         var existingProducts = await _productRepository.GetByIdsAsync(productIds, cancellationToken);
-        
+
         // Criar um dicionário de produtos para melhor acesso
         var productDict = existingProducts.ToDictionary(p => p.Id);
 
@@ -74,20 +67,26 @@ public class CreateCartHandler : IRequestHandler<CreateCartCommand, CreateCartRe
         // Criar entidade Cart com nome do usuário
         var cart = _mapper.Map<Cart>(command);
         cart.UserName = $"{user.Firstname} {user.Lastname}"; // Adiciona o nome do usuário ao cart
-        cart.TotalPrice = total;
+        cart.TotalPrice = OrderRules.CalculateTotal(command.Items.Select(i => (i.Quantity, i.UnitPrice)));
 
-        // Criar CartItems com nome e valor do produto
+        // Criar CartItems 
         cart.Items = command.Items.Select(item =>
         {
             var product = existingProducts.FirstOrDefault(p => p.Id == item.ProductId);
+            var price = product?.Price ?? new Money(0);
+            var discount = OrderRules.CalculateDiscount(item.Quantity, price);
+            var totalWithDiscount = OrderRules.CalculateTotalWithDiscount(item.Quantity, price);
+
             return new CartItem
             {
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
                 ProductName = product?.Title ?? "Unknown Product",
-                UnitPrice = product?.Price ?? new Money(0)
+                UnitPrice = price,
+                Discount = discount,
+                Total = totalWithDiscount
             };
-        }).ToList();  
+        }).ToList();
 
         // Salvar no repositório
         var createdCart = await _cartRepository.CreateAsync(cart, cancellationToken);

@@ -10,50 +10,63 @@ namespace Ambev.DeveloperEvaluation.Domain.BusinessRules;
 public static class OrderRules
 {
     private const int MaxItemsPerProduct = 20;
-    private static readonly decimal Discount10Percent = 0.90m;
-    private static readonly decimal Discount20Percent = 0.80m;
+    private static readonly decimal Discount10Percent = 0.10m;
+    private static readonly decimal Discount20Percent = 0.20m;
 
     /// <summary>
     /// Valida se a quantidade de itens está dentro do limite permitido.
     /// </summary>
-    /// <param name="quantity">Quantidade do item</param>
-    /// <returns>Verdadeiro se a quantidade for válida</returns>
     public static bool ValidateItemQuantity(int quantity)
     {
         return quantity > 0 && quantity <= MaxItemsPerProduct;
     }
 
     /// <summary>
-    /// Aplica desconto baseado na quantidade de itens comprados.
+    /// Calcula o valor absoluto do desconto aplicado a um item do carrinho.
     /// </summary>
     /// <param name="quantity">Quantidade do item</param>
     /// <param name="unitPrice">Preço unitário</param>
-    /// <returns>Preço com desconto aplicado</returns>
-    public static Money ApplyDiscount(int quantity, Money unitPrice)
+    /// <returns>Valor do desconto aplicado</returns>
+    public static Money CalculateDiscount(int quantity, Money unitPrice)
     {
         if (quantity > MaxItemsPerProduct)
             throw new BusinessRuleException("Não é permitido mais de 20 itens do mesmo produto.");
 
-        if (quantity >= 10) return unitPrice * Discount20Percent; // 20% de desconto
-        if (quantity >= 4) return unitPrice * Discount10Percent; // 10% de desconto
+        decimal discountRate = 0;
+        if (quantity >= 10) discountRate = Discount20Percent;
+        else if (quantity >= 4) discountRate = Discount10Percent;
 
-        return unitPrice; // Sem desconto
+        return unitPrice * discountRate * quantity;
+    }
+
+    /// <summary>
+    /// Calcula o total de um item com desconto aplicado.
+    /// </summary>
+    public static Money CalculateTotalWithDiscount(int quantity, Money unitPrice)
+    {
+        var discount = CalculateDiscount(quantity, unitPrice);
+        return (unitPrice * quantity) - discount;
+    }
+
+    /// <summary>
+    /// Aplica o desconto ao preço unitário do item.
+    /// </summary>
+    public static Money ApplyDiscount(int quantity, Money unitPrice)
+    {
+        return CalculateTotalWithDiscount(quantity, unitPrice) / quantity;
     }
 
     /// <summary>
     /// Calcula o valor total do pedido considerando descontos aplicados.
     /// </summary>
-    /// <param name="items">Lista de itens (Quantidade, Preço Unitário)</param>
-    /// <returns>Valor total do pedido</returns>
     public static Money CalculateTotal(IEnumerable<(int Quantity, Money UnitPrice)> items)
     {
-        return items.Sum(item => item.Quantity * ApplyDiscount(item.Quantity, item.UnitPrice));
+        return items.Sum(item => CalculateTotalWithDiscount(item.Quantity, item.UnitPrice));
     }
 
     /// <summary>
     /// Valida se um carrinho pode ser finalizado para checkout.
     /// </summary>
-    /// <param name="items">Lista de itens no carrinho</param>
     public static void ValidateCartForCheckout(IEnumerable<(int Quantity, Money UnitPrice)> items)
     {
         if (!items.Any())
@@ -66,9 +79,6 @@ public static class OrderRules
     /// <summary>
     /// Verifica se um carrinho pode ser deletado.
     /// </summary>
-    /// <param name="status">Status do carrinho</param>
-    /// <param name="throwException">Se verdadeiro, lança uma exceção quando a regra for violada.</param>
-    /// <returns>Retorna verdadeiro se o carrinho puder ser deletado</returns>
     public static bool CanCartBeDeleted(CartStatus status, bool throwException = true)
     {
         bool canDelete = status == CartStatus.Active || status == CartStatus.Cancelled;
@@ -84,9 +94,6 @@ public static class OrderRules
     /// <summary>
     /// Verifica se um carrinho pode ser atualizado.
     /// </summary>
-    /// <param name="status">Status do carrinho</param>
-    /// <param name="throwException">Se verdadeiro, lança uma exceção quando a regra for violada.</param>
-    /// <returns>Retorna verdadeiro se o carrinho puder ser atualizado</returns>
     public static bool CanCartBeUpdated(CartStatus status, bool throwException = true)
     {
         bool canUpdate = status != CartStatus.CheckedOut && status != CartStatus.Completed;
@@ -102,9 +109,6 @@ public static class OrderRules
     /// <summary>
     /// Verifica se um carrinho pode ser recuperado com base no status.
     /// </summary>
-    /// <param name="status">Status do carrinho</param>
-    /// <param name="throwException">Se verdadeiro, lança uma exceção quando a regra for violada.</param>
-    /// <returns>Retorna verdadeiro se o carrinho puder ser recuperado</returns>
     public static bool CanCartBeRetrieved(CartStatus status, bool throwException = true)
     {
         bool canRetrieve = status is CartStatus.Active or CartStatus.CheckedOut or CartStatus.Completed;
@@ -117,12 +121,43 @@ public static class OrderRules
         return canRetrieve;
     }
 
+    /// <summary>
+    /// Verifica se uma venda pode ser cancelada com base no status.
+    /// </summary>
+    /// <param name="status">Status da venda</param>
+    /// <param name="throwException">Se verdadeiro, lança uma exceção quando a regra for violada.</param>
+    /// <returns>Retorna verdadeiro se a venda puder ser cancelada</returns>
+    public static bool CanSaleBeCancelled(SaleStatus status, bool throwException = true)
+    {
+        bool canCancel = status == SaleStatus.Pending || status == SaleStatus.Processing;
+
+        if (!canCancel && throwException)
+        {
+            throw new BusinessRuleException("Only Pending or Processing sales can be cancelled.");
+        }
+
+        return canCancel;
+    }
+
+    /// <summary>
+    /// Verifica se uma venda pode ser recuperada com base no status.
+    /// </summary>
+    public static bool CanSaleBeRetrieved(SaleStatus status, bool throwException = true)
+    {
+        bool canRetrieve = status is SaleStatus.Completed or SaleStatus.Processing or SaleStatus.Pending;
+
+        if (!canRetrieve && throwException)
+        {
+            throw new BusinessRuleException("Esta venda não pode ser recuperada devido ao seu status atual.");
+        }
+
+        return canRetrieve;
+    }
 
 
     /// <summary>
     /// Aplica todas as validações de negócio ao finalizar a venda.
     /// </summary>
-    /// <param name="items">Lista de itens vendidos</param>
     public static void ValidateSale(IEnumerable<(int Quantity, Money UnitPrice)> items)
     {
         if (!items.Any())

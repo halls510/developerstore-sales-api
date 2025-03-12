@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.ORM.Mapping;
 
@@ -17,6 +18,7 @@ public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
         builder.Property(ci => ci.ProductId).IsRequired();
         builder.Property(ci => ci.ProductName).IsRequired().HasMaxLength(200);
         builder.Property(ci => ci.Quantity).IsRequired();
+
         builder.OwnsOne(ci => ci.UnitPrice, unitPrice =>
         {
             unitPrice.Property(m => m.Amount)
@@ -24,6 +26,15 @@ public class CartItemConfiguration : IEntityTypeConfiguration<CartItem>
                 .HasColumnType("decimal(18,2)")
                 .IsRequired();
         });
+
+        builder.OwnsOne(ci => ci.Discount, discount =>
+        {
+            discount.Property(m => m.Amount)
+                .HasColumnName("Discount")
+                .HasColumnType("decimal(18,2)")
+                .IsRequired();
+        });
+
         builder.OwnsOne(ci => ci.Total, total =>
         {
             total.Property(m => m.Amount)

@@ -1,15 +1,14 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Sales.CancelItem;
 using Ambev.DeveloperEvaluation.Application.Sales.CancelSale;
-using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
-using Ambev.DeveloperEvaluation.Application.Sales.GetSale;
 using Ambev.DeveloperEvaluation.Application.Sales.GetSaleById;
+using Ambev.DeveloperEvaluation.Application.Sales.ListSales;
 using Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CancelItem;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CancelSale;
-using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CreateSale;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetSale;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetSaleById;
+using Ambev.DeveloperEvaluation.WebApi.Features.Sales.ListSales;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.UpdateSale;
 using AutoMapper;
 using MediatR;
@@ -37,33 +36,61 @@ public class SalesController : BaseController
         _mapper = mapper;
     }
 
-
     /// <summary>
-    /// Creates a new sale
+    /// Retrieves a paginated list of sales with optional filters and ordering.
     /// </summary>
-    /// <param name="request">The sale creation request</param>
+    /// <param name="_page">Page number for pagination (default: 1) (optional)</param>
+    /// <param name="_size">Number of items per page (default: 10) (optional)</param>
+    /// <param name="_order">Ordering of results (e.g., "totalAmount desc, date asc") (optional)</param>
+    /// <param name="filters">Filtering parameters (optional, e.g., "_minDate=2025-02-04, _maxDate=2025-03-04").</param>    
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>The created sale details</returns>
-    [HttpPost]
-    [ProducesResponseType(typeof(ApiResponseWithData<CreateSaleResponse>), StatusCodes.Status201Created)]
+    /// <returns>List of sales</returns>
+    [HttpGet]
+    [Authorize(Roles = "Admin,Manager,Customer")]
+    [ProducesResponseType(typeof(PaginatedList<GetSaleResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateSale([FromBody] CreateSaleRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> ListSales(
+        [FromQuery] int? _page = null,
+        [FromQuery] int? _size = null,
+        [FromQuery] string? _order = null,
+        [FromQuery] Dictionary<string, string[]>? filters = null,
+        CancellationToken cancellationToken = default)
     {
-        var validator = new CreateSaleRequestValidator();
+        var userRole = User.FindFirst("role")?.Value;
+        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+
+        // Se o usuário for Customer, ele só pode ver as próprias vendas
+        if (userRole.Equals("Customer", StringComparison.OrdinalIgnoreCase))
+        {
+            filters ??= new Dictionary<string, string[]>();
+            filters["UserId"] = new[] { userId.ToString() };
+        }
+
+        var request = new ListSalesRequest
+        {
+            Page = _page ?? 1,
+            Size = _size ?? 10,
+            OrderBy = _order,
+            Filters = filters ?? new Dictionary<string, string[]>()
+        };
+
+        var validator = new ListSalesRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (!validationResult.IsValid)
             return BadRequest(validationResult.Errors);
 
-        var command = _mapper.Map<CreateSaleCommand>(request);
+        var command = _mapper.Map<ListSalesCommand>(request);
         var response = await _mediator.Send(command, cancellationToken);
 
-        return Created(string.Empty, new ApiResponseWithData<CreateSaleResponse>
-        {
-            Success = true,
-            Message = "Sale created successfully",
-            Data = _mapper.Map<CreateSaleResponse>(response)
-        });
+        var paginatedList = new PaginatedList<GetSaleResponse>(
+            _mapper.Map<List<GetSaleResponse>>(response.Sales),
+            response.TotalItems,
+            response.CurrentPage,
+            response.PageSize
+        );
+
+        return OkPaginated(paginatedList);
     }
 
     /// <summary>

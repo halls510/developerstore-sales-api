@@ -37,19 +37,12 @@ public class SaleItem : BaseEntity
     /// <summary>
     /// Gets the discount applied.
     /// </summary>
-    public Money Discount { get; set; }
-
-    // Campo privado para armazenar `Total`
-    private Money _total = new Money(0);
+    public Money Discount { get; set; }    
 
     /// <summary>
     /// Gets the total price for this item (Quantity * UnitPrice - Discount).
     /// </summary>
-    public Money Total
-    {
-        get => new Money((Quantity * UnitPrice.Amount) - Discount.Amount);
-        private set => _total = value; // Setter privado para o EF Core
-    }
+    public Money Total { get; set; }
 
     /// <summary>
     /// Gets the status of the sale item.
@@ -59,39 +52,65 @@ public class SaleItem : BaseEntity
     public SaleItem()
     {
         Status = SaleItemStatus.Active;
+        Quantity = 0;
+        UnitPrice = new Money(0);
         Discount = new Money(0);
+        Total = new Money(0);
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SaleItem"/> class.
     /// </summary>
-    public SaleItem(int saleId, int productId, string productName, int quantity, Money unitPrice)
+    /// <param name="productId"></param>
+    /// <param name="productName"></param>
+    /// <param name="quantity"></param>
+    /// <param name="unitPrice"></param>
+    /// <param name="discount"></param>
+    /// <param name="total"></param>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="ArgumentNullException"></exception>
+    public SaleItem(int productId, string productName, int quantity, Money unitPrice, Money discount, Money total)
+    {
+        if (quantity <= 0)
+            throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
+                
+        ProductId = productId;
+        ProductName = productName ?? throw new ArgumentNullException(nameof(productName));
+        Quantity = quantity;
+        UnitPrice = unitPrice;
+        Status = SaleItemStatus.Active;
+        Discount = discount;
+        Total = total;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SaleItem"/> class.
+    /// </summary>
+    /// <param name="itemId"></param>
+    /// <param name="saleId"></param>
+    /// <param name="productId"></param>
+    /// <param name="productName"></param>
+    /// <param name="quantity"></param>
+    /// <param name="unitPrice"></param>
+    /// <param name="discount"></param>
+    /// <param name="total"></param>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="ArgumentNullException"></exception>
+    public SaleItem(int itemId,int saleId,int productId, string productName, int quantity, Money unitPrice, Money discount, Money total)
     {
         if (quantity <= 0)
             throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
 
+        Id = itemId;
         SaleId = saleId;
         ProductId = productId;
         ProductName = productName ?? throw new ArgumentNullException(nameof(productName));
         Quantity = quantity;
         UnitPrice = unitPrice;
         Status = SaleItemStatus.Active;
-        Discount = new Money(0);
+        Discount = discount;
+        Total = total;
     }
-
-    ///// <summary>
-    ///// Applies a new discount to the sale item.
-    ///// </summary>
-    //public void ApplyDiscount(Money newDiscount)
-    //{
-    //    if (newDiscount.Amount < 0)
-    //        throw new ArgumentException("Discount cannot be negative.", nameof(newDiscount));
-
-    //    if (newDiscount.Amount > (UnitPrice.Amount * Quantity))
-    //        throw new ArgumentException("Discount cannot be greater than total price.");
-
-    //    Discount = newDiscount;
-    //}
 
     /// <summary>
     /// Cancels the item, updating its status.

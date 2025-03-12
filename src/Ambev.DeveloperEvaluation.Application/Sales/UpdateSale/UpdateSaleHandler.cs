@@ -8,6 +8,7 @@ using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Events;
 using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 using Rebus.Bus;
+using Ambev.DeveloperEvaluation.Domain.BusinessRules;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
 
@@ -58,7 +59,6 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
         var existingProducts = await _productRepository.GetByIdsAsync(productIds, cancellationToken);
 
         var productDict = existingProducts.ToDictionary(p => p.Id);
-
         var missingProducts = productIds.Except(productDict.Keys).ToList();
         if (missingProducts.Any())
             throw new ResourceNotFoundException("Product not found", $"The following product(s) do not exist: {string.Join(", ", missingProducts)}");
@@ -66,23 +66,29 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
         var updatedItems = request.Items.Select(item =>
         {
             var product = productDict[item.ProductId];
+            var existingItem = existingSale.Items.FirstOrDefault(i => i.ProductId == item.ProductId);
+
+            if (!OrderRules.ValidateItemQuantity(item.Quantity))
+                throw new BusinessRuleException($"Product {product.Title} exceeds the allowed quantity limit.");
+
+            var discount = OrderRules.CalculateDiscount(item.Quantity, product.Price);
+            var totalWithDiscount = OrderRules.CalculateTotalWithDiscount(item.Quantity, product.Price);
+
             return new SaleItem(
+                existingItem != null ? existingItem.Id : 0, // Preserve existing ID or default to 0
                 existingSale.Id,
-                item.ProductId,
+                product.Id,
                 product.Title,
                 item.Quantity,
-                product.Price
+                product.Price,
+                discount,
+                totalWithDiscount
             );
         }).ToList();
 
-        var itemsToRemove = existingSale.Items.Where(item => !productIds.Contains(item.ProductId)).ToList();
-        foreach (var item in itemsToRemove)
-        {
-            existingSale.Items.Remove(item);
-        }
-
         existingSale.Items = updatedItems;
         existingSale.CustomerName = $"{user.Firstname} {user.Lastname}";
+        existingSale.TotalValue = new Money(updatedItems.Sum(i => i.Total.Amount));
 
         var updatedSale = await _saleRepository.UpdateAsync(existingSale, cancellationToken);
 
@@ -90,7 +96,6 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
         _logger.LogInformation($"Publishing SaleModifiedEvent for sale ID {updatedSale.Id}");
         await _bus.Publish(saleEvent);
 
-        var result = _mapper.Map<UpdateSaleResult>(updatedSale);
-        return result;
+        return _mapper.Map<UpdateSaleResult>(updatedSale);
     }
 }

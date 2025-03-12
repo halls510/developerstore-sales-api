@@ -1,4 +1,6 @@
-﻿namespace Ambev.DeveloperEvaluation.Application.Carts.Common;
+﻿using Ambev.DeveloperEvaluation.Domain.ValueObjects;
+
+namespace Ambev.DeveloperEvaluation.Application.Carts.Common;
 
 /// <summary>
 /// DTO representing an item inside a cart
@@ -14,6 +16,11 @@ public class CartItemDto
     /// Name of the product
     /// </summary>
     public string ProductName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets the discount applied.
+    /// </summary>
+    public decimal Discount { get; set; }
 
     /// <summary>
     /// Quantity of the product in the cart

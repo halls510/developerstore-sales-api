@@ -61,36 +61,36 @@ public class UpdateCartHandler : IRequestHandler<UpdateCartCommand, UpdateCartRe
         if (user == null)
             throw new ResourceNotFoundException("User not found", "User does not exist.");
 
-        // Buscar produtos e validar
+        // Buscar produtos e validar existência
         var productIds = command.Items.Select(i => i.ProductId).ToList();
         var existingProducts = await _productRepository.GetByIdsAsync(productIds, cancellationToken);
 
-        // Criar um dicionário de produtos para acesso rápido
         var productDict = existingProducts.ToDictionary(p => p.Id);
-
-        // Verificar se há produtos que não existem no banco de dados
         var missingProducts = productIds.Except(productDict.Keys).ToList();
         if (missingProducts.Any())
             throw new ResourceNotFoundException("Product not found", $"The following product(s) do not exist: {string.Join(", ", missingProducts)}");
 
-        // Criar nova lista de itens com os produtos enviados na requisição
+        // Criar nova lista de itens com os produtos atualizados
         var updatedItems = command.Items.Select(item =>
         {
             var product = productDict[item.ProductId];
+            var existingItem = existingCart.Items.FirstOrDefault(i => i.ProductId == item.ProductId);
 
-            // Valida se a quantidade é permitida
             if (!OrderRules.ValidateItemQuantity(item.Quantity))
                 throw new BusinessRuleException($"Product {product.Title} exceeds the allowed quantity limit.");
 
+            var discount = OrderRules.CalculateDiscount(item.Quantity, product.Price);
+            var totalWithDiscount = OrderRules.CalculateTotalWithDiscount(item.Quantity, product.Price);
+
             return new CartItem
             {
+                Id = existingItem?.Id ?? 0, // Preserve existing ID or default to 0
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
                 ProductName = product?.Title ?? "Unknown Product",
                 UnitPrice = product?.Price ?? new Money(0),
-                //  Aplica desconto dinamicamente
-                Total = OrderRules.ApplyDiscount(item.Quantity, product?.Price ?? new Money(0)) * item.Quantity
-
+                Discount = discount,
+                Total = totalWithDiscount
             };
         }).ToList();
 
@@ -104,12 +104,11 @@ public class UpdateCartHandler : IRequestHandler<UpdateCartCommand, UpdateCartRe
             existingCart.Items.Remove(item);
         }
 
-        // Atualizar os itens do carrinho
+        // Atualizar os itens e informações do carrinho
         existingCart.Items = updatedItems;
-
-        // Atualizar informações básicas do carrinho
         existingCart.Date = command.Date;
         existingCart.UserName = $"{user.Firstname} {user.Lastname}";
+        existingCart.TotalPrice = OrderRules.CalculateTotal(updatedItems.Select(i => (i.Quantity, i.UnitPrice)));
 
         // Salvar no repositório
         var updatedCart = await _cartRepository.UpdateAsync(existingCart, cancellationToken);
