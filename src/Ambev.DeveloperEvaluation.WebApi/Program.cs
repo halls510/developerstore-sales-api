@@ -90,9 +90,7 @@ public class Program
             {                
                 var dbContext = scope.ServiceProvider.GetRequiredService<DefaultContext>();
                 //.Database.Migrate();
-
-                dbContext.Database.EnsureCreated();
-                SeedDatabase.Initialize(dbContext);
+                dbContext.Database.EnsureCreated();                
             }
 
             app.UseMiddleware<GlobalExceptionMiddleware>();
