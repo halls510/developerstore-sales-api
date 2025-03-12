@@ -16,6 +16,7 @@ using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Carts;
 
@@ -58,8 +59,8 @@ public class CartsController : BaseController
         [FromQuery] Dictionary<string, string[]>? filters = null,
         CancellationToken cancellationToken = default)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Se o usuário for Customer, ele só pode ver os próprios carrinhos
         if (userRole.Equals("Customer", StringComparison.OrdinalIgnoreCase))
@@ -107,8 +108,8 @@ public class CartsController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateCart([FromBody] CreateCartRequest request, CancellationToken cancellationToken)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0"); 
 
         // Customers só podem criar carrinhos para si mesmos
         if (userRole.Equals("Customer", StringComparison.OrdinalIgnoreCase))
@@ -161,9 +162,9 @@ public class CartsController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetCart([FromRoute] int id, CancellationToken cancellationToken)
-    {  
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+    {
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Obtém o carrinho pelo ID antes de retornar
         var cart = await _mediator.Send(new GetCartByIdQuery { Id = id }, cancellationToken);
@@ -208,8 +209,8 @@ public class CartsController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateCart([FromRoute] int id, [FromBody] UpdateCartRequest request, CancellationToken cancellationToken)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Obtém o carrinho pelo ID antes de atualizar
         var cart = await _mediator.Send(new GetCartByIdQuery { Id = id }, cancellationToken);
@@ -262,8 +263,8 @@ public class CartsController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteCart([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Se não for Admin ou Manager, só pode excluir o próprio carrinho
         if (!userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) &&
@@ -306,8 +307,8 @@ public class CartsController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Checkout([FromRoute] int cartId, CancellationToken cancellationToken)
-    {
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+    {        
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Obtém o carrinho antes de processar o checkout
         var cart = await _mediator.Send(new GetCartByIdQuery { Id = cartId }, cancellationToken);

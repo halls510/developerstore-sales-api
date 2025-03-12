@@ -14,6 +14,7 @@ using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Sales;
 
@@ -56,8 +57,8 @@ public class SalesController : BaseController
         [FromQuery] Dictionary<string, string[]>? filters = null,
         CancellationToken cancellationToken = default)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Se o usuário for Customer, ele só pode ver as próprias vendas
         if (userRole.Equals("Customer", StringComparison.OrdinalIgnoreCase))
@@ -105,8 +106,8 @@ public class SalesController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetSale([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Obtém a venda pelo ID antes de retornar
         var sale = await _mediator.Send(new GetSaleByIdQuery { Id = id }, cancellationToken);
@@ -151,8 +152,8 @@ public class SalesController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateSale([FromRoute] int id, [FromBody] UpdateSaleRequest request, CancellationToken cancellationToken)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Obtém a venda pelo ID antes de atualizar
         var sale = await _mediator.Send(new GetSaleByIdQuery { Id = id }, cancellationToken);
@@ -206,8 +207,8 @@ public class SalesController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CancelSale([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Obtém a venda antes de cancelar
         var sale = await _mediator.Send(new GetSaleByIdQuery { Id = id }, cancellationToken);
@@ -261,8 +262,8 @@ public class SalesController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> CancelItem([FromRoute] int saleId, [FromRoute] int productId, CancellationToken cancellationToken)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Obtém a venda antes de cancelar o item
         var sale = await _mediator.Send(new GetSaleByIdQuery { Id = saleId }, cancellationToken);
