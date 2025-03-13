@@ -1,21 +1,23 @@
-﻿using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
+﻿using Ambev.DeveloperEvaluation.Application.Carts.Checkout;
+using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.Application.Carts.DeleteCart;
-using Ambev.DeveloperEvaluation.Application.Carts.GetCart;
 using Ambev.DeveloperEvaluation.Application.Carts.GetCartById;
 using Ambev.DeveloperEvaluation.Application.Carts.ListCarts;
 using Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
+using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.WebApi.Common;
+using Ambev.DeveloperEvaluation.WebApi.Features.Carts.Checkout;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.DeleteCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCartById;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.ListCarts;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.UpdateCart;
-using Ambev.DeveloperEvaluation.WebApi.Features.Products.GetProduct;
 using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Carts;
 
@@ -58,8 +60,8 @@ public class CartsController : BaseController
         [FromQuery] Dictionary<string, string[]>? filters = null,
         CancellationToken cancellationToken = default)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Se o usuário for Customer, ele só pode ver os próprios carrinhos
         if (userRole.Equals("Customer", StringComparison.OrdinalIgnoreCase))
@@ -107,8 +109,8 @@ public class CartsController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateCart([FromBody] CreateCartRequest request, CancellationToken cancellationToken)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0"); 
 
         // Customers só podem criar carrinhos para si mesmos
         if (userRole.Equals("Customer", StringComparison.OrdinalIgnoreCase))
@@ -161,9 +163,9 @@ public class CartsController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetCart([FromRoute] int id, CancellationToken cancellationToken)
-    {  
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+    {
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Obtém o carrinho pelo ID antes de retornar
         var cart = await _mediator.Send(new GetCartByIdQuery { Id = id }, cancellationToken);
@@ -208,8 +210,8 @@ public class CartsController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateCart([FromRoute] int id, [FromBody] UpdateCartRequest request, CancellationToken cancellationToken)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Obtém o carrinho pelo ID antes de atualizar
         var cart = await _mediator.Send(new GetCartByIdQuery { Id = id }, cancellationToken);
@@ -262,8 +264,8 @@ public class CartsController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteCart([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Se não for Admin ou Manager, só pode excluir o próprio carrinho
         if (!userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) &&
@@ -293,4 +295,53 @@ public class CartsController : BaseController
             Data = _mapper.Map<DeleteCartResponse>(response)
         });
     }
+
+    /// <summary>
+    /// Finaliza o checkout de um carrinho e converte em uma venda.
+    /// </summary>
+    /// <param name="cartId">O ID do carrinho a ser finalizado</param>
+    /// <param name="cancellationToken">Token de cancelamento</param>
+    /// <returns>Detalhes da venda gerada</returns>
+    [HttpPost("{cartId}/checkout")]
+    [Authorize(Roles = "Admin,Manager,Customer")] // Somente Admin,Manager, Customer podem finalizar compras
+    [ProducesResponseType(typeof(ApiResponseWithData<CheckoutResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Checkout([FromRoute] int cartId, CancellationToken cancellationToken)
+    {        
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+
+        // Obtém o carrinho antes de processar o checkout
+        var cart = await _mediator.Send(new GetCartByIdQuery { Id = cartId }, cancellationToken);
+
+        if (cart == null)
+        {
+            return NotFound(new ApiResponse { Success = false, Message = "Carrinho não encontrado." });
+        }
+
+        // Customers só podem finalizar o próprio carrinho
+        if (userRole.Equals("Customer", StringComparison.OrdinalIgnoreCase) && cart.CustomerId != userId)
+        {
+            return Forbid(); // 403 Forbidden - O usuário só pode fazer checkout do próprio carrinho
+        }
+
+        var request = new CheckoutRequest { CartId = cartId };
+        var validator = new CheckoutRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        var command = _mapper.Map<CheckoutCommand>(request);
+        var response = await _mediator.Send(command, cancellationToken);
+
+        return Ok(new ApiResponseWithData<CheckoutResponse>
+        {
+            Success = true,
+            Message = "Checkout realizado com sucesso!",
+            Data = _mapper.Map<CheckoutResponse>(response)
+        });
+    }
+
 }

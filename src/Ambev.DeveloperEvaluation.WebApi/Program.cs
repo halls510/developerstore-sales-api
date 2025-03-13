@@ -1,11 +1,8 @@
 ﻿using Ambev.DeveloperEvaluation.Application;
-using Ambev.DeveloperEvaluation.Application.Sales.CreateSale;
-using Ambev.DeveloperEvaluation.Application.Sales.Events;
 using Ambev.DeveloperEvaluation.Common.HealthChecks;
 using Ambev.DeveloperEvaluation.Common.Logging;
 using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Common.Validation;
-using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Events;
 using Ambev.DeveloperEvaluation.IoC;
 using Ambev.DeveloperEvaluation.ORM;
@@ -13,16 +10,16 @@ using Ambev.DeveloperEvaluation.WebApi.Configurations;
 using Ambev.DeveloperEvaluation.WebApi.Middleware;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using Rebus.Bus;
 using Rebus.Config;
-using Rebus.Handlers;
 using Rebus.Routing.TypeBased;
-using Rebus.ServiceProvider;
-using Rebus.Transport.InMem;
 using Serilog;
-using System.Reflection;
 using System.Web;
+using Ambev.DeveloperEvaluation.WebApi.Services;
+using Rebus.Bus;
+using Ambev.DeveloperEvaluation.Application.Sales.Events;
+using Rebus.Handlers;
+using Rebus.Serialization.Json;
+using Ambev.DeveloperEvaluation.Application.Products.GetProduct;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
 
@@ -47,7 +44,7 @@ public class Program
                     builder.Configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.ORM")
                 )
-            );
+            );         
 
             // Configuração do Swagger
             builder.Services.AddSwaggerDocumentation();
@@ -66,12 +63,7 @@ public class Program
                 );
             });
 
-            builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-
-            //Console.WriteLine("🔵 Registrando Handlers de Eventos...");
-            builder.Services.AutoRegisterHandlersFromAssembly(typeof(SaleCreatedEventHandler).Assembly);
-            builder.Services.AutoRegisterHandlersFromAssembly(typeof(SaleCancelledEventHandler).Assembly);
-            builder.Services.AutoRegisterHandlersFromAssembly(typeof(SaleModifiedEventHandler).Assembly);
+            builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));     
 
             var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "ambev.developerevaluation.rabbitmq";
             var rabbitUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "admin";
@@ -83,27 +75,23 @@ public class Program
 
             var rabbitMqConnectionString = $"amqp://{encodedUser}:{encodedPass}@{rabbitHost}";
 
-            Console.WriteLine($"🔵 Conectando ao RabbitMQ: {rabbitMqConnectionString}");
+            Console.WriteLine($"Conectando ao RabbitMQ: {rabbitMqConnectionString}");
+
+            builder.Services.AutoRegisterHandlersFromAssemblyOf<TestEventHandler>();
 
             builder.Services.AddRebus(config => config
-                .Transport(t => t.UseRabbitMq(rabbitMqConnectionString, "sales-create-queue"))
-                .Routing(r => r.TypeBased()
-                    .MapAssemblyOf<SaleCreatedEvent>("sales-create-queue")
-                    .MapAssemblyOf<SaleCancelledEvent>("sales-cancel-queue")
-                    .MapAssemblyOf<SaleModifiedEvent>("sales-update-queue"))
-                .Logging(l => l.Console()));                     
-           
-            var app = builder.Build();
+            .Transport(t => t.UseRabbitMq(rabbitMqConnectionString, "queue_test")
+                .InputQueueOptions(opt => opt.SetDurable(true)))
+            .Routing(r => r.TypeBased()    
+                .MapAssemblyOf<TestEvent>("queue_test"))
+            .Options(o => o.SetNumberOfWorkers(1)) // Garante que há pelo menos 1 worker para processar mensagens
+            .Serialization(s => s.UseSystemTextJson())            
+            .Logging(l => l.Serilog()));            
+            
+            // Configurar inicialização do banco de dados em segundo plano
+            builder.Services.AddHostedService<DbInitializerService>();
 
-            // Rodar migrations automaticamente ao iniciar
-            using (var scope = app.Services.CreateScope())
-            {                
-                var dbContext = scope.ServiceProvider.GetRequiredService<DefaultContext>();
-                //.Database.Migrate();
-
-                dbContext.Database.EnsureCreated();
-                SeedDatabase.Initialize(dbContext);
-            }
+            var app = builder.Build();   
 
             app.UseMiddleware<GlobalExceptionMiddleware>();
 
@@ -123,7 +111,7 @@ public class Program
 
             app.UseBasicHealthChecks();
 
-            app.MapControllers();
+            app.MapControllers();         
 
             app.Run();
         }

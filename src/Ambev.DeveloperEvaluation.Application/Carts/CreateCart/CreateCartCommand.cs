@@ -1,4 +1,5 @@
-﻿using Ambev.DeveloperEvaluation.Common.Validation;
+﻿using Ambev.DeveloperEvaluation.Application.Carts.Common;
+using Ambev.DeveloperEvaluation.Common.Validation;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using MediatR;
@@ -40,7 +41,7 @@ public class CreateCartCommand : IRequest<CreateCartResult>
     /// <summary>
     /// Gets or sets the list of items in the cart.
     /// </summary>
-    public List<CartItem> Items { get; set; } // Relacionamento 1:N com CartItem
+    public List<CartItem> Items { get; set; } 
 
     /// <summary>
     /// Gets or sets the status of the cart.

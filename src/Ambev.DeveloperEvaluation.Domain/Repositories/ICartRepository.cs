@@ -66,4 +66,12 @@ public interface ICartRepository
     /// Retrieves the total count of Carts in the database.
     /// </summary>
     Task<int> CountCartsAsync(Dictionary<string, string[]>? filters, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Verifica se um produto está presente em algum carrinho ativo.
+    /// </summary>
+    /// <param name="productId">O ID do produto.</param>
+    /// <param name="cancellationToken">Token de cancelamento.</param>
+    /// <returns>Verdadeiro se o produto estiver em um carrinho, falso caso contrário.</returns>
+    Task<bool> IsProductInAnyCartAsync(int productId, CancellationToken cancellationToken = default);
 }

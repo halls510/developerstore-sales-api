@@ -17,6 +17,7 @@ using AutoMapper;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Rebus.Bus;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Products;
 
@@ -30,16 +31,18 @@ public class ProductsController : BaseController
 {
     private readonly IMediator _mediator;
     private readonly IMapper _mapper;
+    private readonly IBus _bus;
 
     /// <summary>
     /// Initializes a new instance of ProductsController
     /// </summary>
     /// <param name="mediator">The mediator instance</param>
     /// <param name="mapper">The AutoMapper instance</param>
-    public ProductsController(IMediator mediator, IMapper mapper)
+    public ProductsController(IMediator mediator, IMapper mapper, IBus bus)
     {
         _mediator = mediator;
         _mapper = mapper;
+        _bus = bus;
     }
 
     /// <summary>
@@ -140,6 +143,8 @@ public class ProductsController : BaseController
 
         var command = _mapper.Map<GetProductCommand>(request.Id);
         var response = await _mediator.Send(command, cancellationToken);
+
+        await _bus.Publish("teste");
 
         return Ok(new ApiResponseWithData<GetProductResponse>
         {

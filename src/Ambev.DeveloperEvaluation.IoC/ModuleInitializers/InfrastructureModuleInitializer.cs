@@ -1,9 +1,13 @@
-﻿using Ambev.DeveloperEvaluation.Domain.Repositories;
+﻿using Ambev.DeveloperEvaluation.Application.Products.Services;
+using Ambev.DeveloperEvaluation.Application.Users.Services;
+using Ambev.DeveloperEvaluation.Domain.Repositories;
+using Ambev.DeveloperEvaluation.Domain.Services;
 using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.ORM.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Rebus.Bus;
 
 namespace Ambev.DeveloperEvaluation.IoC.ModuleInitializers;
 
@@ -17,5 +21,7 @@ public class InfrastructureModuleInitializer : IModuleInitializer
         builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
         builder.Services.AddScoped<ICartRepository, CartRepository>();
         builder.Services.AddScoped<ISaleRepository, SaleRepository>();
+        builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IProductService, ProductService>();        
     }
 }

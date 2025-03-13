@@ -90,4 +90,12 @@ public interface ISaleRepository
     /// Retrieves the total count of Sales in the database.
     /// </summary>
     Task<int> CountSalesAsync(Dictionary<string, string[]>? filters, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Verifica se um produto está presente em alguma venda ativa.
+    /// </summary>
+    /// <param name="productId">O ID do produto.</param>
+    /// <param name="cancellationToken">Token de cancelamento.</param>
+    /// <returns>Verdadeiro se o produto estiver em uma venda, falso caso contrário.</returns>
+    Task<bool> IsProductInAnySaleAsync(int productId, CancellationToken cancellationToken = default);
 }

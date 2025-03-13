@@ -14,9 +14,8 @@ public class GetUserProfile : Profile
     /// Initializes the mappings for GetUser operation
     /// </summary>
     public GetUserProfile()
-    {
-        CreateMap<GetUserCommand, User>();
-        CreateMap<User, GetUserResult>()
+    {        
+        CreateMap<User, UserDto>()
            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => new NameResult
            {
                Firstname = src.Firstname,

@@ -15,6 +15,7 @@ using Ambev.DeveloperEvaluation.Application.Users.ListUsers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Ambev.DeveloperEvaluation.Domain.Enums;
+using System.Security.Claims;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Users;
 
@@ -99,7 +100,7 @@ public class UsersController : BaseController
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
         // Pega a Role do usuário autenticado (se existir)
-        var userRole = User.FindFirst("role")?.Value;
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
 
         // Se for Customer autenticado, NÃO pode criar usuários
         if (!string.IsNullOrEmpty(userRole) && userRole.Equals("Customer", StringComparison.OrdinalIgnoreCase))
@@ -157,8 +158,8 @@ public class UsersController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetUser([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Se não for Admin ou Manager, só pode visualizar seu próprio perfil
         if (!userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) &&
@@ -200,8 +201,8 @@ public class UsersController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateUser([FromRoute] int id, [FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Se não for Admin, só pode atualizar o próprio usuário
         if (!userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) && userId != id)
@@ -249,8 +250,8 @@ public class UsersController : BaseController
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteUser([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var userRole = User.FindFirst("role")?.Value;
-        var userId = int.Parse(User.FindFirst("id")?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
+        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
 
         // Se não for Admin, só pode deletar a própria conta
         if (!userRole.Equals("Admin", StringComparison.OrdinalIgnoreCase) && userId != id)

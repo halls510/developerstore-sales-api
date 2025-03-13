@@ -1,6 +1,4 @@
-﻿using Ambev.DeveloperEvaluation.Domain.ValueObjects;
-
-namespace Ambev.DeveloperEvaluation.WebApi.Common;
+﻿namespace Ambev.DeveloperEvaluation.WebApi.Common;
 
 /// <summary>
 /// Represents an item in the sale request.

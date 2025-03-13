@@ -26,6 +26,11 @@ public class CartItemResult
     public string ProductName { get; set; }
 
     /// <summary>
+    /// Gets the discount applied.
+    /// </summary>
+    public Money Discount { get; set; }
+
+    /// <summary>
     /// Gets or sets the unit price of the product when added to the cart.
     /// This ensures that price changes do not affect historical cart entries.
     /// </summary>
@@ -39,5 +44,5 @@ public class CartItemResult
     /// <summary>
     /// Gets the total cost of the cart item.
     /// </summary>
-    public Money Total => new Money(UnitPrice.Amount * Quantity); // Agora retorna um `Money`
+    public Money Total => new Money(0); // Agora retorna um `Money`
 }

@@ -342,6 +342,23 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.OwnsOne("Ambev.DeveloperEvaluation.Domain.ValueObjects.Money", "Discount", b1 =>
+                        {
+                            b1.Property<int>("CartItemId")
+                                .HasColumnType("integer");
+
+                            b1.Property<decimal>("Amount")
+                                .HasColumnType("decimal(18,2)")
+                                .HasColumnName("Discount");
+
+                            b1.HasKey("CartItemId");
+
+                            b1.ToTable("CartItems");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CartItemId");
+                        });
+
                     b.OwnsOne("Ambev.DeveloperEvaluation.Domain.ValueObjects.Money", "Total", b1 =>
                         {
                             b1.Property<int>("CartItemId")
@@ -375,6 +392,9 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                             b1.WithOwner()
                                 .HasForeignKey("CartItemId");
                         });
+
+                    b.Navigation("Discount")
+                        .IsRequired();
 
                     b.Navigation("Total")
                         .IsRequired();

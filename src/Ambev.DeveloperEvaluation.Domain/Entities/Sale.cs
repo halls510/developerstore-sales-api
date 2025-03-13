@@ -40,30 +40,22 @@ public class Sale : BaseEntity
     public List<SaleItem> Items { get; set; }
 
     /// <summary>
-    /// Campo privado para armazenar `TotalValue`
-    /// </summary>
-    private Money _totalValue = new Money(0);
-
-    /// <summary>
     /// Gets the total value of the sale.
     /// </summary>
-    public Money TotalValue
-    {
-        get => new Money(CalculateTotalPrice()); // Calculado dinamicamente
-        private set => _totalValue = value; // Setter privado para o EF Core
-    }
+    public Money TotalValue { get; set; }
 
     /// <summary>
     /// Gets or sets the sale status.
     /// </summary>
     public SaleStatus Status { get; private set; }
 
-    public Sale() {
+    public Sale()
+    {
         SaleNumber = GenerateSaleNumber();
         Items = new List<SaleItem>();
         SaleDate = DateTime.UtcNow;
         Status = SaleStatus.Pending;
-        AssignBranch(); // 🔹 Chamar método para definir a filial automaticamente
+        AssignBranch(); // Chamar método para definir a filial automaticamente
     }
 
     /// <summary>
@@ -71,36 +63,43 @@ public class Sale : BaseEntity
     /// </summary>    
     /// <param name="customerId">Customer's external ID</param>
     /// <param name="customerName">Denormalized customer name</param>
-    /// <param name="branch">Branch where the sale was made</param>
-    /// <param name="items">List of items in the sale</param>
-    public Sale(int customerId, string customerName, string branch, List<SaleItem> items)
-    {       
+    public Sale(int customerId, string customerName)
+    {
         SaleNumber = GenerateSaleNumber();
         SaleDate = DateTime.UtcNow;
         CustomerId = customerId;
         CustomerName = customerName ?? throw new ArgumentNullException(nameof(customerName));
-        Branch = branch ?? throw new ArgumentNullException(nameof(branch));
-        Items = items ?? new List<SaleItem>();
+        Items = new List<SaleItem>();
         Status = SaleStatus.Pending;
-        AssignBranch(); // 🔹 Chamar método para definir a filial automaticamente
+        AssignBranch(); // Chamar método para definir a filial automaticamente
     }
+
+    public void AddItems(List<SaleItem> saleItems)
+    {
+        Items.AddRange(saleItems);
+    }
+
+    public void AddItem(SaleItem saleItem)
+    {
+        Items.Add(saleItem);
+    }
+
+    public void RecalculateTotal()
+    {
+        if (!Items.Any())
+        {
+            TotalValue = new Money(0);
+            return;
+        }
+
+        TotalValue = Items.Where(item => item.Status == SaleItemStatus.Active)
+                          .Sum(item => item.Total);
+    }
+
 
     private string GenerateSaleNumber()
     {
         return $"SALE-{DateTime.UtcNow:yyyyMMddHHmmssfff}-{Guid.NewGuid().ToString("N").Substring(0, 6)}";
-    }
-
-    /// <summary>
-    /// Calculates the total value of the sale.
-    /// </summary>
-    private decimal CalculateTotalPrice()
-    {
-        decimal total = 0;
-        foreach (var item in Items)
-        {
-            total += item.Total.Amount;
-        }
-        return total;
     }
 
     /// <summary>
@@ -134,13 +133,19 @@ public class Sale : BaseEntity
 
     private void AssignBranch()
     {
-        // 🔹 Simulando uma lista de filiais disponíveis (poderia vir de um serviço externo)
-        var availableBranches = new List<string> { "Filial A", "Filial B", "Filial C", "Filial D" };
+        // Lista de filiais (CDDs) da Ambev
+        var availableBranches = new List<string>
+        {
+            "CDD Moema (SP)", "CDD Mooca (SP)", "CDD Capital (SP)", "CDD Litoral (SP)",
+            "CDD Piracicaba (SP)", "CDD Salto (SP)", "CDD Contagem (MG)", "CDD Sete Lagoas (MG)",
+            "CDD Nova Rio (RJ)", "CDD Brasília (DF)", "CDD Gama (DF)", "CDD Olinda (PE)",
+            "CDD Cabo de Santo Agostinho (PE)", "CDD Caruaru (PE)", "CDD Salgueiro (PE)",
+            "CDD Belém (PA)", "CDD Manaus (AM)", "CDD Natal (RN)", "CDD Paraíba (PB)",
+            "CDD Equatorial (MA)", "CDD Sergipe (SE)", "Sala de Vendas Campo Grande (MS)"
+        };
 
-        // 🔹 Selecionar aleatoriamente uma filial
+        // Selecionar aleatoriamente uma filial
         var random = new Random();
         Branch = availableBranches[random.Next(availableBranches.Count)];
     }
-
-
 }

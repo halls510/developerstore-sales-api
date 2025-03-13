@@ -1,5 +1,6 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Common;
 using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.Domain.Entities;
@@ -36,15 +37,22 @@ public class Cart : BaseEntity
     /// </summary>
     public CartStatus Status { get; set; } = CartStatus.Active;
 
-    // Campo privado para armazenar `TotalPrice`
-    private Money _totalPrice = new Money(0);
-
     /// <summary>
     /// Gets or sets the total price of the cart.
     /// </summary>
-    public Money TotalPrice
+    public Money TotalPrice { get; set; }
+
+    /// <summary>
+    /// Marks the cart as checked out, preventing further modifications.
+    /// </summary>
+    public void MarkAsCheckedOut()
     {
-        get => new Money(Items.Sum(item => item.Total.Amount)); // Calculado dinamicamente
-        private set => _totalPrice = value; // Setter privado para o EF Core
+        if (Status == CartStatus.CheckedOut)
+            throw new BusinessRuleException("O carrinho já foi finalizado.");
+
+        if (!Items.Any())
+            throw new BusinessRuleException("Não é possível finalizar um carrinho vazio.");
+
+        Status = CartStatus.CheckedOut;
     }
 }
