@@ -87,7 +87,7 @@ public class CreateCartHandler : IRequestHandler<CreateCartCommand, CreateCartRe
         // Criar entidade Cart com nome do usuário
         var cart = _mapper.Map<Cart>(command);
         cart.UserName = $"{user.Firstname} {user.Lastname}";
-        cart.TotalPrice = OrderRules.CalculateTotal(command.Items.Select(i => (i.Quantity, i.UnitPrice)));
+        
 
         _logger.LogInformation("Criando itens do carrinho para o usuário {UserId}", command.UserId);
 
@@ -109,6 +109,8 @@ public class CreateCartHandler : IRequestHandler<CreateCartCommand, CreateCartRe
                 Total = totalWithDiscount
             };
         }).ToList();
+
+        cart.TotalPrice = OrderRules.CalculateTotal(cart.Items.Select(i => (i.Quantity, i.UnitPrice)));
 
         // Salvar no repositório
         _logger.LogInformation("Salvando o carrinho no banco de dados para o usuário {UserId}", command.UserId);

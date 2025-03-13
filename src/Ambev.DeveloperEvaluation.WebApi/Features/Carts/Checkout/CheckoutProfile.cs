@@ -7,6 +7,7 @@ public class CheckoutProfile : Profile
 {
     public CheckoutProfile()
     {
-        CreateMap<CheckoutRequest, CheckoutCommand>();       
+        CreateMap<CheckoutRequest, CheckoutCommand>();
+        CreateMap<CheckoutResult, CheckoutResponse>(); 
     }
 }

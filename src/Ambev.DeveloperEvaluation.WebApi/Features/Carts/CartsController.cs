@@ -4,6 +4,7 @@ using Ambev.DeveloperEvaluation.Application.Carts.DeleteCart;
 using Ambev.DeveloperEvaluation.Application.Carts.GetCartById;
 using Ambev.DeveloperEvaluation.Application.Carts.ListCarts;
 using Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
+using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.Checkout;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
@@ -302,18 +303,25 @@ public class CartsController : BaseController
     /// <param name="cancellationToken">Token de cancelamento</param>
     /// <returns>Detalhes da venda gerada</returns>
     [HttpPost("{cartId}/checkout")]
-    [Authorize(Roles = "Customer")] // Somente Customers podem finalizar compras
+    [Authorize(Roles = "Admin,Manager,Customer")] // Somente Admin,Manager, Customer podem finalizar compras
     [ProducesResponseType(typeof(ApiResponseWithData<CheckoutResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Checkout([FromRoute] int cartId, CancellationToken cancellationToken)
     {        
         var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "None";
 
         // Obtém o carrinho antes de processar o checkout
         var cart = await _mediator.Send(new GetCartByIdQuery { Id = cartId }, cancellationToken);
 
-        if (cart == null || cart.CustomerId != userId)
+        if (cart == null)
+        {
+            return NotFound(new ApiResponse { Success = false, Message = "Carrinho não encontrado." });
+        }
+
+        // Customers só podem finalizar o próprio carrinho
+        if (userRole.Equals("Customer", StringComparison.OrdinalIgnoreCase) && cart.CustomerId != userId)
         {
             return Forbid(); // 403 Forbidden - O usuário só pode fazer checkout do próprio carrinho
         }
