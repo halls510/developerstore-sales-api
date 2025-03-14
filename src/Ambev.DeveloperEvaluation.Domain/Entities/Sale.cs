@@ -14,7 +14,7 @@ public class Sale : BaseEntity
     /// <summary>
     /// Gets or sets the sale number (unique identifier for the sale).
     /// </summary>
-    public string SaleNumber { get; private set; }
+    public string SaleNumber { get; set; }
 
     /// <summary>
     /// Gets or sets the date when the sale was completed.
