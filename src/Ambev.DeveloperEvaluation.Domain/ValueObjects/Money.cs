@@ -15,11 +15,10 @@ public record Money
     /// <param name="amount">Valor do dinheiro</param>
     public Money(decimal amount)
     {
-        if (amount < 0)
+        if (amount >= 0)
         {
-            throw new ArgumentException("O valor monetário não pode ser negativo.", nameof(amount));
-        }
-        Amount = Math.Round(amount, 2, MidpointRounding.AwayFromZero); // Evita problemas de precisão
+            Amount = Math.Round(amount, 2, MidpointRounding.AwayFromZero); // Evita problemas de precisão
+        }        
     }
 
     /// <summary>
