@@ -12,6 +12,8 @@ public record GetUserCommand : IRequest<GetUserResult>
     /// </summary>
     public int Id { get; }
 
+    public GetUserCommand() { }
+
     /// <summary>
     /// Initializes a new instance of GetUserCommand
     /// </summary>
