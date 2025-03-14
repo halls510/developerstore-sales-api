@@ -16,16 +16,10 @@ public class CartValidator : AbstractValidator<Cart>
 
         RuleFor(cart => cart.UserName)
             .NotEmpty().WithMessage("UserName is required.")
-            .MaximumLength(200).WithMessage("UserName cannot exceed 200 characters.");
-
-        RuleFor(cart => cart.Date)
-            .LessThanOrEqualTo(DateTime.UtcNow).WithMessage("Cart date cannot be in the future.");
+            .MaximumLength(200).WithMessage("UserName cannot exceed 200 characters.");  
 
         RuleFor(cart => cart.Status)
             .IsInEnum().WithMessage("Invalid cart status.");
-
-        RuleFor(cart => cart.TotalPrice.Amount)
-          .GreaterThanOrEqualTo(0).WithMessage("Total price must be a positive value or zero.");
 
         RuleFor(cart => cart.Items)
             .NotEmpty().WithMessage("Cart must contain at least one item.");

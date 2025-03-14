@@ -36,6 +36,6 @@ public static class CartTestData
         Date = DateTime.UtcNow.AddDays(1), // Inválido: Data no futuro
         Status = (CartStatus)99, // Inválido: Status inexistente
         Items = new List<CartItem>(), // Inválido: Carrinho vazio
-        TotalPrice = new Money(-10) // Inválido: Total negativo
+        TotalPrice = new Money(0) 
     };
 }

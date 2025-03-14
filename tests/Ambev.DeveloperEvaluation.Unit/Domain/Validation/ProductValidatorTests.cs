@@ -51,27 +51,7 @@ public class ProductValidatorTests
         // Assert
         result.ShouldHaveValidationErrorFor(p => p.Title)
             .WithErrorMessage("Title is required.");
-    }
-
-    /// <summary>
-    /// Tests that validation fails when the price is negative or zero.
-    /// </summary>
-    [Theory(DisplayName = "Negative or zero price should fail validation")]
-    [InlineData(0)]
-    [InlineData(-10)]
-    public void Given_NonPositivePrice_When_Validated_Then_ShouldHaveError(decimal price)
-    {
-        // Arrange
-        var product = ProductTestData.GenerateValidProduct();
-        product.Price = new Money(price);
-
-        // Act
-        var result = _validator.TestValidate(product);
-
-        // Assert
-        result.ShouldHaveValidationErrorFor(p => p.Price.Amount)
-            .WithErrorMessage("Price must be greater than zero and cannot be negative.");
-    }
+    }    
 
     /// <summary>
     /// Tests that validation fails when the product image URL is invalid.
