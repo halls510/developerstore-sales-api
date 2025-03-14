@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Validation;
 using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 using Ambev.DeveloperEvaluation.Unit.Domain.Entities.TestData;
 using FluentAssertions;
@@ -74,7 +75,6 @@ public class ProductTests
     [Theory(DisplayName = "Product price must be greater than zero")]
     [InlineData(1, true)]
     [InlineData(0, false)]
-    [InlineData(-10, false)]
     public void Given_ProductPrice_When_Validated_Then_ShouldBeCorrect(decimal price, bool expectedIsValid)
     {
         // Arrange
