@@ -1,5 +1,7 @@
-﻿using Ambev.DeveloperEvaluation.Domain.Common;
+﻿using Ambev.DeveloperEvaluation.Common.Validation;
+using Ambev.DeveloperEvaluation.Domain.Common;
 using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.Domain.Validation;
 using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 
 namespace Ambev.DeveloperEvaluation.Domain.Entities;
@@ -131,6 +133,20 @@ public class Sale : BaseEntity
         return Status == SaleStatus.Cancelled;
     }
 
+    /// <summary>
+    /// Completes the sale if it is in a pending state and has active items.
+    /// </summary>
+    public void CompleteSale()
+    {
+        if (Status != SaleStatus.Pending)
+            throw new InvalidOperationException("Only pending sales can be completed.");
+
+        if (!Items.Any(item => item.Status == SaleItemStatus.Active))
+            throw new InvalidOperationException("Cannot complete a sale with no active items.");
+
+        Status = SaleStatus.Completed;
+    }
+
     private void AssignBranch()
     {
         // Lista de filiais (CDDs) da Ambev
@@ -147,5 +163,16 @@ public class Sale : BaseEntity
         // Selecionar aleatoriamente uma filial
         var random = new Random();
         Branch = availableBranches[random.Next(availableBranches.Count)];
+    }
+
+    public ValidationResultDetail Validate()
+    {
+        var validator = new SaleValidator();
+        var result = validator.Validate(this);
+        return new ValidationResultDetail
+        {
+            IsValid = result.IsValid,
+            Errors = result.Errors.Select(o => (ValidationErrorDetail)o)
+        };
     }
 }
