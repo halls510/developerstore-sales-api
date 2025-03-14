@@ -41,12 +41,18 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             address.HasIndex(a => new { a.City, a.Street })
                 .HasDatabaseName("idx_users_address");
 
+            // Configuração de Geolocation
             address.OwnsOne(a => a.Geolocation, geo =>
             {
-                geo.Property(g => g.Lat).IsRequired().HasMaxLength(50);
-                geo.Property(g => g.Long).IsRequired().HasMaxLength(50);
+                geo.Property(g => g.Lat)
+                    .IsRequired()
+                    .HasColumnType("double precision");
 
-                // Criando índice dentro da propriedade Owned
+                geo.Property(g => g.Long)
+                    .IsRequired()
+                    .HasColumnType("double precision");
+
+                // 🔹 Criando índice dentro da propriedade Owned
                 geo.HasIndex(g => new { g.Lat, g.Long })
                     .HasDatabaseName("idx_users_geolocation");
             });
@@ -75,6 +81,12 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         // Índice para ordenar por função (Admin, Manager, Customer)
         builder.HasIndex(u => u.Role)
-            .HasDatabaseName("idx_users_role");    
+            .HasDatabaseName("idx_users_role");
+
+        // 🔹 Adicionando o campo LastHash para rastreamento de mudanças
+        builder.Property(u => u.LastHash)
+            .IsRequired()
+            .HasMaxLength(100)
+            .HasColumnName("last_hash");
     }
 }

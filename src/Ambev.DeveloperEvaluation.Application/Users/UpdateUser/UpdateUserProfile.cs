@@ -27,6 +27,9 @@ public class UpdateUserProfile : Profile
         CreateMap<Address, AddressResult>()
             .ForMember(dest => dest.Geolocation, opt => opt.MapFrom(src => src.Geolocation));
 
-        CreateMap<Geolocation, GeoLocationResult>();
+        CreateMap<Geolocation, GeoLocationResult>()
+        .ForMember(dest => dest.Lat, opt => opt.MapFrom(src => src.Lat.ToString("F4"))) // Formata latitude para string
+        .ForMember(dest => dest.Long, opt => opt.MapFrom(src => src.Long.ToString("F4"))); // Formata longitude para string
+
     }
 }

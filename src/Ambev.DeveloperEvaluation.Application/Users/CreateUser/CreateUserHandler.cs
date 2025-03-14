@@ -6,6 +6,7 @@ using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
+using Ambev.DeveloperEvaluation.Domain.Enums;
 
 namespace Ambev.DeveloperEvaluation.Application.Users.CreateUser;
 
@@ -68,7 +69,7 @@ public class CreateUserHandler : IRequestHandler<CreateUserCommand, CreateUserRe
         _logger.LogInformation("Criando novo usuário com e-mail {Email}", command.Email);
         var user = _mapper.Map<User>(command);
         user.Password = _passwordHasher.HashPassword(command.Password);
-
+             
         _logger.LogInformation("Salvando usuário no banco de dados");
         var createdUser = await _userRepository.CreateAsync(user, cancellationToken);
 

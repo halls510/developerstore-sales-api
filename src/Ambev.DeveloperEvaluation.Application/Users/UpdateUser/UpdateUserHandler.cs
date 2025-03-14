@@ -6,6 +6,7 @@ using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
+using Ambev.DeveloperEvaluation.Domain.Enums;
 
 namespace Ambev.DeveloperEvaluation.Application.Users.UpdateUser;
 
@@ -65,8 +66,30 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, UpdateUserRe
             throw new ResourceNotFoundException("User not found", $"User with ID {command.Id} not found.");
         }
 
-        // Atualizar os dados do usuário
-        _logger.LogInformation("Atualizando informações do usuário {UserId}", command.Id);
+        // Guardar o hash atual antes da modificação
+        string oldHash = user.LastHash;
+
+        // Atualizar status do usuário utilizando métodos da entidade
+        if (command.Status != user.Status)
+        {
+            _logger.LogInformation("Alterando status do usuário {UserId} para {Status}", command.Id, command.Status);
+            switch (command.Status)
+            {
+                case UserStatus.Active:
+                    user.Activate();
+                    break;
+                case UserStatus.Inactive:
+                    user.Deactivate();
+                    break;
+                case UserStatus.Suspended:
+                    user.Suspend();
+                    break;
+                default:
+                    throw new InvalidOperationException("Invalid status change");
+            }
+        }
+
+        // Atualizar outras informações do usuário
         _mapper.Map(command, user);
 
         // Hash da nova senha, caso tenha sido alterada
@@ -76,8 +99,15 @@ public class UpdateUserHandler : IRequestHandler<UpdateUserCommand, UpdateUserRe
             user.Password = _passwordHasher.HashPassword(command.Password);
         }
 
-        // Marcar a data de atualização
-        user.UpdatedAt = DateTime.UtcNow;
+        // Gerar o novo hash após a atualização
+        string newHash = user.CalculateHash();
+
+        // Apenas atualizar `UpdatedAt` se o hash mudou
+        if (oldHash != newHash)
+        {
+            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdateHash(); // Atualiza o hash armazenado
+        }
 
         _logger.LogInformation("Salvando usuário {UserId} atualizado no banco de dados", command.Id);
         var updatedUser = await _userRepository.UpdateAsync(user, cancellationToken);
