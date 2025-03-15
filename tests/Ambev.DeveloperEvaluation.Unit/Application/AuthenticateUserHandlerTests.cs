@@ -1,6 +1,7 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Auth.AuthenticateUser;
 using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Unit.Application.TestData;
 using FluentAssertions;
@@ -47,18 +48,18 @@ public class AuthenticateUserHandlerTests
         result.Token.Should().Be(token);
     }
 
-    [Fact(DisplayName = "Given invalid credentials When authenticating user Then throws UnauthorizedAccessException")]
-    public async Task Handle_InvalidCredentials_ThrowsUnauthorizedAccessException()
+    [Fact(DisplayName = "Given invalid credentials When authenticating user Then throws AuthenticationErrorException")]
+    public async Task Handle_InvalidCredentials_ThrowsAuthenticationErrorException()
     {
         // Given
         var command = AuthenticateUserHandlerTestData.GenerateValidCommand();
         _userRepository.GetByEmailAsync(command.Email, Arg.Any<CancellationToken>()).Returns((User)null);
 
         // When
-        var act = () => _handler.Handle(command, CancellationToken.None);
+        Func<Task> act = async () => await _handler.Handle(command, CancellationToken.None);
 
         // Then
-        await act.Should().ThrowAsync<UnauthorizedAccessException>();
+        await act.Should().ThrowAsync<AuthenticationErrorException>();
     }
 
     [Fact(DisplayName = "Given inactive user When authenticating Then throws UnauthorizedAccessException")]

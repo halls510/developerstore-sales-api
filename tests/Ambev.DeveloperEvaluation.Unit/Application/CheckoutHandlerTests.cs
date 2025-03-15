@@ -42,7 +42,11 @@ public class CheckoutHandlerTests
         var command = CheckoutHandlerTestData.GenerateValidCommand();
         var cart = CheckoutHandlerTestData.GenerateValidCart(command);
         var sale = CheckoutHandlerTestData.GenerateValidSale(cart);
-        var expectedResult = _mapper.Map<CheckoutResult>(sale);
+        var expectedResult = new CheckoutResult
+        {
+            SaleId = sale.Id,
+            TotalValue = sale.TotalValue
+        };
 
         _cartRepository.GetByIdAsync(command.CartId, Arg.Any<CancellationToken>()).Returns(cart);
         _saleRepository.CreateAsync(Arg.Any<Sale>(), Arg.Any<CancellationToken>()).Returns(sale);
@@ -65,7 +69,7 @@ public class CheckoutHandlerTests
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);
 
-        await act.Should().ThrowAsync<ResourceNotFoundException>().WithMessage("Carrinho não encontrado.");
+        await act.Should().ThrowAsync<ResourceNotFoundException>().WithMessage($"Carrinho {command.CartId} não encontrado.");
     }
 
     [Fact(DisplayName = "Given inactive cart When processing checkout Then throws Exception")]

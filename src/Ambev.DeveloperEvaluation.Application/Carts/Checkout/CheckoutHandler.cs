@@ -7,6 +7,7 @@ using AutoMapper;
 using MediatR;
 using Rebus.Bus;
 using Microsoft.Extensions.Logging;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.Checkout;
 
@@ -44,7 +45,7 @@ public class CheckoutHandler : IRequestHandler<CheckoutCommand, CheckoutResult>
         if (cart == null)
         {
             _logger.LogWarning("Carrinho {CartId} não encontrado.", request.CartId);
-            throw new Exception("Carrinho não encontrado.");
+            throw new ResourceNotFoundException("Carrinho não encontrado.", $"Carrinho {request.CartId} não encontrado.");
         }
 
         // 🔹 2️⃣ Verificar se o carrinho pode ser finalizado

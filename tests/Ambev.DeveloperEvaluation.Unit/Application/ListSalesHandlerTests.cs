@@ -1,5 +1,6 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Sales.GetSale;
 using Ambev.DeveloperEvaluation.Application.Sales.ListSales;
+using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Unit.Application.TestData;
 using AutoMapper;
@@ -28,19 +29,27 @@ public class ListSalesHandlerTests
     [Fact(DisplayName = "Given valid list request When listing sales Then returns paginated sales")]
     public async Task Handle_ValidRequest_ReturnsSalesList()
     {
+        // Given
         var command = ListSalesHandlerTestData.GenerateValidCommand();
         var sales = ListSalesHandlerTestData.GenerateSalesEntityList();
         var expectedSales = ListSalesHandlerTestData.GenerateSalesList();
 
+        sales.Should().NotBeNull();
+        sales.Should().NotBeEmpty();  // Verifica se há dados antes do mapeamento
+
         _saleRepository.GetSalesAsync(command.Page, command.Size, command.OrderBy, command.Filters, Arg.Any<CancellationToken>())
             .Returns(sales);
-        _saleRepository.CountSalesAsync(command.Filters, Arg.Any<CancellationToken>()).Returns(sales.Count);
-        _mapper.Map<List<GetSaleResult>>(sales).Returns(expectedSales);
+        _saleRepository.CountSalesAsync(command.Filters, Arg.Any<CancellationToken>())
+            .Returns(sales.Count);
 
+        _mapper.Map<List<GetSaleResult>>(Arg.Any<List<Sale>>()).Returns(expectedSales); // Melhor compatibilidade com NSubstitute
+
+        // When
         var result = await _handler.Handle(command, CancellationToken.None);
 
+        // Then
         result.Should().NotBeNull();
-        result.Sales.Should().NotBeNull();
+        result.Sales.Should().NotBeNull().And.NotBeEmpty();
         result.TotalItems.Should().Be(sales.Count);
         result.CurrentPage.Should().Be(command.Page);
         result.PageSize.Should().Be(command.Size);

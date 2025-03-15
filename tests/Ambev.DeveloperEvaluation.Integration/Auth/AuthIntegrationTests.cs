@@ -46,7 +46,7 @@ namespace Ambev.DeveloperEvaluation.Integration.Auth
             var content = new StringContent(JsonConvert.SerializeObject(loginRequest), Encoding.UTF8, "application/json");
 
             // Act
-            var response = await _client.PostAsync("api/auth", content);
+            var response = await _client.PostAsync("/api/auth", content);
             if (!response.IsSuccessStatusCode)
             {
                 var errorDetails = await response.Content.ReadAsStringAsync();
@@ -73,7 +73,7 @@ namespace Ambev.DeveloperEvaluation.Integration.Auth
             var content = new StringContent(JsonConvert.SerializeObject(loginRequest), Encoding.UTF8, "application/json");
 
             // Act
-            var response = await _client.PostAsync("api/auth", content);
+            var response = await _client.PostAsync("/api/auth", content);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -98,7 +98,7 @@ namespace Ambev.DeveloperEvaluation.Integration.Auth
             var content = new StringContent(JsonConvert.SerializeObject(loginRequest), Encoding.UTF8, "application/json");
 
             // Act
-            var response = await _client.PostAsync("api/auth", content);
+            var response = await _client.PostAsync("/api/auth", content);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -123,7 +123,7 @@ namespace Ambev.DeveloperEvaluation.Integration.Auth
             var content = new StringContent(JsonConvert.SerializeObject(loginRequest), Encoding.UTF8, "application/json");
 
             // Act
-            var response = await _client.PostAsync("api/auth", content);
+            var response = await _client.PostAsync("/api/auth", content);
 
             if (!response.IsSuccessStatusCode)
             {

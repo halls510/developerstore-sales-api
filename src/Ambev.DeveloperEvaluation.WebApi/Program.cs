@@ -11,6 +11,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Ambev.DeveloperEvaluation.WebApi.Services;
+using Ambev.DeveloperEvaluation.Application.Common.Messaging;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
 
@@ -24,6 +25,12 @@ public class Program
 
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             builder.AddDefaultLogging();
+
+            // Adicionando User Secrets
+            if (builder.Environment.IsDevelopment())
+            {
+                builder.Configuration.AddUserSecrets<Program>();
+            }
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -58,6 +65,9 @@ public class Program
 
             // Configurar inicialização do banco de dados em segundo plano
             builder.Services.AddHostedService<DbInitializerService>();
+
+            // Registra o Publisher no container de DI
+            builder.Services.AddTransient<RabbitMqPublisher>();
 
             var app = builder.Build();
 
