@@ -15,8 +15,8 @@ services:
       - RABBITMQ_USER=${RABBITMQ_USER:-developer}
       - RABBITMQ_PASS=${RABBITMQ_PASSWORD:-example_password}
     ports:
-      - "8080"
-      - "8081"
+      - "8080:8080"
+      - "8081:8081"
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/https:ro
@@ -35,12 +35,12 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-example_password}
     ports:
       - "5432"
-    restart: unless-stopped
+    restart: unless-stopped 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-developer} -d ${POSTGRES_DB:-developer_evaluation}"]
       interval: 5s
       timeout: 3s
-      retries: 5
+      retries: 20
   ambev.developerevaluation.rabbitmq:
     container_name: ambev_developer_evaluation_rabbitmq
     image: rabbitmq:3-management

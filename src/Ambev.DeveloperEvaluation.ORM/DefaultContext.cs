@@ -46,6 +46,7 @@ public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json")
             .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
+            .AddUserSecrets<YourDbContextFactory>()
             .Build();
 
         var builder = new DbContextOptionsBuilder<DefaultContext>();

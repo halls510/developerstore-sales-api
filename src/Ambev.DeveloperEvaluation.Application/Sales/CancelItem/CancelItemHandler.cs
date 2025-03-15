@@ -8,6 +8,7 @@ using Ambev.DeveloperEvaluation.Domain.Events;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Domain.BusinessRules;
+using Ambev.DeveloperEvaluation.Application.Common.Messaging;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.CancelItem
 {
@@ -16,18 +17,19 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CancelItem
         private readonly ISaleRepository _saleRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<CancelItemHandler> _logger;
-        private readonly IBus _bus;
+        private readonly RabbitMqPublisher _rabbitMqPublisher;
 
         public CancelItemHandler(
             ISaleRepository saleRepository,
             IMapper mapper,
-            ILogger<CancelItemHandler> logger,
-            IBus bus)
+                 RabbitMqPublisher rabbitMqPublisher,
+            ILogger<CancelItemHandler> logger           
+            )
         {
             _saleRepository = saleRepository;
             _mapper = mapper;
             _logger = logger;
-            _bus = bus;
+            _rabbitMqPublisher = rabbitMqPublisher;
         }
 
         public async Task<CancelItemResult> Handle(CancelItemCommand request, CancellationToken cancellationToken)
@@ -81,12 +83,12 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CancelItem
             // Publicar evento de Item Cancelado
             var itemEvent = new ItemCancelledEvent(saleItem);
             _logger.LogInformation("📢 Publicando evento ItemCancelledEvent para item {ProductId} da venda ID {SaleId}", saleItem.ProductId, sale.Id);
-            await _bus.Publish(itemEvent);
+            await _rabbitMqPublisher.PublishAsync(itemEvent);
 
             // Publicar evento de atualização da venda
             var saleUpdatedEvent = new SaleModifiedEvent(updatedSale);
             _logger.LogInformation("📢 Publicando evento SaleUpdatedEvent para venda ID {SaleId}", sale.Id);
-            await _bus.Publish(saleUpdatedEvent);
+            await _rabbitMqPublisher.PublishAsync(saleUpdatedEvent);
 
             // Mapear para o resultado esperado e retornar
             _logger.LogInformation("Finalizando cancelamento do item {ProductId} na venda {SaleId}", request.ProductId, request.SaleId);

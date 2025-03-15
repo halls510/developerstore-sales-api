@@ -49,14 +49,14 @@ public class DbInitializerService : BackgroundService
 
         try
         {
-            //if (configuration["ASPNETCORE_ENVIRONMENT"] == "Development")
-            //{
-            //    _logger.LogInformation("Ambiente de desenvolvimento detectado. Recriando banco de dados...");
-            //    await context.Database.EnsureDeletedAsync(stoppingToken);
-            //}
+            if (configuration["ASPNETCORE_ENVIRONMENT"] == "Development")
+            {
+                _logger.LogInformation("Ambiente de desenvolvimento detectado. Recriando banco de dados...");
+                await context.Database.EnsureDeletedAsync(stoppingToken);
+            }
 
             _logger.LogInformation("Aplicando migrações pendentes no banco de dados...");
-            await context.Database.MigrateAsync(stoppingToken);
+            await context.Database.MigrateAsync(stoppingToken);            
             _logger.LogInformation("Migrações aplicadas com sucesso.");
         }
         catch (Exception ex)
@@ -105,7 +105,19 @@ public class DbInitializerService : BackgroundService
             Password = adminPassword,
             Phone = adminPhone,
             Role = UserRole.Admin,
-            Status = UserStatus.Active
+            Status = UserStatus.Active,
+            Address = new AddressRequest
+            {
+                City = "Belo Horizonte",
+                Street = "Avenida do Contorno",
+                Number = 1000,
+                Zipcode = "30110-936", // CEP válido para Belo Horizonte
+                Geolocation = new GeoLocationRequest
+                {
+                    Lat = "-19.9245", // Latitude real para Belo Horizonte
+                    Long = "-43.9352" // Longitude real para Belo Horizonte
+                }
+            }
         };
 
         var validator = new CreateUserRequestValidator();

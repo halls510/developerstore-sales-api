@@ -1,6 +1,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Ambev.DeveloperEvaluation.Common.Security;
+using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Specifications;
 using MediatR;
@@ -29,7 +30,7 @@ namespace Ambev.DeveloperEvaluation.Application.Auth.AuthenticateUser
             
             if (user == null || !_passwordHasher.VerifyPassword(request.Password, user.Password))
             {
-                throw new UnauthorizedAccessException("Invalid credentials");
+                throw new AuthenticationErrorException("Invalid credentials", "Invalid email or password");
             }
 
             var activeUserSpec = new ActiveUserSpecification();

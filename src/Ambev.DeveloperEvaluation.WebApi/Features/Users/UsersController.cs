@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using System.Security.Claims;
+using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CancelItem;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Users;
 
@@ -84,7 +85,7 @@ public class UsersController : BaseController
             response.PageSize
          );
 
-        return OkPaginated(paginatedList);
+        return Ok(paginatedList);
     }
 
     /// <summary>
@@ -177,14 +178,9 @@ public class UsersController : BaseController
             return BadRequest(validationResult.Errors);
 
         var command = _mapper.Map<GetUserCommand>(request.Id);
-        var response = await _mediator.Send(command, cancellationToken);
+        var response = await _mediator.Send(command, cancellationToken);      
 
-        return Ok(new ApiResponseWithData<GetUserResponse>
-        {
-            Success = true,
-            Message = "User retrieved successfully",
-            Data = _mapper.Map<GetUserResponse>(response)
-        });
+        return Ok(_mapper.Map<GetUserResponse>(response), "User retrieved successfully");
     }
 
     /// <summary>
@@ -230,12 +226,7 @@ public class UsersController : BaseController
         command.Id = id;
         var response = await _mediator.Send(command, cancellationToken);
 
-        return Ok(new ApiResponseWithData<UpdateUserResponse>
-        {
-            Success = true,
-            Message = "User updated successfully",
-            Data = _mapper.Map<UpdateUserResponse>(response)
-        });
+        return Ok(_mapper.Map<UpdateUserResponse>(response), "User updated successfully");
     }
 
     /// <summary>
@@ -269,11 +260,7 @@ public class UsersController : BaseController
         var command = _mapper.Map<DeleteUserCommand>(request.Id);
         var response = await _mediator.Send(command, cancellationToken);
 
-        return Ok(new ApiResponseWithData<DeleteUserResponse>
-        {
-            Success = true,
-            Message = "User deleted successfully",
-            Data = _mapper.Map<DeleteUserResponse>(response)
-        });
+        return Ok(_mapper.Map<DeleteUserResponse>(response), "User deleted successfully");
     }
+
 }

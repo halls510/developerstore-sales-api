@@ -21,6 +21,15 @@ public class Address
 /// </summary>
 public class Geolocation
 {
-    public string Lat { get; set; } = string.Empty;
-    public string Long { get; set; } = string.Empty;
+    /// <summary>
+    /// Latitude of the address.
+    /// Must be a valid coordinate between -90 and 90.
+    /// </summary>
+    public double Lat { get; set; } = 0.0;
+
+    /// <summary>
+    /// Longitude of the address.
+    /// Must be a valid coordinate between -180 and 180.
+    /// </summary>
+    public double Long { get; set; } = 0.0;
 }

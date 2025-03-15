@@ -12,4 +12,11 @@ public record GetCartByIdQuery : IRequest<CartDto>
     /// The unique identifier of the cart
     /// </summary>
     public int Id { get; init; }
+
+    public GetCartByIdQuery() { }
+
+    public GetCartByIdQuery(int id)
+    {
+        Id = Id;
+    }
 }

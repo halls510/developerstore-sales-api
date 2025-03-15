@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Rebus.Bus;
 using Ambev.DeveloperEvaluation.Domain.Events;
 using Microsoft.Extensions.DependencyInjection;
+using Ambev.DeveloperEvaluation.Application.Common.Messaging;
 
 namespace Ambev.DeveloperEvaluation.Application.Products.GetProduct;
 
@@ -19,15 +20,18 @@ public class GetProductHandler : IRequestHandler<GetProductCommand, GetProductRe
     private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<GetProductHandler> _logger;
+    private readonly RabbitMqPublisher _rabbitMqPublisher;
 
     public GetProductHandler(
         IServiceProvider serviceProvider,
         IProductRepository productRepository,
         IMapper mapper,
+        RabbitMqPublisher rabbitMqPublisher,
         ILogger<GetProductHandler> logger)
     {        
         _productRepository = productRepository;
         _mapper = mapper;
+        _rabbitMqPublisher = rabbitMqPublisher;
         _logger = logger;
     }
 
@@ -51,7 +55,9 @@ public class GetProductHandler : IRequestHandler<GetProductCommand, GetProductRe
         {
             _logger.LogWarning("Product with ID {ProductId} not found", request.Id);
             throw new ResourceNotFoundException("Product not found", $"Product with ID {request.Id} not found");
-        }       
+        }
+
+        await _rabbitMqPublisher.PublishAsync("Pesquisa no Product");
 
         _logger.LogInformation("Product with ID {ProductId} retrieved successfully", request.Id);
         return _mapper.Map<GetProductResult>(product);

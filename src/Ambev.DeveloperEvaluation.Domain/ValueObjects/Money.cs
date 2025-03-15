@@ -17,8 +17,9 @@ public record Money
     {
         if (amount < 0)
         {
-            throw new ArgumentException("O valor monetário não pode ser negativo.", nameof(amount));
+            throw new ArgumentOutOfRangeException(nameof(amount), "Money amount cannot be negative.");
         }
+
         Amount = Math.Round(amount, 2, MidpointRounding.AwayFromZero); // Evita problemas de precisão
     }
 
