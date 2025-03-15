@@ -10,8 +10,9 @@ public class GetCartByIdProfile : Profile
     {
         // Mapeia a entidade Cart para CartDto
         CreateMap<Cart, CartDto>()
-            .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items))
-            .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice));
+              .ForMember(dest => dest.CustomerId, opt => opt.MapFrom(src => src.UserId))
+              .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.Items))
+              .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice.Amount));
 
         // Mapeia CartItem para CartItemDto
         CreateMap<CartItem, CartItemDto>();

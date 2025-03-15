@@ -14,7 +14,9 @@ public class GetCartByIdProfile : Profile
     {
         // Mapeia CartDto para GetCartByIdResponse
         CreateMap<CartDto, GetCartByIdResponse>()
-            .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Items));
+                .ForMember(dest => dest.UserId, opt => opt.MapFrom(src => src.CustomerId)) // Garante que CustomerId seja mapeado corretamente
+                .ForMember(dest => dest.Date, opt => opt.MapFrom(src => src.CreatedAt.Date)) // Apenas a data, sem horário
+                .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Items));
 
         // Mapeia CartItemDto para GetCartItemResponse
         CreateMap<CartItemDto, CartItemResponse>()

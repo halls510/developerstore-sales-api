@@ -262,4 +262,5 @@ public class UsersController : BaseController
 
         return Ok(_mapper.Map<DeleteUserResponse>(response), "User deleted successfully");
     }
+
 }

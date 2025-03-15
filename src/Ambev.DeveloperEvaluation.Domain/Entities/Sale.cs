@@ -95,11 +95,13 @@ public class Sale : BaseEntity
     public void AddItems(List<SaleItem> saleItems)
     {
         Items.AddRange(saleItems);
+        RecalculateTotal();
     }
 
     public void AddItem(SaleItem saleItem)
     {
         Items.Add(saleItem);
+        RecalculateTotal();
     }
 
     public void RecalculateTotal()
