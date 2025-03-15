@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ambev.DeveloperEvaluation.ORM.Migrations
 {
     [DbContext(typeof(DefaultContext))]
-    [Migration("20250312213750_AddMoney")]
-    partial class AddMoney
+    [Migration("20250315105549_ColumnLastHashModified")]
+    partial class ColumnLastHashModified
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -256,6 +256,11 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                         .IsRequired()
                         .HasMaxLength(24)
                         .HasColumnType("character varying(24)");
+
+                    b.Property<string>("LastHash")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Lastname")
                         .IsRequired()
@@ -591,15 +596,11 @@ namespace Ambev.DeveloperEvaluation.ORM.Migrations
                                     b2.Property<int>("AddressUserId")
                                         .HasColumnType("integer");
 
-                                    b2.Property<string>("Lat")
-                                        .IsRequired()
-                                        .HasMaxLength(50)
-                                        .HasColumnType("character varying(50)");
+                                    b2.Property<double>("Lat")
+                                        .HasColumnType("double precision");
 
-                                    b2.Property<string>("Long")
-                                        .IsRequired()
-                                        .HasMaxLength(50)
-                                        .HasColumnType("character varying(50)");
+                                    b2.Property<double>("Long")
+                                        .HasColumnType("double precision");
 
                                     b2.HasKey("AddressUserId");
 

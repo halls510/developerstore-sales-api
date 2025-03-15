@@ -83,10 +83,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasIndex(u => u.Role)
             .HasDatabaseName("idx_users_role");
 
-        // 🔹 Adicionando o campo LastHash para rastreamento de mudanças
+        // Adicionando o campo LastHash para rastreamento de mudanças
         builder.Property(u => u.LastHash)
-            .IsRequired()
-            .HasMaxLength(100)
-            .HasColumnName("last_hash");
+            .HasMaxLength(100);
     }
 }
