@@ -16,18 +16,19 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CancelItem
         private readonly ISaleRepository _saleRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<CancelItemHandler> _logger;
-        private readonly IBus _bus;
+       // private readonly IBus _bus;
 
         public CancelItemHandler(
             ISaleRepository saleRepository,
             IMapper mapper,
-            ILogger<CancelItemHandler> logger,
-            IBus bus)
+             //IBus bus,
+            ILogger<CancelItemHandler> logger           
+            )
         {
             _saleRepository = saleRepository;
             _mapper = mapper;
             _logger = logger;
-            _bus = bus;
+           // _bus = bus;
         }
 
         public async Task<CancelItemResult> Handle(CancelItemCommand request, CancellationToken cancellationToken)
@@ -78,15 +79,15 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CancelItem
             // Log da operação
             _logger.LogInformation("Item {ProductId} da venda {SaleId} foi cancelado com sucesso", saleItem.ProductId, sale.Id);
 
-            // Publicar evento de Item Cancelado
-            var itemEvent = new ItemCancelledEvent(saleItem);
-            _logger.LogInformation("📢 Publicando evento ItemCancelledEvent para item {ProductId} da venda ID {SaleId}", saleItem.ProductId, sale.Id);
-            await _bus.Publish(itemEvent);
+            //// Publicar evento de Item Cancelado
+            //var itemEvent = new ItemCancelledEvent(saleItem);
+            //_logger.LogInformation("📢 Publicando evento ItemCancelledEvent para item {ProductId} da venda ID {SaleId}", saleItem.ProductId, sale.Id);
+            //await _bus.Publish(itemEvent);
 
-            // Publicar evento de atualização da venda
-            var saleUpdatedEvent = new SaleModifiedEvent(updatedSale);
-            _logger.LogInformation("📢 Publicando evento SaleUpdatedEvent para venda ID {SaleId}", sale.Id);
-            await _bus.Publish(saleUpdatedEvent);
+            //// Publicar evento de atualização da venda
+            //var saleUpdatedEvent = new SaleModifiedEvent(updatedSale);
+            //_logger.LogInformation("📢 Publicando evento SaleUpdatedEvent para venda ID {SaleId}", sale.Id);
+            //await _bus.Publish(saleUpdatedEvent);
 
             // Mapear para o resultado esperado e retornar
             _logger.LogInformation("Finalizando cancelamento do item {ProductId} na venda {SaleId}", request.ProductId, request.SaleId);

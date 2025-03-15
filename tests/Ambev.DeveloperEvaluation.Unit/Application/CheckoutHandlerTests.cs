@@ -26,10 +26,14 @@ public class CheckoutHandlerTests
     {
         _cartRepository = Substitute.For<ICartRepository>();
         _saleRepository = Substitute.For<ISaleRepository>();
-        _bus = Substitute.For<IBus>();
+        //_bus = Substitute.For<IBus>();
         _mapper = Substitute.For<IMapper>();
         _logger = Substitute.For<ILogger<CheckoutHandler>>();
-        _handler = new CheckoutHandler(_cartRepository, _saleRepository, _bus, _mapper, _logger);
+        _handler = new CheckoutHandler(_cartRepository,
+            _saleRepository,
+          //  _bus,
+            _mapper,
+            _logger);
     }
 
     [Fact(DisplayName = "Given valid checkout request When processing Then returns checkout result")]

@@ -27,8 +27,12 @@ public class CancelSaleHandlerTests
         _saleRepository = Substitute.For<ISaleRepository>();
         _mapper = Substitute.For<IMapper>();
         _logger = Substitute.For<ILogger<CancelSaleHandler>>();
-        _bus = Substitute.For<IBus>();
-        _handler = new CancelSaleHandler(_saleRepository, _mapper, _logger, _bus);
+        //_bus = Substitute.For<IBus>();
+        _handler = new CancelSaleHandler(_saleRepository,
+            _mapper,
+            //  _bus,
+            _logger
+            );
     }
 
     [Fact(DisplayName = "Given valid cancel request When processing Then returns cancelled sale result")]
@@ -85,8 +89,8 @@ public class CancelSaleHandlerTests
     public async Task Handle_CompletedSale_ThrowsException()
     {
         var command = CancelSaleHandlerTestData.GenerateValidCommand();
-        var sale = CancelSaleHandlerTestData.GenerateValidCompletedSale(command);       
-        
+        var sale = CancelSaleHandlerTestData.GenerateValidCompletedSale(command);
+
         _saleRepository.GetByIdAsync(command.SaleId, Arg.Any<CancellationToken>()).Returns(sale);
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);

@@ -18,7 +18,7 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
     private readonly IUserRepository _userRepository;
     private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
-    private readonly IBus _bus;
+   // private readonly IBus _bus;
     private readonly ILogger<UpdateSaleHandler> _logger;
 
     public UpdateSaleHandler(
@@ -26,14 +26,14 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
         IUserRepository userRepository,
         IProductRepository productRepository,
         IMapper mapper,
-        IBus bus,
+       // IBus bus,
         ILogger<UpdateSaleHandler> logger)
     {
         _saleRepository = saleRepository;
         _userRepository = userRepository;
         _productRepository = productRepository;
         _mapper = mapper;
-        _bus = bus;
+      //  _bus = bus;
         _logger = logger;
     }
 
@@ -119,9 +119,9 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
 
         _logger.LogInformation("Venda {SaleId} atualizada com sucesso", request.Id);
 
-        var saleEvent = new SaleModifiedEvent(updatedSale);
-        _logger.LogInformation("📢 Publicando evento SaleModifiedEvent para venda ID {SaleId}", updatedSale.Id);
-        await _bus.Publish(saleEvent);
+        //var saleEvent = new SaleModifiedEvent(updatedSale);
+        //_logger.LogInformation("📢 Publicando evento SaleModifiedEvent para venda ID {SaleId}", updatedSale.Id);
+        //await _bus.Publish(saleEvent);
 
         return _mapper.Map<UpdateSaleResult>(updatedSale);
     }

@@ -3,7 +3,9 @@ using Ambev.DeveloperEvaluation.Application.Sales.CancelSale;
 using Ambev.DeveloperEvaluation.Application.Sales.GetSaleById;
 using Ambev.DeveloperEvaluation.Application.Sales.ListSales;
 using Ambev.DeveloperEvaluation.Application.Sales.UpdateSale;
+using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.WebApi.Common;
+using Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCartById;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CancelItem;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.CancelSale;
 using Ambev.DeveloperEvaluation.WebApi.Features.Sales.GetSale;
@@ -91,7 +93,7 @@ public class SalesController : BaseController
             response.PageSize
         );
 
-        return OkPaginated(paginatedList);
+        return Ok(paginatedList);
     }
 
     /// <summary>
@@ -130,12 +132,7 @@ public class SalesController : BaseController
             return Forbid(); // 403 Forbidden - Apenas Admins e Managers podem visualizar qualquer venda
         }
 
-        return Ok(new ApiResponseWithData<GetSaleByIdResponse>
-        {
-            Success = true,
-            Message = "Sale retrieved successfully",
-            Data = _mapper.Map<GetSaleByIdResponse>(sale)
-        });
+        return Ok(_mapper.Map<GetSaleByIdResponse>(sale), "Sale retrieved successfully");
     }
 
     /// <summary>
@@ -184,14 +181,9 @@ public class SalesController : BaseController
 
         var command = _mapper.Map<UpdateSaleCommand>(request);
         command.Id = id;
-        var response = await _mediator.Send(command, cancellationToken);
+        var response = await _mediator.Send(command, cancellationToken);       
 
-        return Ok(new ApiResponseWithData<UpdateSaleResponse>
-        {
-            Success = true,
-            Message = "Sale updated successfully",
-            Data = _mapper.Map<UpdateSaleResponse>(response)
-        });
+        return Ok(_mapper.Map<UpdateSaleResponse>(response), "Sale updated successfully");
     }
 
     /// <summary>
@@ -241,12 +233,7 @@ public class SalesController : BaseController
         var command = _mapper.Map<CancelSaleCommand>(request.SaleId);
         var response = await _mediator.Send(command, cancellationToken);
 
-        return Ok(new ApiResponseWithData<CancelSaleResponse>
-        {
-            Success = true,
-            Message = "Sale canceled successfully",
-            Data = _mapper.Map<CancelSaleResponse>(response)
-        });
+        return Ok(_mapper.Map<CancelSaleResponse>(response), "Sale canceled successfully");
     }
 
     /// <summary>
@@ -294,13 +281,8 @@ public class SalesController : BaseController
             return BadRequest(validationResult.Errors);
 
         var command = _mapper.Map<CancelItemCommand>(request);
-        var response = await _mediator.Send(command, cancellationToken);
+        var response = await _mediator.Send(command, cancellationToken);    
 
-        return Ok(new ApiResponseWithData<CancelItemResponse>
-        {
-            Success = true,
-            Message = "Sale Item canceled successfully",
-            Data = _mapper.Map<CancelItemResponse>(response)
-        });
+        return Ok(_mapper.Map<CancelItemResponse>(response), "Sale Item canceled successfully");
     }
 }

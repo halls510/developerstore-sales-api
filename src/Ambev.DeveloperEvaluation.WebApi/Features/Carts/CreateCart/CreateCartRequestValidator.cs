@@ -14,9 +14,6 @@ public class CreateCartRequestValidator : AbstractValidator<CreateCartRequest>
         RuleFor(x => x.UserId)
             .GreaterThan(0).WithMessage("UserId must be greater than 0.");
 
-        RuleFor(x => x.Date)
-            .Must(date => date.Date == date).WithMessage("Date must be stored without time.");
-
         RuleFor(x => x.Products)
             .NotEmpty().WithMessage("The cart must contain at least one product.");
     }

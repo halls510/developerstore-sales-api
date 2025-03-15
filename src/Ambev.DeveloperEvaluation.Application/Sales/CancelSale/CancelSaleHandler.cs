@@ -15,18 +15,19 @@ public class CancelSaleHandler : IRequestHandler<CancelSaleCommand, CancelSaleRe
     private readonly ISaleRepository _saleRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<CancelSaleHandler> _logger;
-    private readonly IBus _bus;
+    //  private readonly IBus _bus;
 
     public CancelSaleHandler(
         ISaleRepository saleRepository,
         IMapper mapper,
-        ILogger<CancelSaleHandler> logger,
-        IBus bus)
+        //IBus bus,
+        ILogger<CancelSaleHandler> logger
+        )
     {
         _saleRepository = saleRepository;
         _mapper = mapper;
         _logger = logger;
-        _bus = bus;
+        //_bus = bus;
     }
 
     public async Task<CancelSaleResult> Handle(CancelSaleCommand request, CancellationToken cancellationToken)
@@ -65,10 +66,10 @@ public class CancelSaleHandler : IRequestHandler<CancelSaleCommand, CancelSaleRe
 
         _logger.LogInformation("Venda {SaleId} foi cancelada com sucesso", request.SaleId);
 
-        // Publicar evento de Venda Cancelada
-        var saleEvent = new SaleCancelledEvent(updatedSale);
-        _logger.LogInformation("📢 Publicando evento SaleCancelledEvent para venda ID {SaleId}", updatedSale.Id);
-        await _bus.Publish(saleEvent);
+        //// Publicar evento de Venda Cancelada
+        //var saleEvent = new SaleCancelledEvent(updatedSale);
+        //_logger.LogInformation("📢 Publicando evento SaleCancelledEvent para venda ID {SaleId}", updatedSale.Id);
+        //await _bus.Publish(saleEvent);
 
         // Mapear para o resultado esperado e retornar
         _logger.LogInformation("Finalizando cancelamento da venda {SaleId}", request.SaleId);

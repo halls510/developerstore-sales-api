@@ -6,6 +6,7 @@ using Ambev.DeveloperEvaluation.Application.Carts.ListCarts;
 using Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.WebApi.Common;
+using Ambev.DeveloperEvaluation.WebApi.Features.Auth.AuthenticateUserFeature;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.Checkout;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.WebApi.Features.Carts.DeleteCart;
@@ -94,7 +95,7 @@ public class CartsController : BaseController
             response.PageSize
          );
 
-        return OkPaginated(paginatedList);
+        return Ok(paginatedList);
     }
 
     /// <summary>
@@ -186,14 +187,9 @@ public class CartsController : BaseController
         if (!isAdminOrManager && cart.CustomerId != userId)
         {
             return Forbid(); // 403 Forbidden - Apenas Admins e Managers podem visualizar qualquer carrinho
-        }
+        }      
 
-        return Ok(new ApiResponseWithData<GetCartByIdResponse>
-        {
-            Success = true,
-            Message = "Cart retrieved successfully",
-            Data = _mapper.Map<GetCartByIdResponse>(cart)
-        });
+        return Ok(_mapper.Map<GetCartByIdResponse>(cart), "Cart retrieved successfully");
     }
 
     /// <summary>
@@ -243,12 +239,7 @@ public class CartsController : BaseController
         command.Id = id;
         var response = await _mediator.Send(command, cancellationToken);
 
-        return Ok(new ApiResponseWithData<UpdateCartResponse>
-        {
-            Success = true,
-            Message = "Cart updated successfully",
-            Data = _mapper.Map<UpdateCartResponse>(response)
-        });
+        return Ok(_mapper.Map<UpdateCartResponse>(response), "Cart updated successfully");
     }
 
     /// <summary>
@@ -286,14 +277,9 @@ public class CartsController : BaseController
             return BadRequest(validationResult.Errors);
 
         var command = _mapper.Map<DeleteCartCommand>(request.Id);
-        var response = await _mediator.Send(command, cancellationToken);
+        var response = await _mediator.Send(command, cancellationToken);      
 
-        return Ok(new ApiResponseWithData<DeleteCartResponse>
-        {
-            Success = true,
-            Message = "Cart deleted successfully",
-            Data = _mapper.Map<DeleteCartResponse>(response)
-        });
+        return Ok(_mapper.Map<DeleteCartResponse>(response), "Cart deleted successfully");
     }
 
     /// <summary>
@@ -304,7 +290,7 @@ public class CartsController : BaseController
     /// <returns>Detalhes da venda gerada</returns>
     [HttpPost("{cartId}/checkout")]
     [Authorize(Roles = "Admin,Manager,Customer")] // Somente Admin,Manager, Customer podem finalizar compras
-    [ProducesResponseType(typeof(ApiResponseWithData<CheckoutResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponseWithData<CreateCartResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Checkout([FromRoute] int cartId, CancellationToken cancellationToken)
@@ -334,14 +320,13 @@ public class CartsController : BaseController
             return BadRequest(validationResult.Errors);
 
         var command = _mapper.Map<CheckoutCommand>(request);
-        var response = await _mediator.Send(command, cancellationToken);
+        var response = await _mediator.Send(command, cancellationToken); 
 
-        return Ok(new ApiResponseWithData<CheckoutResponse>
+        return Created(string.Empty, new ApiResponseWithData<CheckoutResponse>
         {
             Success = true,
             Message = "Checkout realizado com sucesso!",
             Data = _mapper.Map<CheckoutResponse>(response)
         });
     }
-
 }

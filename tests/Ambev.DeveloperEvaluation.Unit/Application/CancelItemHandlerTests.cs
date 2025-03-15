@@ -26,8 +26,12 @@ public class CancelItemHandlerTests
         _saleRepository = Substitute.For<ISaleRepository>();
         _mapper = Substitute.For<IMapper>();
         _logger = Substitute.For<ILogger<CancelItemHandler>>();
-        _bus = Substitute.For<IBus>();
-        _handler = new CancelItemHandler(_saleRepository, _mapper, _logger, _bus);
+        //_bus = Substitute.For<IBus>();
+        _handler = new CancelItemHandler(_saleRepository,
+            _mapper,
+            //_bus,
+            _logger
+            );
     }
 
     [Fact(DisplayName = "Given valid cancel request When processing Then returns cancelled item result")]
