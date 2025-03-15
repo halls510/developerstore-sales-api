@@ -1,5 +1,4 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Users.GetUser;
-using Ambev.DeveloperEvaluation.Application.Users.UpdateUser;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Bogus;
@@ -7,9 +6,7 @@ using Bogus;
 namespace Ambev.DeveloperEvaluation.Unit.Application.TestData;
 
 public static class GetUserHandlerTestData
-{
-    //private static readonly Faker<GetUserCommand> getUserHandlerFaker = new Faker<GetUserCommand>()
-    //    .RuleFor(u => u.Id, f => f.Random.Int(1, 1000));
+{  
     private static readonly Faker<GetUserCommand> getUserHandlerFaker = new Faker<GetUserCommand>()
     .CustomInstantiator(f => new GetUserCommand(f.Random.Int(1, 1000)));
 

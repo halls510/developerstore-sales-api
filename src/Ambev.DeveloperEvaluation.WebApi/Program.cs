@@ -37,14 +37,14 @@ public class Program
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
 
-            builder.AddBasicHealthChecks();           
+            builder.AddBasicHealthChecks();
 
             builder.Services.AddDbContext<DefaultContext>(options =>
                 options.UseNpgsql(
                     builder.Configuration.GetConnectionString("DefaultConnection"),
                     b => b.MigrationsAssembly("Ambev.DeveloperEvaluation.ORM")
                 )
-            );         
+            );
 
             // Configuração do Swagger
             builder.Services.AddSwaggerDocumentation();
@@ -63,7 +63,7 @@ public class Program
                 );
             });
 
-            builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));     
+            builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
             var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "ambev.developerevaluation.rabbitmq";
             var rabbitUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "admin";
@@ -77,21 +77,36 @@ public class Program
 
             Console.WriteLine($"Conectando ao RabbitMQ: {rabbitMqConnectionString}");
 
-            builder.Services.AutoRegisterHandlersFromAssemblyOf<TestEventHandler>();
+            //builder.Services.AutoRegisterHandlersFromAssemblyOf<TestEventHandler>();
 
-            builder.Services.AddRebus(config => config
-            .Transport(t => t.UseRabbitMq(rabbitMqConnectionString, "queue_test")
-                .InputQueueOptions(opt => opt.SetDurable(true)))
-            .Routing(r => r.TypeBased()    
-                .MapAssemblyOf<TestEvent>("queue_test"))
-            .Options(o => o.SetNumberOfWorkers(1)) // Garante que há pelo menos 1 worker para processar mensagens
-            .Serialization(s => s.UseSystemTextJson())            
-            .Logging(l => l.Serilog()));            
-            
+            //builder.Services.AddRebus(config => config
+            //.Transport(t => t.UseRabbitMq(rabbitMqConnectionString, "queue_test")
+            //    .InputQueueOptions(opt => opt.SetDurable(true)))
+            //.Routing(r => r.TypeBased()    
+            //    .MapAssemblyOf<TestEvent>("queue_test"))
+            //.Serialization(s => s.UseSystemTextJson())            
+            //.Logging(l => l.Serilog()));            
+
+            //builder.Services.AddRebus(config => config
+            //.Transport(t => t.UseRabbitMq(rabbitMqConnectionString, "publisher_only_queue") // Cria uma fila "dummy"
+            //    .InputQueueOptions(opt => opt.SetDurable(true))) // Garante que a fila persista
+            //.Routing(r => r.TypeBased()
+            //    .Map<TestEvent>("fila_vendas")) // Mapeia a mensagem para a fila correta
+            //.Serialization(s => s.UseSystemTextJson())
+            //.Logging(l => l.Serilog()));
+
+            //builder.Services.AddRebus(config => config
+            //.Transport(t => t.UseRabbitMq(rabbitMqConnectionString, "publisher_only_queue") // Define uma fila "dummy"
+            //    .InputQueueOptions(opt => opt.SetDurable(true))) // Mantém a conexão ativa
+            //.Routing(r => r.TypeBased().Map<TestEvent>("fila_vendas")) // Define a fila de saída
+            //.Serialization(s => s.UseSystemTextJson())
+            //.Logging(l => l.Serilog()));
+
+
             // Configurar inicialização do banco de dados em segundo plano
             builder.Services.AddHostedService<DbInitializerService>();
 
-            var app = builder.Build();   
+            var app = builder.Build();
 
             app.UseMiddleware<GlobalExceptionMiddleware>();
 
@@ -102,7 +117,7 @@ public class Program
                 {
                     options.SwaggerEndpoint("/swagger/v1/swagger.json", "Sale API V1");
                 });
-            }                        
+            }
 
             app.UseHttpsRedirection();
 
@@ -111,7 +126,7 @@ public class Program
 
             app.UseBasicHealthChecks();
 
-            app.MapControllers();         
+            app.MapControllers();
 
             app.Run();
         }

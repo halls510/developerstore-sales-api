@@ -8,6 +8,7 @@ namespace Ambev.DeveloperEvaluation.Application.Common;
 public class SaleItemResult
 {
     public int Id { get; set; }
+    public int SaleId { get; set; }
 
     /// <summary>
     /// The product ID.
@@ -49,9 +50,10 @@ public class SaleItemResult
     /// <summary>
     /// Constructor for sale item result.
     /// </summary>
-    public SaleItemResult(int id,int productId, string productName, int quantity, Money unitPrice, Money discount, Money total, string status)
+    public SaleItemResult(int id, int saleId, int productId, string productName, int quantity, Money unitPrice, Money discount, Money total, string status)
     {
         Id = id;
+        SaleId = saleId;
         ProductId = productId;
         ProductName = productName ?? throw new ArgumentNullException(nameof(productName));
         Quantity = quantity;

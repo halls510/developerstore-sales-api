@@ -76,6 +76,22 @@ public class Sale : BaseEntity
         AssignBranch(); // Chamar método para definir a filial automaticamente
     }
 
+    /// <summary>
+    /// Additional constructor to allow testing with specific values.
+    /// </summary>
+    public Sale(int id, int customerId, string customerName, DateTime saleDate, SaleStatus status)
+    {
+        Id = id;
+        CustomerId = customerId;
+        CustomerName = customerName ?? throw new ArgumentNullException(nameof(customerName));
+        SaleNumber = GenerateSaleNumber();
+        SaleDate = saleDate;       
+        Status = status;
+        Items = new List<SaleItem>();
+        TotalValue = new Money(0);
+        AssignBranch(); // Chamar método para definir a filial automaticamente
+    }
+
     public void AddItems(List<SaleItem> saleItems)
     {
         Items.AddRange(saleItems);

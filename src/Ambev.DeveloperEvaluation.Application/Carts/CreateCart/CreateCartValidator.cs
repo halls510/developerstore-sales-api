@@ -13,10 +13,7 @@ public class CreateCartCommandValidator : AbstractValidator<CreateCartCommand>
     public CreateCartCommandValidator()
     {
         RuleFor(x => x.UserId)
-            .GreaterThan(0).WithMessage("UserId must be greater than 0.");
-
-        RuleFor(x => x.Date)
-            .Must(date => date.Date == date).WithMessage("Date must be stored without time.");
+            .GreaterThan(0).WithMessage("UserId must be greater than 0.");  
 
         RuleFor(x => x.Items)
             .NotEmpty().WithMessage("The cart must contain at least one product.");

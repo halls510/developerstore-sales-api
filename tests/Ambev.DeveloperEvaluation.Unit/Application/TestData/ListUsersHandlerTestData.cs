@@ -10,7 +10,6 @@ public static class ListUsersHandlerTestData
         .RuleFor(c => c.Page, f => f.Random.Int(1, 10))
         .RuleFor(c => c.Size, f => f.Random.Int(5, 50))
         .RuleFor(c => c.OrderBy, f => f.Lorem.Word());
-       // .RuleFor(c => c.Filters, f => new Dictionary<string, string> { { "username", f.Internet.UserName() } });
 
     public static ListUsersCommand GenerateValidCommand()
     {

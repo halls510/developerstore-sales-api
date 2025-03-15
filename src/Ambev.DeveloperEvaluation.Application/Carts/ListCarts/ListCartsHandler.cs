@@ -47,12 +47,14 @@ public class ListCartsHandler : IRequestHandler<ListCartsCommand, ListCartsResul
 
         _logger.LogInformation("Listagem de carrinhos concluída com {TotalCarts} carrinhos encontrados", carts.Count);
 
-        return new ListCartsResult
+        var result = new ListCartsResult
         {
             Carts = _mapper.Map<List<GetCartResult>>(carts),
             TotalItems = totalCarts,
             CurrentPage = command.Page,
             PageSize = command.Size
         };
+
+        return result;
     }
 }

@@ -19,5 +19,5 @@ public class SaleItemDto
 
     public decimal Total { get; set; }
 
-    public SaleItemStatus Status { get; private set; }
+    public SaleItemStatus Status { get; set; }
 }

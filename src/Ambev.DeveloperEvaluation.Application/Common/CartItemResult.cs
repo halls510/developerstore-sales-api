@@ -44,5 +44,5 @@ public class CartItemResult
     /// <summary>
     /// Gets the total cost of the cart item.
     /// </summary>
-    public Money Total => new Money(0); // Agora retorna um `Money`
+    public Money Total { get; set; } = new Money(0); // Agora retorna um `Money`
 }

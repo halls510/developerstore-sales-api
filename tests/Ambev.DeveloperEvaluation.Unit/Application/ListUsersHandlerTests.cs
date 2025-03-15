@@ -35,7 +35,7 @@ public class ListUsersHandlerTests
             .Returns(users);
         _userRepository.CountUsersAsync(command.Filters, Arg.Any<CancellationToken>()).Returns(users.Count);
         _mapper.Map<List<GetUserResult>>(users).Returns(new List<GetUserResult>());
-
+        
         var result = await _handler.Handle(command, CancellationToken.None);
 
         result.Should().NotBeNull();
