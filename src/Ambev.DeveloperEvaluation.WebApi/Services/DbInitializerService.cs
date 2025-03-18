@@ -134,14 +134,16 @@ public class DbInitializerService : BackgroundService
     }
 
     private async Task InitializeProducts(
-        IMediator mediator,
-        IMapper mapper,
-        IProductService productService,
-        CancellationToken cancellationToken)
+     IMediator mediator,
+     IMapper mapper,
+     IProductService productService,
+     CancellationToken cancellationToken)
     {
         _logger.LogInformation("Verificando produtos padrão...");
 
-        var request = new CreateProductRequest
+        var products = new List<CreateProductRequest>
+    {
+        new CreateProductRequest
         {
             Title = "Cerveja Puro Malte",
             Description = "Cerveja puro malte premium, 600ml.",
@@ -149,28 +151,77 @@ public class DbInitializerService : BackgroundService
             Category = "Bebidas",
             Image = "https://example.com/cerveja.jpg",
             Rating = new RatingRequest { Rate = 4.5, Count = 120 }
-        };
-
-        var existingProduct = await productService.GetByTitleAsync(request.Title, cancellationToken);
-        if (existingProduct != null)
+        },
+        new CreateProductRequest
         {
-            _logger.LogInformation("Produto já existe. Nenhuma ação necessária.");
-            return;
-        }
-
-        var validator = new CreateProductRequestValidator();
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
-
-        if (!validationResult.IsValid)
+            Title = "Whisky 12 anos",
+            Description = "Whisky envelhecido 12 anos, garrafa de 750ml.",
+            Price = 149.99M,
+            Category = "Bebidas",
+            Image = "https://example.com/whisky.jpg",
+            Rating = new RatingRequest { Rate = 4.8, Count = 95 }
+        },
+        new CreateProductRequest
         {
-            _logger.LogError("Erro na validação do produto: {Errors}", string.Join(", ", validationResult.Errors));
-            throw new Exception("Erro na validação do produto: " + string.Join(", ", validationResult.Errors));
+            Title = "Vinho Tinto Seco",
+            Description = "Vinho tinto seco de alta qualidade, 750ml.",
+            Price = 59.99M,
+            Category = "Bebidas",
+            Image = "https://example.com/vinho.jpg",
+            Rating = new RatingRequest { Rate = 4.7, Count = 150 }
+        },
+        new CreateProductRequest
+            {
+                Title = "Vodka Premium",
+                Description = "Vodka premium destilada cinco vezes, 1L.",
+                Price = 79.99M,
+                Category = "Bebidas",
+                Image = "https://example.com/vodka.jpg",
+                Rating = new RatingRequest { Rate = 4.6, Count = 85 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Rum Añejo",
+                Description = "Rum envelhecido por 8 anos, garrafa de 750ml.",
+                Price = 89.99M,
+                Category = "Bebidas",
+                Image = "https://example.com/rum.jpg",
+                Rating = new RatingRequest { Rate = 4.4, Count = 60 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Gin Artesanal",
+                Description = "Gin artesanal premium com ervas selecionadas, 700ml.",
+                Price = 99.99M,
+                Category = "Bebidas",
+                Image = "https://example.com/gin.jpg",
+                Rating = new RatingRequest { Rate = 4.9, Count = 110 }
+            }
+    };
+
+        foreach (var request in products)
+        {
+            var existingProduct = await productService.GetByTitleAsync(request.Title, cancellationToken);
+            if (existingProduct != null)
+            {
+                _logger.LogInformation("Produto '{Title}' já existe. Nenhuma ação necessária.", request.Title);
+                continue;
+            }
+
+            var validator = new CreateProductRequestValidator();
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+            if (!validationResult.IsValid)
+            {
+                _logger.LogError("Erro na validação do produto '{Title}': {Errors}", request.Title, string.Join(", ", validationResult.Errors));
+                continue; // Continua para o próximo produto em vez de lançar uma exceção
+            }
+
+            var command = mapper.Map<CreateProductCommand>(request);
+            await mediator.Send(command, cancellationToken);
+
+            _logger.LogInformation("Produto '{Title}' criado com sucesso.", request.Title);
         }
-
-        var command = mapper.Map<CreateProductCommand>(request);
-        await mediator.Send(command, cancellationToken);
-
-        _logger.LogInformation("Produto padrão criado com sucesso.");
     }
 
 }
