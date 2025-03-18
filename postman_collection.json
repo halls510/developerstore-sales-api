@@ -33,7 +33,26 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Login - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Login - Response contains a token\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property(\"token\");",
+                  "    pm.expect(jsonData.data.token).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -60,7 +79,26 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get Users - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Get Users - Response is an array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"data\");",
+                  "    pm.expect(jsonData.data).to.be.an(\"array\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Users - Create User",
@@ -90,7 +128,27 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Create User - Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Create User - Response contains user data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"id\");",
+                  "    pm.expect(jsonData).to.have.property(\"email\");",
+                  "    pm.expect(jsonData.email).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Users - Get User by ID",
@@ -113,7 +171,26 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get User by ID - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Get User by ID - Response contains user details\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"id\");",
+                  "    pm.expect(jsonData).to.have.property(\"email\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Users - Update User",
@@ -144,7 +221,25 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Update User - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Update User - Response contains updated data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"email\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Users - Delete User",
@@ -167,7 +262,25 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Delete User - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Delete User - Response confirms deletion\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"message\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -194,7 +307,26 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get Products - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Get Products - Response contains product list\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"data\");",
+                  "    pm.expect(jsonData.data).to.be.an(\"array\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Products - Get Product by ID",
@@ -217,7 +349,26 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get Product by ID - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Get Product by ID - Response contains product details\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"id\");",
+                  "    pm.expect(jsonData).to.have.property(\"title\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Products - Create Product",
@@ -247,7 +398,26 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Create Product - Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Create Product - Response contains product data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.have.property(\"id\");",
+                  "    pm.expect(jsonData.data).to.have.property(\"title\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Products - Update Product",
@@ -278,7 +448,34 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Update Product - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Update Product - Response contains updated data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"title\");",
+                  "    pm.expect(jsonData.title).to.be.a(\"string\");",
+                  "    pm.expect(jsonData).to.have.property(\"price\");",
+                  "    pm.expect(jsonData.price).to.be.a(\"number\");",
+                  "    pm.expect(jsonData).to.have.property(\"description\");",
+                  "    pm.expect(jsonData.description).to.be.a(\"string\");",
+                  "    pm.expect(jsonData).to.have.property(\"category\");",
+                  "    pm.expect(jsonData.category).to.be.a(\"string\");",
+                  "    pm.expect(jsonData).to.have.property(\"image\");",
+                  "    pm.expect(jsonData.image).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Products - Delete Product",
@@ -301,7 +498,25 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Delete Product - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Delete Product - Response confirms deletion\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"message\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Products - Get Categories",
@@ -324,7 +539,26 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get Product Categories - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Get Product Categories - Response is an array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an(\"array\");",
+                  "    pm.expect(jsonData.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -351,7 +585,26 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get Carts - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Get Carts - Response contains cart list\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"data\");",
+                  "    pm.expect(jsonData.data).to.be.an(\"array\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Carts - Get Cart by ID",
@@ -374,7 +627,25 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get Cart by ID - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Get Cart by ID - Response contains cart details\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"id\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Carts - Create Cart",
@@ -404,7 +675,25 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Create Cart - Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Create Cart - Response contains cart data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"id\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Carts - Update Cart",
@@ -435,7 +724,30 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Update Cart - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Update Cart - Response contains updated data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"id\");",
+                  "    pm.expect(jsonData).to.have.property(\"userId\");",
+                  "    pm.expect(jsonData).to.have.property(\"date\");",
+                  "    pm.expect(jsonData).to.have.property(\"products\");",
+                  "    pm.expect(jsonData.products).to.be.an(\"array\");",
+                  "    pm.expect(jsonData.products.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Carts - Delete Cart",
@@ -458,7 +770,25 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Delete Cart - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Delete Cart - Response confirms deletion\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"message\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Carts - Checkout Cart",
@@ -490,7 +820,26 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Checkout Cart - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Checkout Cart - Response confirms checkout success\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"message\");",
+                  "    pm.expect(jsonData.message).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -517,7 +866,26 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get Sales - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Get Sales - Response contains sales list\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"data\");",
+                  "    pm.expect(jsonData.data).to.be.an(\"array\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Sales - Get Sale by ID",
@@ -540,7 +908,28 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Get Sale by ID - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Get Sale by ID - Response contains sale details\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"id\");",
+                  "    pm.expect(jsonData).to.have.property(\"customerId\");",
+                  "    pm.expect(jsonData).to.have.property(\"items\");",
+                  "    pm.expect(jsonData.items).to.be.an(\"array\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Sales - Update Sale",
@@ -571,7 +960,25 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Update Sale - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Update Sale - Response contains updated data\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"customerId\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Sales - Cancel Sale",
@@ -595,7 +1002,25 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Cancel Sale - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Cancel Sale - Response confirms cancellation\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"message\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Sales - Cancel Sale Item",
@@ -621,7 +1046,25 @@
               ]
             }
           },
-          "response": []
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Cancel Sale Item - Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Cancel Sale Item - Response confirms item cancellation\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property(\"message\");",
+                  "});"
+                ]
+              }
+            }
+          ]
         }
       ]
     }
@@ -632,7 +1075,27 @@
       "script": {
         "type": "text/javascript",
         "exec": [
-          ""
+          "if (!pm.environment.get(\"token\") || pm.environment.get(\"token_expiration\") < Date.now()) {",
+          "    pm.sendRequest({",
+          "        url: pm.environment.get(\"baseUrl\") + \"/auth\",",
+          "        method: \"POST\",",
+          "        header: { \"Content-Type\": \"application/json\" },",
+          "        body: {",
+          "            mode: \"raw\",",
+          "            raw: JSON.stringify({",
+          "                email: pm.environment.get(\"email\"),",
+          "                password: pm.environment.get(\"password\")",
+          "            })",
+          "        }",
+          "    }, function (err, res) {",
+          "        if (!err && res.status === 200) {",
+          "            var jsonData = res.json();",
+          "            pm.environment.set(\"token\", jsonData.token);",
+          "            var tokenPayload = JSON.parse(atob(jsonData.token.split(\".\")[1]));",
+          "            pm.environment.set(\"token_expiration\", tokenPayload.exp * 1000);",
+          "        }",
+          "    });",
+          "}"
         ]
       }
     },

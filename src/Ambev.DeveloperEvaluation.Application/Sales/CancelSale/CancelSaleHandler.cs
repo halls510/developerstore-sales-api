@@ -7,6 +7,7 @@ using Ambev.DeveloperEvaluation.Domain.BusinessRules;
 using Rebus.Bus;
 using Ambev.DeveloperEvaluation.Domain.Events;
 using FluentValidation;
+using Ambev.DeveloperEvaluation.Application.Common.Messaging;
 
 namespace Ambev.DeveloperEvaluation.Application.Sales.CancelSale;
 
@@ -15,19 +16,19 @@ public class CancelSaleHandler : IRequestHandler<CancelSaleCommand, CancelSaleRe
     private readonly ISaleRepository _saleRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<CancelSaleHandler> _logger;
-    //  private readonly IBus _bus;
+    private readonly RabbitMqPublisher _rabbitMqPublisher;
 
     public CancelSaleHandler(
         ISaleRepository saleRepository,
         IMapper mapper,
-        //IBus bus,
+        RabbitMqPublisher rabbitMqPublisher,
         ILogger<CancelSaleHandler> logger
         )
     {
         _saleRepository = saleRepository;
         _mapper = mapper;
         _logger = logger;
-        //_bus = bus;
+        _rabbitMqPublisher = rabbitMqPublisher;
     }
 
     public async Task<CancelSaleResult> Handle(CancelSaleCommand request, CancellationToken cancellationToken)
@@ -66,10 +67,10 @@ public class CancelSaleHandler : IRequestHandler<CancelSaleCommand, CancelSaleRe
 
         _logger.LogInformation("Venda {SaleId} foi cancelada com sucesso", request.SaleId);
 
-        //// Publicar evento de Venda Cancelada
-        //var saleEvent = new SaleCancelledEvent(updatedSale);
-        //_logger.LogInformation("📢 Publicando evento SaleCancelledEvent para venda ID {SaleId}", updatedSale.Id);
-        //await _bus.Publish(saleEvent);
+        // Publicar evento de Venda Cancelada
+        var saleEvent = new SaleCancelledEvent(updatedSale);
+        _logger.LogInformation("📢 Publicando evento SaleCancelledEvent para venda ID {SaleId}", updatedSale.Id);
+        await _rabbitMqPublisher.SendAsync(saleEvent);
 
         // Mapear para o resultado esperado e retornar
         _logger.LogInformation("Finalizando cancelamento da venda {SaleId}", request.SaleId);

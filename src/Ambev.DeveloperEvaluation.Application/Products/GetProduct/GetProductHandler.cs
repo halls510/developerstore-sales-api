@@ -4,9 +4,7 @@ using FluentValidation;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
-using Rebus.Bus;
 using Ambev.DeveloperEvaluation.Domain.Events;
-using Microsoft.Extensions.DependencyInjection;
 using Ambev.DeveloperEvaluation.Application.Common.Messaging;
 
 namespace Ambev.DeveloperEvaluation.Application.Products.GetProduct;
@@ -57,9 +55,9 @@ public class GetProductHandler : IRequestHandler<GetProductCommand, GetProductRe
             throw new ResourceNotFoundException("Product not found", $"Product with ID {request.Id} not found");
         }
 
-        await _rabbitMqPublisher.PublishAsync("Pesquisa no Product");
-
         _logger.LogInformation("Product with ID {ProductId} retrieved successfully", request.Id);
+        TestEvent testEvent = new TestEvent($"Product with ID {request.Id} retrieved successfully");
+        await _rabbitMqPublisher.SendAsync(testEvent);
         return _mapper.Map<GetProductResult>(product);
     }
 }
