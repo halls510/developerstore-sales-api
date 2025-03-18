@@ -12,6 +12,10 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Ambev.DeveloperEvaluation.WebApi.Services;
 using Ambev.DeveloperEvaluation.Application.Common.Messaging;
+using Rebus.Config;
+using System.Web;
+using Ambev.DeveloperEvaluation.Domain.Events;
+using Rebus.Routing.TypeBased;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
 
@@ -61,7 +65,10 @@ public class Program
                 );
             });
 
-            builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));           
+            builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+            // Criação das filas no RabbitMq
+            RabbitMqSetup.EnsureRabbitMqQueuesExist(builder.Configuration);
 
             // Configurar inicialização do banco de dados em segundo plano
             builder.Services.AddHostedService<DbInitializerService>();

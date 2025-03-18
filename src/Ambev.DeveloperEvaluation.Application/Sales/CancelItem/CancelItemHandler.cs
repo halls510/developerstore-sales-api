@@ -22,7 +22,7 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CancelItem
         public CancelItemHandler(
             ISaleRepository saleRepository,
             IMapper mapper,
-                 RabbitMqPublisher rabbitMqPublisher,
+            RabbitMqPublisher rabbitMqPublisher,
             ILogger<CancelItemHandler> logger           
             )
         {
@@ -82,13 +82,13 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CancelItem
 
             // Publicar evento de Item Cancelado
             var itemEvent = new ItemCancelledEvent(saleItem);
-            _logger.LogInformation("📢 Publicando evento ItemCancelledEvent para item {ProductId} da venda ID {SaleId}", saleItem.ProductId, sale.Id);
-            await _rabbitMqPublisher.PublishAsync(itemEvent);
+            _logger.LogInformation("Publicando evento ItemCancelledEvent para item {ProductId} da venda ID {SaleId}", saleItem.ProductId, sale.Id);
+            await _rabbitMqPublisher.SendAsync(itemEvent);
 
             // Publicar evento de atualização da venda
             var saleUpdatedEvent = new SaleModifiedEvent(updatedSale);
-            _logger.LogInformation("📢 Publicando evento SaleUpdatedEvent para venda ID {SaleId}", sale.Id);
-            await _rabbitMqPublisher.PublishAsync(saleUpdatedEvent);
+            _logger.LogInformation("Publicando evento SaleUpdatedEvent para venda ID {SaleId}", sale.Id);
+            await _rabbitMqPublisher.SendAsync(saleUpdatedEvent);
 
             // Mapear para o resultado esperado e retornar
             _logger.LogInformation("Finalizando cancelamento do item {ProductId} na venda {SaleId}", request.ProductId, request.SaleId);

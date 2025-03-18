@@ -8,6 +8,7 @@ using MediatR;
 using Rebus.Bus;
 using Microsoft.Extensions.Logging;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
+using Ambev.DeveloperEvaluation.Application.Common.Messaging;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.Checkout;
 
@@ -18,20 +19,20 @@ public class CheckoutHandler : IRequestHandler<CheckoutCommand, CheckoutResult>
 {
     private readonly ICartRepository _cartRepository;
     private readonly ISaleRepository _saleRepository;
-    //private readonly IBus _bus;
+    private readonly RabbitMqPublisher _rabbitMqPublisher;
     private readonly IMapper _mapper;
     private readonly ILogger<CheckoutHandler> _logger;
 
     public CheckoutHandler(
         ICartRepository cartRepository, 
-        ISaleRepository saleRepository, 
-        //IBus bus, 
+        ISaleRepository saleRepository,
+        RabbitMqPublisher rabbitMqPublisher, 
         IMapper mapper, 
         ILogger<CheckoutHandler> logger)
     {
         _cartRepository = cartRepository;
         _saleRepository = saleRepository;
-       // _bus = bus;
+        _rabbitMqPublisher = rabbitMqPublisher;
         _mapper = mapper;
         _logger = logger;
     }
@@ -86,10 +87,10 @@ public class CheckoutHandler : IRequestHandler<CheckoutCommand, CheckoutResult>
         await _cartRepository.UpdateAsync(cart, cancellationToken);
         _logger.LogInformation("Carrinho {CartId} atualizado para CheckedOut.", request.CartId);
 
-        //// 🔹 8️⃣ Publicar o evento de venda criada
-        //var saleEvent = new SaleCreatedEvent(createdSale);
-        //_logger.LogInformation("📢 Publicando evento SaleCreatedEvent para venda ID {SaleId}", createdSale.Id);
-        //await _bus.Publish(saleEvent);
+        // 🔹 8️⃣ Publicar o evento de venda criada
+        var saleEvent = new SaleCreatedEvent(createdSale);
+        _logger.LogInformation("Publicando evento SaleCreatedEvent para venda ID {SaleId}", createdSale.Id);
+        await _rabbitMqPublisher.SendAsync(saleEvent);
 
         // 🔹 9️⃣ Retornar o resultado
         _logger.LogInformation("Checkout finalizado com sucesso para o carrinho {CartId}.", request.CartId);
