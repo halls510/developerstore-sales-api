@@ -88,8 +88,8 @@ public static class TestDataGenerator
     {
         return valid ? new
         {
-            Email = "carlos@example.com",
-            Password = "Secure@123"
+            Email = "halls510@hotmail.com",
+            Password = "A#g7jfdsd#$%#"
         } : new
         {
             Email = "invalid@example.com",
