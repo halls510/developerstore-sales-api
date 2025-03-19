@@ -16,14 +16,14 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureServices(services =>
         {
-            Console.WriteLine("🔹 Configurando WebApplicationFactory para testes...");
+            Console.WriteLine("Configurando WebApplicationFactory para testes...");
 
             // Remover configuração do banco de dados real
             var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<DefaultContext>));
             if (descriptor != null)
             {
                 services.Remove(descriptor);
-                Console.WriteLine("✅ Configuração de banco de dados removida.");
+                Console.WriteLine("Configuração de banco de dados removida.");
             }
 
             // Configurar banco de dados em memória para testes
@@ -37,9 +37,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             var db = scope.ServiceProvider.GetRequiredService<DefaultContext>();
             db.Database.EnsureCreated();
 
-            Console.WriteLine("✅ Banco de dados de testes inicializado.");
+            Console.WriteLine("Banco de dados de testes inicializado.");
         });
 
-        Console.WriteLine("✅ API de Teste inicializada com sucesso!");
+        Console.WriteLine("API de Teste inicializada com sucesso!");
     }
 }

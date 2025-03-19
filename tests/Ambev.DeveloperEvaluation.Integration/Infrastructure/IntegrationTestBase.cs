@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using Xunit;
 using Ambev.DeveloperEvaluation.Common.Security;
+using Ambev.DeveloperEvaluation.WebApi.Common;
 
 namespace Ambev.DeveloperEvaluation.Integration.Infrastructure;
 
@@ -51,17 +52,30 @@ public abstract class IntegrationTestBase : IClassFixture<CustomWebApplicationFa
             if (adminUser == null)
             {
                 var passwordHasher = new BCryptPasswordHasher(); // Instancia o BCrypt
-                var hashedPassword = passwordHasher.HashPassword("Admin@123"); // Gera a senha hash
+                var hashedPassword = passwordHasher.HashPassword("A#g7jfdsd#$%#"); // Gera a senha hash
 
                 context.Users.Add(new User
                 {
-                    Firstname = "Admin",
-                    Lastname = "User",
+                    Username = "admin",
+                    Firstname = "Usuário",
+                    Lastname = "Admin",
                     Email = "admin@example.com",
-                    Password = hashedPassword, // 🔹 Agora a senha está armazenada corretamente
+                    Password = hashedPassword,
                     Phone = "+5511999999999",
                     Role = UserRole.Admin,
-                    Status = UserStatus.Active
+                    Status = UserStatus.Active,
+                    Address = new Address
+                    {
+                        City = "Belo Horizonte",
+                        Street = "Avenida do Contorno",
+                        Number = 1000,
+                        Zipcode = "30110-936", 
+                        Geolocation = new Geolocation
+                        {
+                            Lat = -19.9245, 
+                            Long = -43.9352 
+                        }
+                    }
                 });
 
                 context.SaveChanges();
@@ -74,7 +88,7 @@ public abstract class IntegrationTestBase : IClassFixture<CustomWebApplicationFa
     /// <summary>
     /// Obtém um token de autenticação JWT para testes.
     /// </summary>
-    protected async Task<string> GetAuthToken(string email = "admin@example.com", string password = "Admin@123")
+    protected async Task<string> GetAuthToken(string email = "admin@example.com", string password = "A#g7jfdsd#$%#")
     {
         var credentials = new
         {
