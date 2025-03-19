@@ -21,6 +21,9 @@ public static class SwaggerServiceExtensions
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             c.IncludeXmlComments(xmlPath);
 
+            // Configuração para permitir upload de arquivos no Swagger
+            c.OperationFilter<FileUploadOperationFilter>();
+
             // Configuração para autenticação JWT no Swagger
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {

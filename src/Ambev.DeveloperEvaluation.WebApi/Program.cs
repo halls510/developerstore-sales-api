@@ -12,10 +12,9 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Ambev.DeveloperEvaluation.WebApi.Services;
 using Ambev.DeveloperEvaluation.Application.Common.Messaging;
-using Rebus.Config;
-using System.Web;
-using Ambev.DeveloperEvaluation.Domain.Events;
-using Rebus.Routing.TypeBased;
+using Ambev.DeveloperEvaluation.Application.Uploads;
+using Ambev.DeveloperEvaluation.Domain.Services;
+using Ambev.DeveloperEvaluation.ORM.Services;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
 
@@ -75,6 +74,13 @@ public class Program
 
             // Registra o Publisher no container de DI
             builder.Services.AddTransient<RabbitMqPublisher>();
+
+
+            // Adiciona UploadImageHandler
+            builder.Services.AddScoped<UploadImageHandler>();
+
+            // Adiciona MinioFileStorageService implementando IFileStorageService
+            builder.Services.AddScoped<IFileStorageService, MinioFileStorageService>();
 
             var app = builder.Build();
 
