@@ -40,7 +40,7 @@ public class DbInitializerService : BackgroundService
 
         using var scope = _serviceProvider.CreateScope();
         var services = scope.ServiceProvider;
-        var context = services.GetRequiredService<DefaultContext>();    
+        var context = services.GetRequiredService<DefaultContext>();
         var mediator = services.GetRequiredService<IMediator>();
         var mapper = services.GetRequiredService<IMapper>();
         var configuration = services.GetRequiredService<IConfiguration>();
@@ -56,7 +56,7 @@ public class DbInitializerService : BackgroundService
             }
 
             _logger.LogInformation("Aplicando migrações pendentes no banco de dados...");
-            await context.Database.MigrateAsync(stoppingToken);            
+            await context.Database.MigrateAsync(stoppingToken);
             _logger.LogInformation("Migrações aplicadas com sucesso.");
         }
         catch (Exception ex)
@@ -66,7 +66,7 @@ public class DbInitializerService : BackgroundService
         }
 
         await InitializeUsers(mediator, mapper, userService, configuration, stoppingToken);
-        await InitializeProducts(mediator, mapper,productService, stoppingToken);
+        await InitializeProducts(mediator, mapper, productService, stoppingToken);
     }
 
     private async Task InitializeUsers(
@@ -143,39 +143,90 @@ public class DbInitializerService : BackgroundService
 
         var products = new List<CreateProductRequest>
     {
-        new CreateProductRequest
-        {
-            Title = "Cerveja Puro Malte",
-            Description = "Cerveja puro malte premium, 600ml.",
-            Price = 9.99M,
-            Category = "Bebidas",
-            Image = "https://example.com/cerveja.jpg",
-            Rating = new RatingRequest { Rate = 4.5, Count = 120 }
-        },
-        new CreateProductRequest
-        {
-            Title = "Whisky 12 anos",
-            Description = "Whisky envelhecido 12 anos, garrafa de 750ml.",
-            Price = 149.99M,
-            Category = "Bebidas",
-            Image = "https://example.com/whisky.jpg",
-            Rating = new RatingRequest { Rate = 4.8, Count = 95 }
-        },
-        new CreateProductRequest
-        {
-            Title = "Vinho Tinto Seco",
-            Description = "Vinho tinto seco de alta qualidade, 750ml.",
-            Price = 59.99M,
-            Category = "Bebidas",
-            Image = "https://example.com/vinho.jpg",
-            Rating = new RatingRequest { Rate = 4.7, Count = 150 }
-        },
-        new CreateProductRequest
+
+            // Cervejas
+            new CreateProductRequest
+            {
+                Title = "Cerveja Puro Malte",
+                Description = "Cerveja puro malte premium, 600ml.",
+                Price = 9.99M,
+                Category = "Cervejas",
+                Image = "https://example.com/cerveja.jpg",
+                Rating = new RatingRequest { Rate = 4.5, Count = 120 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Cerveja IPA Artesanal",
+                Description = "Cerveja IPA de alta fermentação, amargor intenso, 500ml.",
+                Price = 14.99M,
+                Category = "Cervejas",
+                Image = "https://example.com/ipa.jpg",
+                Rating = new RatingRequest { Rate = 4.7, Count = 95 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Cerveja Lager Premium",
+                Description = "Cerveja lager leve e refrescante, 600ml.",
+                Price = 8.99M,
+                Category = "Cervejas",
+                Image = "https://example.com/lager.jpg",
+                Rating = new RatingRequest { Rate = 4.6, Count = 130 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Cerveja Weiss Alemã",
+                Description = "Cerveja de trigo com notas frutadas, 500ml.",
+                Price = 12.99M,
+                Category = "Cervejas",
+                Image = "https://example.com/weiss.jpg",
+                Rating = new RatingRequest { Rate = 4.8, Count = 110 }
+            },
+
+            // Vinhos
+            new CreateProductRequest
+            {
+                Title = "Vinho Tinto Seco",
+                Description = "Vinho tinto seco de alta qualidade, 750ml.",
+                Price = 59.99M,
+                Category = "Vinhos",
+                Image = "https://example.com/vinho.jpg",
+                Rating = new RatingRequest { Rate = 4.7, Count = 150 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Vinho Branco Chardonnay",
+                Description = "Vinho branco suave e aromático, 750ml.",
+                Price = 49.99M,
+                Category = "Vinhos",
+                Image = "https://example.com/vinho-branco.jpg",
+                Rating = new RatingRequest { Rate = 4.6, Count = 100 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Espumante Brut",
+                Description = "Espumante fino, ideal para celebrações, 750ml.",
+                Price = 79.99M,
+                Category = "Vinhos",
+                Image = "https://example.com/espumante.jpg",
+                Rating = new RatingRequest { Rate = 4.8, Count = 120 }
+            },
+
+            // Destilados
+            new CreateProductRequest
+            {
+                Title = "Whisky 12 anos",
+                Description = "Whisky envelhecido 12 anos, garrafa de 750ml.",
+                Price = 149.99M,
+                Category = "Destilados",
+                Image = "https://example.com/whisky.jpg",
+                Rating = new RatingRequest { Rate = 4.8, Count = 95 }
+            },
+            new CreateProductRequest
             {
                 Title = "Vodka Premium",
                 Description = "Vodka premium destilada cinco vezes, 1L.",
                 Price = 79.99M,
-                Category = "Bebidas",
+                Category = "Destilados",
                 Image = "https://example.com/vodka.jpg",
                 Rating = new RatingRequest { Rate = 4.6, Count = 85 }
             },
@@ -184,7 +235,7 @@ public class DbInitializerService : BackgroundService
                 Title = "Rum Añejo",
                 Description = "Rum envelhecido por 8 anos, garrafa de 750ml.",
                 Price = 89.99M,
-                Category = "Bebidas",
+                Category = "Destilados",
                 Image = "https://example.com/rum.jpg",
                 Rating = new RatingRequest { Rate = 4.4, Count = 60 }
             },
@@ -193,11 +244,87 @@ public class DbInitializerService : BackgroundService
                 Title = "Gin Artesanal",
                 Description = "Gin artesanal premium com ervas selecionadas, 700ml.",
                 Price = 99.99M,
-                Category = "Bebidas",
+                Category = "Destilados",
                 Image = "https://example.com/gin.jpg",
                 Rating = new RatingRequest { Rate = 4.9, Count = 110 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Tequila Reposado",
+                Description = "Tequila envelhecida 6 meses em barris de carvalho, 750ml.",
+                Price = 119.99M,
+                Category = "Destilados",
+                Image = "https://example.com/tequila.jpg",
+                Rating = new RatingRequest { Rate = 4.7, Count = 75 }
+            },
+
+            // Bebidas não alcoólicas
+            new CreateProductRequest
+            {
+                Title = "Água Mineral com Gás",
+                Description = "Água mineral pura e refrescante, 500ml.",
+                Price = 2.99M,
+                Category = "Bebidas Não Alcoólicas",
+                Image = "https://example.com/agua.jpg",
+                Rating = new RatingRequest { Rate = 4.5, Count = 200 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Refrigerante Cola",
+                Description = "Refrigerante sabor cola, lata de 350ml.",
+                Price = 4.99M,
+                Category = "Bebidas Não Alcoólicas",
+                Image = "https://example.com/refrigerante.jpg",
+                Rating = new RatingRequest { Rate = 4.6, Count = 300 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Energético PowerBoost",
+                Description = "Energético com cafeína natural, 250ml.",
+                Price = 8.99M,
+                Category = "Bebidas Não Alcoólicas",
+                Image = "https://example.com/energetico.jpg",
+                Rating = new RatingRequest { Rate = 4.8, Count = 220 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Chá Gelado de Pêssego",
+                Description = "Chá gelado natural sabor pêssego, 500ml.",
+                Price = 5.99M,
+                Category = "Bebidas Não Alcoólicas",
+                Image = "https://example.com/cha-pessego.jpg",
+                Rating = new RatingRequest { Rate = 4.7, Count = 180 }
+            },
+
+            // Acessórios
+            new CreateProductRequest
+            {
+                Title = "Kit de Taças para Vinho",
+                Description = "Conjunto com 6 taças de cristal para vinho.",
+                Price = 89.99M,
+                Category = "Acessórios",
+                Image = "https://example.com/tacas.jpg",
+                Rating = new RatingRequest { Rate = 4.9, Count = 130 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Cooler Térmico 24L",
+                Description = "Cooler térmico ideal para manter suas bebidas geladas.",
+                Price = 149.99M,
+                Category = "Acessórios",
+                Image = "https://example.com/cooler.jpg",
+                Rating = new RatingRequest { Rate = 4.8, Count = 90 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Abridor de Garrafas Profissional",
+                Description = "Abridor de garrafas com alavanca para facilidade.",
+                Price = 24.99M,
+                Category = "Acessórios",
+                Image = "https://example.com/abridor.jpg",
+                Rating = new RatingRequest { Rate = 4.7, Count = 110 }
             }
-    };
+        };
 
         foreach (var request in products)
         {
