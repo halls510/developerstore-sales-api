@@ -17,12 +17,12 @@ namespace Ambev.DeveloperEvaluation.Application.Sales.CancelItem
         private readonly ISaleRepository _saleRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<CancelItemHandler> _logger;
-        private readonly RabbitMqPublisher _rabbitMqPublisher;
+        private readonly IRabbitMqPublisher _rabbitMqPublisher;
 
         public CancelItemHandler(
             ISaleRepository saleRepository,
             IMapper mapper,
-            RabbitMqPublisher rabbitMqPublisher,
+            IRabbitMqPublisher rabbitMqPublisher,
             ILogger<CancelItemHandler> logger           
             )
         {

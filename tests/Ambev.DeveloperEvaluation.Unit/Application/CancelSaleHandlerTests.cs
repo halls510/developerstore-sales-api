@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Common;
+using Ambev.DeveloperEvaluation.Application.Common.Messaging;
 using Ambev.DeveloperEvaluation.Application.Sales.CancelSale;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
@@ -19,7 +20,7 @@ public class CancelSaleHandlerTests
     private readonly ISaleRepository _saleRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<CancelSaleHandler> _logger;
-    private readonly IBus _bus;
+    private readonly IRabbitMqPublisher _rabbitMqPublisher;
     private readonly CancelSaleHandler _handler;
 
     public CancelSaleHandlerTests()
@@ -27,10 +28,10 @@ public class CancelSaleHandlerTests
         _saleRepository = Substitute.For<ISaleRepository>();
         _mapper = Substitute.For<IMapper>();
         _logger = Substitute.For<ILogger<CancelSaleHandler>>();
-        //_bus = Substitute.For<IBus>();
+        _rabbitMqPublisher = Substitute.For<IRabbitMqPublisher>();
         _handler = new CancelSaleHandler(_saleRepository,
             _mapper,
-            //  _bus,
+            _rabbitMqPublisher,
             _logger
             );
     }

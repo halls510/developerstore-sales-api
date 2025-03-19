@@ -6,7 +6,9 @@ namespace Ambev.DeveloperEvaluation.Application.Carts.Checkout;
 public class CheckoutProfile : Profile
 {
     public CheckoutProfile()
-    {      
-        CreateMap<Sale, CheckoutResult>();
+    {
+        CreateMap<Sale, CheckoutResult>()
+           .ForMember(dest => dest.SaleId, opt => opt.MapFrom(src => src.Id))
+           .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
     }
 }

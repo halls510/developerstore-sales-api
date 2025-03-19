@@ -5,13 +5,11 @@ using Rebus.Activation;
 using Rebus.Bus;
 using Rebus.Config;
 using Rebus.Routing.TypeBased;
-using System;
-using System.Threading.Tasks;
 using System.Web;
 
 namespace Ambev.DeveloperEvaluation.Application.Common.Messaging
 {
-    public class RabbitMqPublisher : IDisposable
+    public class RabbitMqPublisher : IRabbitMqPublisher, IDisposable
     {
         private readonly IBus _bus;
         private readonly ILogger<RabbitMqPublisher> _logger;
@@ -46,7 +44,7 @@ namespace Ambev.DeveloperEvaluation.Application.Common.Messaging
                         .Map<ItemCancelledEvent>("queue-sale-item-cancelled")
                         .Map<SaleModifiedEvent>("queue-sale-updated")
                         .Map<TestEvent>("queue-test"))
-                    
+
                     .Start();
             }
             catch (Exception ex)

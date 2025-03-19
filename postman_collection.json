@@ -1,1140 +1,1250 @@
 {
-  "info": {
-    "_postman_id": "076a2500-8e88-46fe-afea-ea29d7c7c281",
-    "name": "API Functional Tests",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "33884383"
-  },
-  "item": [
-    {
-      "name": "Auth",
-      "item": [
-        {
-          "name": "Login",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"email\":\"{{email}}\", \"password\":\"{{password}}\"}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseUrl}}/auth",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Login - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Login - Response contains a token\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data).to.have.property(\"token\");",
-                  "    pm.expect(jsonData.data.token).to.be.a(\"string\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Users",
-      "item": [
-        {
-          "name": "Users - Get All Users",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/users",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "users"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Get Users - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Get Users - Response is an array\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"data\");",
-                  "    pm.expect(jsonData.data).to.be.an(\"array\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Users - Create User",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{ \"email\":\"test@example.com\", \"username\":\"testuser\", \"password\":\"Password123!\", \"role\":\"Customer\" }"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/users",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "users"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Create User - Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "",
-                  "pm.test(\"Create User - Response contains user data\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"id\");",
-                  "    pm.expect(jsonData).to.have.property(\"email\");",
-                  "    pm.expect(jsonData.email).to.be.a(\"string\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Users - Get User by ID",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/users/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "users",
-                "1"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Get User by ID - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Get User by ID - Response contains user details\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"id\");",
-                  "    pm.expect(jsonData).to.have.property(\"email\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Users - Update User",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{ \"email\":\"updated@example.com\", \"username\":\"updateduser\", \"role\":\"Manager\" }"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/users/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "users",
-                "1"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Update User - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Update User - Response contains updated data\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"email\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Users - Delete User",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/users/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "users",
-                "1"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Delete User - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Delete User - Response confirms deletion\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"message\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Products",
-      "item": [
-        {
-          "name": "Products - Get All Products",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/products",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Get Products - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Get Products - Response contains product list\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"data\");",
-                  "    pm.expect(jsonData.data).to.be.an(\"array\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Products - Get Product by ID",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/products/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products",
-                "1"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Get Product by ID - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Get Product by ID - Response contains product details\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"id\");",
-                  "    pm.expect(jsonData).to.have.property(\"title\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Products - Create Product",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{ \"title\":\"Product Name\", \"price\":99.99, \"description\":\"Product Description\", \"category\":\"Category\", \"image\":\"http://example.com/image.jpg\" }"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/products",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Create Product - Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "",
-                  "pm.test(\"Create Product - Response contains product data\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.data).to.have.property(\"id\");",
-                  "    pm.expect(jsonData.data).to.have.property(\"title\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Products - Update Product",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{ \"title\":\"Updated Product\", \"price\":79.99, \"description\":\"Updated Description\", \"category\":\"Updated Category\", \"image\":\"http://example.com/newimage.jpg\" }"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/products/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products",
-                "1"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Update Product - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Update Product - Response contains updated data\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"title\");",
-                  "    pm.expect(jsonData.title).to.be.a(\"string\");",
-                  "    pm.expect(jsonData).to.have.property(\"price\");",
-                  "    pm.expect(jsonData.price).to.be.a(\"number\");",
-                  "    pm.expect(jsonData).to.have.property(\"description\");",
-                  "    pm.expect(jsonData.description).to.be.a(\"string\");",
-                  "    pm.expect(jsonData).to.have.property(\"category\");",
-                  "    pm.expect(jsonData.category).to.be.a(\"string\");",
-                  "    pm.expect(jsonData).to.have.property(\"image\");",
-                  "    pm.expect(jsonData.image).to.be.a(\"string\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Products - Delete Product",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/products/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products",
-                "1"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Delete Product - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Delete Product - Response confirms deletion\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"message\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Products - Get Categories",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/products/categories",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "products",
-                "categories"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Get Product Categories - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Get Product Categories - Response is an array\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.be.an(\"array\");",
-                  "    pm.expect(jsonData.length).to.be.greaterThan(0);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Carts",
-      "item": [
-        {
-          "name": "Carts - Get All Carts",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/carts",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "carts"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Get Carts - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Get Carts - Response contains cart list\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"data\");",
-                  "    pm.expect(jsonData.data).to.be.an(\"array\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Carts - Get Cart by ID",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/carts/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "carts",
-                "1"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Get Cart by ID - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Get Cart by ID - Response contains cart details\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"id\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Carts - Create Cart",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{ \"userId\": 1, \"date\": \"2025-02-10\", \"products\": [{ \"productId\": 1, \"quantity\": 2 }] }"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/carts",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "carts"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Create Cart - Status code is 201\", function () {",
-                  "    pm.response.to.have.status(201);",
-                  "});",
-                  "",
-                  "pm.test(\"Create Cart - Response contains cart data\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"id\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Carts - Update Cart",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{ \"userId\": 1, \"date\": \"2025-02-12\", \"products\": [{ \"productId\": 1, \"quantity\": 3 }] }"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/carts/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "carts",
-                "1"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Update Cart - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Update Cart - Response contains updated data\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"id\");",
-                  "    pm.expect(jsonData).to.have.property(\"userId\");",
-                  "    pm.expect(jsonData).to.have.property(\"date\");",
-                  "    pm.expect(jsonData).to.have.property(\"products\");",
-                  "    pm.expect(jsonData.products).to.be.an(\"array\");",
-                  "    pm.expect(jsonData.products.length).to.be.greaterThan(0);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Carts - Delete Cart",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/carts/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "carts",
-                "1"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Delete Cart - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Delete Cart - Response confirms deletion\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"message\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Carts - Checkout Cart",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/carts/1/checkout",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "carts",
-                "1",
-                "checkout"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Checkout Cart - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Checkout Cart - Response confirms checkout success\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"message\");",
-                  "    pm.expect(jsonData.message).to.be.a(\"string\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "Sales",
-      "item": [
-        {
-          "name": "Sales - Get All Sales",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/sales",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "sales"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Get Sales - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Get Sales - Response contains sales list\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"data\");",
-                  "    pm.expect(jsonData.data).to.be.an(\"array\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Sales - Get Sale by ID",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/sales/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "sales",
-                "1"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Get Sale by ID - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Get Sale by ID - Response contains sale details\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"id\");",
-                  "    pm.expect(jsonData).to.have.property(\"customerId\");",
-                  "    pm.expect(jsonData).to.have.property(\"items\");",
-                  "    pm.expect(jsonData.items).to.be.an(\"array\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Sales - Update Sale",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\"customerId\":1, \"items\":[{\"productId\":1, \"quantity\":2}]}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/sales/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "sales",
-                "1"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Update Sale - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Update Sale - Response contains updated data\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"customerId\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Sales - Cancel Sale",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/sales/1/cancel",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "sales",
-                "1",
-                "cancel"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Cancel Sale - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Cancel Sale - Response confirms cancellation\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"message\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Sales - Cancel Sale Item",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/sales/1/items/1/cancel",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "sales",
-                "1",
-                "items",
-                "1",
-                "cancel"
-              ]
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"Cancel Sale Item - Status code is 200\", function () {",
-                  "    pm.response.to.have.status(200);",
-                  "});",
-                  "",
-                  "pm.test(\"Cancel Sale Item - Response confirms item cancellation\", function () {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property(\"message\");",
-                  "});"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "exec": [
-          "if (!pm.variables.get(\"token\") || pm.variables.get(\"token_expiration\") < Date.now()) {",
-          "    pm.sendRequest({",
-          "        url: pm.variables.get(\"baseUrl\") + \"/auth\",",
-          "        method: \"POST\",",
-          "        header: { \"Content-Type\": \"application/json\" },",
-          "        body: {",
-          "            mode: \"raw\",",
-          "            raw: JSON.stringify({",
-          "                email: pm.variables.get(\"email\"),",
-          "                password: pm.variables.get(\"password\")",
-          "            })",
-          "        }",
-          "    }, function (err, res) {",
-          "        if (!err && res.code === 200) {",
-          "            var jsonData = res.json();",
-          "            pm.collectionVariables.set(\"token\", jsonData.token);",
-          "            var tokenPayload = JSON.parse(atob(jsonData.token.split(\".\")[1]));",
-          "            pm.collectionVariables.set(\"token_expiration\", tokenPayload.exp * 1000);",
-          "        }",
-          "    });",
-          "}"
-        ]
-      }
-    },
-    {
-      "listen": "test",
-      "script": {
-        "type": "text/javascript",
-        "packages": {},
-        "exec": [
-          ""
-        ]
-      }
-    }
-  ],
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "https://localhost:8081/api",
-      "type": "string"
-    },
-    {
-      "key": "email",
-      "value": "admin@example.com",
-      "type": "string"
-    },
-    {
-      "key": "password",
-      "value": "A#g7jfdsd#$%#",
-      "type": "string"
-    },
-    {
-      "key": "token",
-      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwidW5pcXVlX25hbWUiOiJhZG1pbiIsInJvbGUiOiJBZG1pbiIsIm5iZiI6MTc0MjA3NTA3NCwiZXhwIjoxNzQyMTAzODc0LCJpYXQiOjE3NDIwNzUwNzR9.8UZLGAEsDAp-th57VSHjNK4zp4m535UajGcoy8Z2qcE",
-      "type": "string"
-    },
-    {
-      "key": "token_expiration",
-      "value": "",
-      "type": "string"
-    }
-  ]
+	"info": {
+		"_postman_id": "46e1d409-9357-4fe7-8434-e020b82c3cf3",
+		"name": "API Functional Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33884383"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Login - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Login - Response contains a token\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property(\"token\");",
+									"    pm.expect(jsonData.data.token).to.be.a(\"string\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"    pm.sendRequest({\r",
+									"        url: pm.variables.get(\"baseUrl\") + \"/auth\",\r",
+									"        method: \"POST\",\r",
+									"        header: { \"Content-Type\": \"application/json\" },\r",
+									"        body: {\r",
+									"            mode: \"raw\",\r",
+									"            raw: JSON.stringify({\r",
+									"                email: pm.variables.get(\"email\"),\r",
+									"                password: pm.variables.get(\"password\")\r",
+									"            })\r",
+									"        }\r",
+									"    }, function (err, res) {\r",
+									"        if (!err && res.code === 200) {\r",
+									"            var jsonData = res.json();\r",
+									"            console.log('passou aqui',jsonData)\r",
+									"            pm.collectionVariables.set(\"token\", jsonData.data.token);\r",
+									"            var tokenPayload = JSON.parse(atob(jsonData.token.split(\".\")[1]));\r",
+									"            pm.collectionVariables.set(\"token_expiration\", tokenPayload.exp * 1000);\r",
+									"        }\r",
+									"    });\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"email\":\"{{email}}\", \"password\":\"{{password}}\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Users - Get All Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Get Users - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get Users - Response is an array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"data\");",
+									"    pm.expect(jsonData.data).to.be.an(\"array\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Users - Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Create User - Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Create User - Response contains user data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.collectionVariables.set(\"id_user\", jsonData.data.id);",
+									"    pm.expect(jsonData).to.have.property(\"data\");    ",
+									"    pm.expect(jsonData.data).to.have.property(\"id\");",
+									"    pm.expect(jsonData.data).to.have.property(\"email\");",
+									"    pm.expect(jsonData.data.email).to.be.a(\"string\");",
+									"});",
+									"",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var countUser = pm.variables.get(\"count_user\");\r",
+									"var countCurrent = countUser + 1;\r",
+									"pm.collectionVariables.set(\"count_user\", countCurrent);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": {\r\n    \"firstname\": \"Mariana\",\r\n    \"lastname\": \"Souza\"\r\n  },\r\n  \"username\": \"marianasouza\",\r\n  \"password\": \"StrongPass@456\",\r\n  \"email\": \"mariana{{count_user}}@example.com\",\r\n  \"phone\": \"+5511987654321\",\r\n  \"role\": \"Admin\",\r\n  \"status\": \"Active\",\r\n  \"address\": {\r\n    \"city\": \"Rio de Janeiro\",\r\n    \"street\": \"Rua das Laranjeiras\",\r\n    \"number\": 789,\r\n    \"zipcode\": \"22240-003\",\r\n    \"geolocation\": {\r\n      \"lat\": \"-22.926718\",\r\n      \"long\": \"-43.182365\"\r\n    }\r\n  }\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Users - Get User by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get User by ID - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get User by ID - Response contains user details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property(\"id\");",
+									"    pm.expect(jsonData.data).to.have.property(\"email\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{id_user}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{id_user}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Users - Update User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update User - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Update User - Response contains updated data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property(\"email\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": {\r\n    \"firstname\": \"Mariana\",\r\n    \"lastname\": \"Souza Dias\"\r\n  },\r\n  \"username\": \"marianasouza\",\r\n  \"password\": \"StrongPass@456\",\r\n  \"email\": \"mariana{{count_user}}@example.com\",\r\n  \"phone\": \"+5511987654321\",\r\n  \"role\": \"Admin\",\r\n  \"status\": \"Inactive\",\r\n  \"address\": {\r\n    \"city\": \"Rio de Janeiro\",\r\n    \"street\": \"Rua das Laranjeiras\",\r\n    \"number\": 789,\r\n    \"zipcode\": \"22240-003\",\r\n    \"geolocation\": {\r\n      \"lat\": \"-22.926718\",\r\n      \"long\": \"-43.182365\"\r\n    }\r\n  }\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/{{id_user}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{id_user}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Users - Delete User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Delete User - Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"Delete User - Response contains error details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData).to.have.property(\"type\", \"ResourceNotFound\");",
+									"    pm.expect(jsonData).to.have.property(\"error\", \"User not found\");",
+									"    pm.expect(jsonData).to.have.property(\"detail\");",
+									"    pm.expect(jsonData.detail).to.include(\"User with ID\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/300000000",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"300000000"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Products - Get All Products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Get Products - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get Products - Response contains product list\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"data\");",
+									"    pm.expect(jsonData.data).to.be.an(\"array\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Products - Create Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Create Product - Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Create Product - Response contains product data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"     pm.collectionVariables.set(\"id_product\", jsonData.data.id);",
+									"    pm.expect(jsonData.data).to.have.property(\"id\");",
+									"    pm.expect(jsonData.data).to.have.property(\"title\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"var countProduct = pm.variables.get(\"count_product\");\r",
+									"var countCurrent = countProduct + 1;\r",
+									"pm.collectionVariables.set(\"count_product\", countCurrent);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \"title\":\"Product Name {{count_product}}\", \"price\":99.99, \"description\":\"Product Description\", \"category\":\"Category\", \"image\":\"http://example.com/image.jpg\" }"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Products - Get Product by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Product by ID - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get Product by ID - Response contains product details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property(\"id\");",
+									"    pm.expect(jsonData.data).to.have.property(\"title\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/products/{{id_product}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								"{{id_product}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Products - Update Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update Product - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Update Product - Response contains updated data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property(\"title\");",
+									"    pm.expect(jsonData.data.title).to.be.a(\"string\");",
+									"    pm.expect(jsonData.data).to.have.property(\"price\");",
+									"    pm.expect(jsonData.data.price).to.be.a(\"number\");",
+									"    pm.expect(jsonData.data).to.have.property(\"description\");",
+									"    pm.expect(jsonData.data.description).to.be.a(\"string\");",
+									"    pm.expect(jsonData.data).to.have.property(\"category\");",
+									"    pm.expect(jsonData.data.category).to.be.a(\"string\");",
+									"    pm.expect(jsonData.data).to.have.property(\"image\");",
+									"    pm.expect(jsonData.data.image).to.be.a(\"string\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \"title\":\"Product Name {{count_product}}\", \"price\":99.99, \"description\":\"Update Description\", \"category\":\"Category\", \"image\":\"http://example.com/image.jpg\" }"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/products/{{id_product}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								"{{id_product}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Products - Delete Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Delete Product - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Delete Product - Response confirms deletion\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"message\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/products/{{id_product}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								"{{id_product}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Products - Get Categories",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Product Categories - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get Product Categories - Response is an array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.be.an(\"array\");",
+									"    pm.expect(jsonData.data.length).to.be.greaterThan(0);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/products/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"products",
+								"categories"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Carts",
+			"item": [
+				{
+					"name": "Carts - Get All Carts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Get Carts - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get Carts - Response contains cart list\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"data\");",
+									"    pm.expect(jsonData.data).to.be.an(\"array\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/carts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"carts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Carts - Create Cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Create Cart - Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Create Cart - Response contains cart data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"     pm.collectionVariables.set(\"id_cart\", jsonData.data.id);",
+									"    pm.expect(jsonData.data).to.have.property(\"id\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \"userId\": 1, \"date\": \"2025-02-10\", \"products\": [{ \"productId\": 1, \"quantity\": 2 },{\"productId\":2,\"quantity\":10}] }"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/carts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"carts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Carts - Get Cart by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Cart by ID - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get Cart by ID - Response contains cart details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property(\"id\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/carts/{{id_cart}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"carts",
+								"{{id_cart}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Carts - Update Cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update Cart - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Update Cart - Response contains updated data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property(\"id\");",
+									"    pm.expect(jsonData.data).to.have.property(\"userId\");",
+									"    pm.expect(jsonData.data).to.have.property(\"date\");",
+									"    pm.expect(jsonData.data).to.have.property(\"products\");",
+									"    pm.expect(jsonData.data.products).to.be.an(\"array\");",
+									"    pm.expect(jsonData.data.products.length).to.be.greaterThan(0);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \"userId\": 1, \"date\": \"2025-02-12\", \"products\": [{ \"productId\": 1, \"quantity\": 5 }] }"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/carts/{{id_cart}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"carts",
+								"{{id_cart}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Carts - Checkout Cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Checkout Cart - Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Checkout Cart - Response confirms checkout success\", function () {",
+									"    var jsonData = pm.response.json();",
+									"     pm.collectionVariables.set(\"id_sale\", jsonData.data.saleId);",
+									"    pm.expect(jsonData).to.have.property(\"message\");",
+									"    pm.expect(jsonData.message).to.be.a(\"string\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/carts/{{id_cart}}/checkout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"carts",
+								"{{id_cart}}",
+								"checkout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Carts - Delete Cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Delete Cart - Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"Delete Cart - Response contains error details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"",
+									"    pm.expect(jsonData).to.have.property(\"type\", \"ResourceNotFound\");",
+									"    pm.expect(jsonData).to.have.property(\"error\", \"Cart not found\");",
+									"    pm.expect(jsonData).to.have.property(\"detail\");",
+									"    pm.expect(jsonData.detail).to.include(\"Cart with ID\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/carts/20000000",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"carts",
+								"20000000"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sales",
+			"item": [
+				{
+					"name": "Sales - Get All Sales",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Get Sales - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get Sales - Response contains sales list\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"data\");",
+									"    pm.expect(jsonData.data).to.be.an(\"array\");",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/sales",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sales - Get Sale by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Get Sale by ID - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Get Sale by ID - Response contains sale details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property(\"saleId\");",
+									"    pm.expect(jsonData.data).to.have.property(\"customerId\");",
+									"    pm.expect(jsonData.data).to.have.property(\"items\");",
+									"    pm.expect(jsonData.data.items).to.be.an(\"array\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/sales/{{id_sale}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								"{{id_sale}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sales - Update Sale",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Update Sale - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Update Sale - Response contains updated data\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.data).to.have.property(\"customerId\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"customerId\":1, \"items\":[{\"productId\":1, \"quantity\":4}]}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/sales/{{id_sale}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								"{{id_sale}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sales - Cancel Sale Item",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Cancel Sale Item - Status code is 404\", function () {",
+									"    pm.response.to.have.status(404);",
+									"});",
+									"",
+									"pm.test(\"Cancel Sale Item - Response contains error details\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"type\", \"ResourceNotFound\");",
+									"    pm.expect(jsonData).to.have.property(\"error\", \"Item not found\");",
+									"    pm.expect(jsonData).to.have.property(\"detail\");",
+									"    pm.expect(jsonData.detail).to.include(\"Item does not\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/sales/{{id_sale}}/items/2/cancel",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								"{{id_sale}}",
+								"items",
+								"2",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sales - Cancel Sale",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Cancel Sale - Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Cancel Sale - Response confirms cancellation\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property(\"message\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/sales/{{id_sale}}/cancel",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sales",
+								"{{id_sale}}",
+								"cancel"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://localhost:8081/api",
+			"type": "string"
+		},
+		{
+			"key": "email",
+			"value": "admin@example.com",
+			"type": "string"
+		},
+		{
+			"key": "password",
+			"value": "A#g7jfdsd#$%#",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "token_expiration",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "id_user",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "count_user",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "id_product",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "count_product",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "id_cart",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "id_sale",
+			"value": "",
+			"type": "string",
+			"disabled": true
+		},
+		{
+			"key": "id_sale",
+			"value": ""
+		}
+	]
 }

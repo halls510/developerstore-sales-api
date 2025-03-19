@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts.Checkout;
+using Ambev.DeveloperEvaluation.Application.Common.Messaging;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
@@ -17,7 +18,7 @@ public class CheckoutHandlerTests
 {
     private readonly ICartRepository _cartRepository;
     private readonly ISaleRepository _saleRepository;
-    private readonly IBus _bus;
+    private readonly IRabbitMqPublisher _rabbitMqPublisher;
     private readonly IMapper _mapper;
     private readonly ILogger<CheckoutHandler> _logger;
     private readonly CheckoutHandler _handler;
@@ -26,12 +27,12 @@ public class CheckoutHandlerTests
     {
         _cartRepository = Substitute.For<ICartRepository>();
         _saleRepository = Substitute.For<ISaleRepository>();
-        //_bus = Substitute.For<IBus>();
+        _rabbitMqPublisher = Substitute.For<IRabbitMqPublisher>();
         _mapper = Substitute.For<IMapper>();
         _logger = Substitute.For<ILogger<CheckoutHandler>>();
         _handler = new CheckoutHandler(_cartRepository,
             _saleRepository,
-          //  _bus,
+            _rabbitMqPublisher,
             _mapper,
             _logger);
     }

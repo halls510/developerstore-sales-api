@@ -1,5 +1,6 @@
 ﻿using Ambev.DeveloperEvaluation.Functional.Infrastructure;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Http.Json;
 using Xunit;

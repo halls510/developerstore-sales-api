@@ -1,5 +1,6 @@
 ﻿using Ambev.DeveloperEvaluation.Functional.Infrastructure;
 using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Http.Json;
 using Xunit;
@@ -23,7 +24,7 @@ public class UserControllerTests : FunctionalTestBase
             Email = "ana@example.com",
             Password = "Ana@1234",
             Phone = "+5511988888888",
-            Role = "User",
+            Role = "Customer",
             Status = "Active"
         };
 
@@ -43,9 +44,13 @@ public class UserControllerTests : FunctionalTestBase
     {
         var updateRequest = new
         {
-            Firstname = "Updated Name",
-            Lastname = "Updated Lastname",
-            Phone = "+5511988888888"
+            Name = new { Firstname = "Ana", Lastname = "Lima" },
+            Username = "analima",
+            Email = "ana@example.com",
+            Password = "Ana@123454",
+            Phone = "+5511988888847",
+            Role = "Customer",
+            Status = "Active"
         };
 
         var response = await _client.PutAsJsonAsync("/api/users/1", updateRequest);

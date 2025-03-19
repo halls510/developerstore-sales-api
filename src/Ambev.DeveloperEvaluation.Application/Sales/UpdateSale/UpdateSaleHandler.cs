@@ -19,7 +19,7 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
     private readonly IUserRepository _userRepository;
     private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
-    private readonly RabbitMqPublisher _rabbitMqPublisher;
+    private readonly IRabbitMqPublisher _rabbitMqPublisher;
     private readonly ILogger<UpdateSaleHandler> _logger;
 
     public UpdateSaleHandler(
@@ -27,7 +27,7 @@ public class UpdateSaleHandler : IRequestHandler<UpdateSaleCommand, UpdateSaleRe
         IUserRepository userRepository,
         IProductRepository productRepository,
         IMapper mapper,
-        RabbitMqPublisher rabbitMqPublisher,
+        IRabbitMqPublisher rabbitMqPublisher,
         ILogger<UpdateSaleHandler> logger)
     {
         _saleRepository = saleRepository;

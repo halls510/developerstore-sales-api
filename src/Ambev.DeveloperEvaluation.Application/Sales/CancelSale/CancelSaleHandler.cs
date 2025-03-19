@@ -16,12 +16,12 @@ public class CancelSaleHandler : IRequestHandler<CancelSaleCommand, CancelSaleRe
     private readonly ISaleRepository _saleRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<CancelSaleHandler> _logger;
-    private readonly RabbitMqPublisher _rabbitMqPublisher;
+    private readonly IRabbitMqPublisher _rabbitMqPublisher;
 
     public CancelSaleHandler(
         ISaleRepository saleRepository,
         IMapper mapper,
-        RabbitMqPublisher rabbitMqPublisher,
+        IRabbitMqPublisher rabbitMqPublisher,
         ILogger<CancelSaleHandler> logger
         )
     {

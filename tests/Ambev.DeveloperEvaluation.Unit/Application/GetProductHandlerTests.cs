@@ -1,4 +1,5 @@
-﻿using Ambev.DeveloperEvaluation.Application.Products.GetProduct;
+﻿using Ambev.DeveloperEvaluation.Application.Common.Messaging;
+using Ambev.DeveloperEvaluation.Application.Products.GetProduct;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
@@ -17,13 +18,20 @@ public class GetProductHandlerTests
     private readonly IMapper _mapper;
     private readonly ILogger<GetProductHandler> _logger;
     private readonly GetProductHandler _handler;
+    private readonly IRabbitMqPublisher _rabbitMqPublisher;
 
     public GetProductHandlerTests()
     {
         _productRepository = Substitute.For<IProductRepository>();
         _mapper = Substitute.For<IMapper>();
         _logger = Substitute.For<ILogger<GetProductHandler>>();
-        _handler = new GetProductHandler(Substitute.For<IServiceProvider>(), _productRepository, _mapper, _logger);
+        _rabbitMqPublisher = Substitute.For<IRabbitMqPublisher>();
+        _handler = new GetProductHandler(
+            Substitute.For<IServiceProvider>(),
+            _productRepository,
+            _mapper,
+            _rabbitMqPublisher,
+            _logger);
     }
 
     [Fact]

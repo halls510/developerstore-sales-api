@@ -19,14 +19,14 @@ public class CheckoutHandler : IRequestHandler<CheckoutCommand, CheckoutResult>
 {
     private readonly ICartRepository _cartRepository;
     private readonly ISaleRepository _saleRepository;
-    private readonly RabbitMqPublisher _rabbitMqPublisher;
+    private readonly IRabbitMqPublisher _rabbitMqPublisher;
     private readonly IMapper _mapper;
     private readonly ILogger<CheckoutHandler> _logger;
 
     public CheckoutHandler(
         ICartRepository cartRepository, 
         ISaleRepository saleRepository,
-        RabbitMqPublisher rabbitMqPublisher, 
+        IRabbitMqPublisher rabbitMqPublisher, 
         IMapper mapper, 
         ILogger<CheckoutHandler> logger)
     {

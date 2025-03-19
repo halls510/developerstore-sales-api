@@ -4,6 +4,8 @@ using System.Net.Http.Headers;
 using System.Net;
 using System.Text;
 using Xunit;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Ambev.DeveloperEvaluation.Functional.Infrastructure;
 
@@ -15,10 +17,12 @@ public abstract class FunctionalTestBase : IClassFixture<CustomWebApplicationFac
     protected readonly HttpClient _client;
     private static string? _authToken;
     private static readonly object _lock = new(); // Evita problemas de concorrência
+    private readonly IConfiguration _configuration;
 
     public FunctionalTestBase(CustomWebApplicationFactory factory)
     {
         _client = factory.CreateClient();
+        _configuration = factory.Services.GetRequiredService<IConfiguration>(); // Obtém a configuração da fábrica
         Console.WriteLine($"🔹 Teste rodando na URL base: {_client.BaseAddress}");
         AuthenticateClientAsync().GetAwaiter().GetResult();
     }
@@ -26,16 +30,19 @@ public abstract class FunctionalTestBase : IClassFixture<CustomWebApplicationFac
     /// <summary>
     /// Obtém um token de autenticação JWT para os testes.
     /// </summary>
-    protected async Task<string> GetAuthToken(string email = "carlos@example.com", string password = "Secure@123")
+    protected async Task<string> GetAuthToken()
     {
+        string adminEmail = _configuration["AdminEmail"];
+        string adminPassword = _configuration["AdminPassword"];
+
         var credentials = new
         {
-            Email = email,
-            Password = password
+            Email = adminEmail,
+            Password = adminPassword
         };
 
         var content = new StringContent(JsonConvert.SerializeObject(credentials), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/auth/login", content);
+        var response = await _client.PostAsync("/auth", content); // 🚀 Corrigido para "/auth/login"
 
         if (!response.IsSuccessStatusCode)
         {

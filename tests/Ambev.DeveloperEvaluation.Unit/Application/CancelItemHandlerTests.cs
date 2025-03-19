@@ -1,14 +1,14 @@
-﻿using Ambev.DeveloperEvaluation.Application.Sales.CancelItem;
+﻿using Ambev.DeveloperEvaluation.Application.Common.Messaging;
+using Ambev.DeveloperEvaluation.Application.Sales.CancelItem;
 using Ambev.DeveloperEvaluation.Domain.Entities;
-using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Ambev.DeveloperEvaluation.Unit.Application.TestData;
 using AutoMapper;
+using Castle.Core.Configuration;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using Rebus.Bus;
 using Xunit;
 
 namespace Ambev.DeveloperEvaluation.Unit.Application;
@@ -18,7 +18,7 @@ public class CancelItemHandlerTests
     private readonly ISaleRepository _saleRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<CancelItemHandler> _logger;
-    private readonly IBus _bus;
+    private readonly IRabbitMqPublisher _rabbitMqPublisher;
     private readonly CancelItemHandler _handler;
 
     public CancelItemHandlerTests()
@@ -26,10 +26,10 @@ public class CancelItemHandlerTests
         _saleRepository = Substitute.For<ISaleRepository>();
         _mapper = Substitute.For<IMapper>();
         _logger = Substitute.For<ILogger<CancelItemHandler>>();
-        //_bus = Substitute.For<IBus>();
+        _rabbitMqPublisher = Substitute.For<IRabbitMqPublisher>();
         _handler = new CancelItemHandler(_saleRepository,
             _mapper,
-            //_bus,
+            _rabbitMqPublisher,
             _logger
             );
     }
@@ -76,7 +76,7 @@ public class CancelItemHandlerTests
         await act.Should().ThrowAsync<ResourceNotFoundException>().WithMessage("Sale does not exist.");
     }
 
-    [Fact(DisplayName = "Given already cancelled item When cancelling again Then throws BusinessRuleException")]    
+    [Fact(DisplayName = "Given already cancelled item When cancelling again Then throws BusinessRuleException")]
     public async Task Handle_AlreadyCancelledItem_ThrowsException()
     {
         // Arrange

@@ -1,10 +1,8 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.Application.Common;
 using Ambev.DeveloperEvaluation.Domain.Entities;
-using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
-using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 using Ambev.DeveloperEvaluation.Unit.Application.TestData;
 using AutoMapper;
 using FluentAssertions;
@@ -55,7 +53,7 @@ public class CreateCartHandlerTests
         };
 
         var mappedCartResult = new CreateCartResult
-        {        
+        {
             UserId = mappedCart.UserId,
             Products = mappedCart.Items.Select(item => new CartItemResult
             {

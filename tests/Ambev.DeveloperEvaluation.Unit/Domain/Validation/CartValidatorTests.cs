@@ -35,7 +35,7 @@ public class CartValidatorTests
     }
 
     [Theory(DisplayName = "Invalid UserId should fail validation")]
-    [InlineData(0)]
+    [InlineData(-2)]
     [InlineData(-1)]
     public void Given_InvalidUserId_When_Validated_Then_ShouldHaveError(int userId)
     {

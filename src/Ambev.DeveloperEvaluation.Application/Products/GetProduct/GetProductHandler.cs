@@ -18,13 +18,13 @@ public class GetProductHandler : IRequestHandler<GetProductCommand, GetProductRe
     private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<GetProductHandler> _logger;
-    private readonly RabbitMqPublisher _rabbitMqPublisher;
+    private readonly IRabbitMqPublisher _rabbitMqPublisher;
 
     public GetProductHandler(
         IServiceProvider serviceProvider,
         IProductRepository productRepository,
         IMapper mapper,
-        RabbitMqPublisher rabbitMqPublisher,
+        IRabbitMqPublisher rabbitMqPublisher,
         ILogger<GetProductHandler> logger)
     {        
         _productRepository = productRepository;
