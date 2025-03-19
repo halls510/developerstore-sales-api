@@ -12,10 +12,10 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Ambev.DeveloperEvaluation.WebApi.Services;
 using Ambev.DeveloperEvaluation.Application.Common.Messaging;
-using Rebus.Config;
-using System.Web;
-using Ambev.DeveloperEvaluation.Domain.Events;
-using Rebus.Routing.TypeBased;
+using Ambev.DeveloperEvaluation.Application.Uploads;
+using Ambev.DeveloperEvaluation.Domain.Services;
+using Ambev.DeveloperEvaluation.ORM.Services;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
 
@@ -30,13 +30,24 @@ public class Program
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             builder.AddDefaultLogging();
 
+            // Habilita suporte para uploads de arquivos grandes
+            builder.Services.Configure<FormOptions>(options =>
+            {
+                options.MultipartBodyLengthLimit = 104857600; // 100MB de limite
+            });
+
             // Adicionando User Secrets
             if (builder.Environment.IsDevelopment())
             {
                 builder.Configuration.AddUserSecrets<Program>();
             }
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                  .AddMvcOptions(options =>
+                  {
+                      options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+                  });
+
             builder.Services.AddEndpointsApiExplorer();
 
             builder.AddBasicHealthChecks();
@@ -74,7 +85,14 @@ public class Program
             builder.Services.AddHostedService<DbInitializerService>();
 
             // Registra o Publisher no container de DI
-            builder.Services.AddTransient<RabbitMqPublisher>();
+            builder.Services.AddTransient<IRabbitMqPublisher,RabbitMqPublisher>();
+
+
+            // Adiciona UploadImageHandler
+            builder.Services.AddScoped<UploadImageHandler>();
+
+            // Adiciona MinioFileStorageService implementando IFileStorageService
+            builder.Services.AddScoped<IFileStorageService, MinioFileStorageService>();
 
             var app = builder.Build();
 
