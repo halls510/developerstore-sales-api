@@ -22,9 +22,25 @@ public class UploadController : ControllerBase
         if (file == null || file.Length == 0)
             return BadRequest("Nenhuma imagem foi enviada.");
 
-        using var stream = file.OpenReadStream();
-        string fileUrl = await _uploadImageHandler.Handle(stream, file.FileName, file.ContentType);
+        try
+        {
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream); // Copia para um stream em memória
 
-        return Ok(new { imageUrl = fileUrl });
+            if (memoryStream.Length == 0)
+                return BadRequest("O arquivo está vazio após a cópia.");
+
+            memoryStream.Position = 0; // Garante que a leitura começará do início
+
+            string fileUrl = await _uploadImageHandler.Handle(memoryStream, file.FileName, file.ContentType);
+
+            return Ok(new { imageUrl = fileUrl });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "Erro ao processar o upload da imagem", details = ex.Message });
+        }
     }
 }
+
+
