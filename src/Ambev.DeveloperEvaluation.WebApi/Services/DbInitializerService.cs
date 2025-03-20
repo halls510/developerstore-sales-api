@@ -145,42 +145,62 @@ public class DbInitializerService : BackgroundService
     {
 
             // Cervejas
+           // Cervejas da Ambev
             new CreateProductRequest
             {
-                Title = "Cerveja Puro Malte",
-                Description = "Cerveja puro malte premium, 600ml.",
-                Price = 9.99M,
+                Title = "Skol Pilsen",
+                Description = "Cerveja Pilsen leve e refrescante, 600ml.",
+                Price = 7.99M,
                 Category = "Cervejas",
-                Image = "https://example.com/cerveja.jpg",
-                Rating = new RatingRequest { Rate = 4.5, Count = 120 }
+                Image = "https://minio-api.hallison.com.br/productsapisale/cerveja_skol_pilsen.png",
+                Rating = new RatingRequest { Rate = 4.3, Count = 200 }
             },
             new CreateProductRequest
             {
-                Title = "Cerveja IPA Artesanal",
-                Description = "Cerveja IPA de alta fermentação, amargor intenso, 500ml.",
-                Price = 14.99M,
-                Category = "Cervejas",
-                Image = "https://example.com/ipa.jpg",
-                Rating = new RatingRequest { Rate = 4.7, Count = 95 }
-            },
-            new CreateProductRequest
-            {
-                Title = "Cerveja Lager Premium",
-                Description = "Cerveja lager leve e refrescante, 600ml.",
+                Title = "Brahma Chopp",
+                Description = "Cerveja Brahma Chopp, tradicional e cremosa, 600ml.",
                 Price = 8.99M,
                 Category = "Cervejas",
-                Image = "https://example.com/lager.jpg",
-                Rating = new RatingRequest { Rate = 4.6, Count = 130 }
+                Image = "https://minio-api.hallison.com.br/productsapisale/cerveja_brahma_chopp.png",
+                Rating = new RatingRequest { Rate = 4.6, Count = 180 }
             },
             new CreateProductRequest
             {
-                Title = "Cerveja Weiss Alemã",
-                Description = "Cerveja de trigo com notas frutadas, 500ml.",
+                Title = "Antarctica Original",
+                Description = "Cerveja Antarctica Original, puro malte, 600ml.",
+                Price = 9.49M,
+                Category = "Cervejas",
+                Image = "https://minio-api.hallison.com.br/productsapisale/cerveja_antarctica_original.webp",
+                Rating = new RatingRequest { Rate = 4.7, Count = 160 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Bohemia Puro Malte",
+                Description = "Cerveja Bohemia puro malte, 600ml.",
+                Price = 10.99M,
+                Category = "Cervejas",
+                Image = "https://minio-api.hallison.com.br/productsapisale/cerveja_bohemia_puro_malte.webp",
+                Rating = new RatingRequest { Rate = 4.5, Count = 140 }
+            },
+            new CreateProductRequest
+            {
+                Title = "Stella Artois",
+                Description = "Cerveja premium belga, 600ml.",
                 Price = 12.99M,
                 Category = "Cervejas",
-                Image = "https://example.com/weiss.jpg",
-                Rating = new RatingRequest { Rate = 4.8, Count = 110 }
+                Image = "https://minio-api.hallison.com.br/productsapisale/cerveja_stella_artois.webp",
+                Rating = new RatingRequest { Rate = 4.8, Count = 170 }
             },
+            new CreateProductRequest
+            {
+                Title = "Budweiser",
+                Description = "Cerveja lager americana, 600ml.",
+                Price = 11.49M,
+                Category = "Cervejas",
+                Image = "https://minio-api.hallison.com.br/productsapisale/cerveja_budweiser.jpg",
+                Rating = new RatingRequest { Rate = 4.6, Count = 190 }
+            },
+
 
             // Vinhos
             new CreateProductRequest
