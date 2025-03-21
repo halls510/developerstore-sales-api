@@ -113,6 +113,8 @@ public class UserRepository : IUserRepository
                         .ThenInclude(a => a.Geolocation)
                         .AsQueryable();
 
+        filters = CleanFilters(filters);
+
         // Aplica filtros
         if (filters != null && filters.Any())
         {
@@ -194,6 +196,8 @@ public class UserRepository : IUserRepository
                         .ThenInclude(a => a.Geolocation)
                         .AsQueryable();
 
+        filters = CleanFilters(filters);
+
         // Aplica filtros
         if (filters != null && filters.Any())
         {
@@ -251,6 +255,17 @@ public class UserRepository : IUserRepository
         }
 
         return Expression.Lambda<Func<T, bool>>(body ?? Expression.Constant(true), param);
+    }
+
+    private Dictionary<string, string[]> CleanFilters(Dictionary<string, string[]>? filters)
+    {
+        if (filters == null) return new Dictionary<string, string[]>();
+
+        var cleanedFilters = filters
+            .Where(kvp => kvp.Key != "_page" && kvp.Key != "_size")
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+        return cleanedFilters;
     }
 
 }

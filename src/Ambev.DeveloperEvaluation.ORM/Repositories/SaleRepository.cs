@@ -109,6 +109,8 @@ public class SaleRepository : ISaleRepository
     {
         var query = _context.Sales.Include(p => p.Items).AsQueryable();
 
+        filters = CleanFilters(filters);
+
         // Aplica filtros
         if (filters != null && filters.Any())
         {
@@ -186,6 +188,8 @@ public class SaleRepository : ISaleRepository
     public async Task<int> CountSalesAsync(Dictionary<string, string[]>? filters, CancellationToken cancellationToken)
     {
         var query = _context.Sales.Include(p => p.Items).AsQueryable();
+
+        filters = CleanFilters(filters);
 
         // Aplica filtros
         if (filters != null && filters.Any())
@@ -316,5 +320,14 @@ public class SaleRepository : ISaleRepository
         return await _context.Sales
             .AnyAsync(s => s.Items.Any(i => i.ProductId == productId), cancellationToken);
     }
+    private Dictionary<string, string[]> CleanFilters(Dictionary<string, string[]>? filters)
+    {
+        if (filters == null) return new Dictionary<string, string[]>();
 
+        var cleanedFilters = filters
+            .Where(kvp => kvp.Key != "_page" && kvp.Key != "_size")
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+        return cleanedFilters;
+    }
 }

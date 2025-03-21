@@ -150,6 +150,8 @@ public class ProductRepository : IProductRepository
                         .Include(p => p.Category)
                         .AsQueryable();
 
+        filters = CleanFilters(filters);
+
         // Aplica filtros
         if (filters != null && filters.Any())
         {
@@ -236,6 +238,8 @@ public class ProductRepository : IProductRepository
         var query = _context.Products
                         .Include(p => p.Category)
                         .AsQueryable();
+
+        filters = CleanFilters(filters);
 
         // Aplica filtros
         if (filters != null && filters.Any())
@@ -338,4 +342,16 @@ public class ProductRepository : IProductRepository
 
         return Expression.Lambda<Func<T, bool>>(body ?? Expression.Constant(true), param);
     }
+
+    private Dictionary<string, string[]> CleanFilters(Dictionary<string, string[]>? filters)
+    {
+        if (filters == null) return new Dictionary<string, string[]>();
+
+        var cleanedFilters = filters
+            .Where(kvp => kvp.Key != "_page" && kvp.Key != "_size")
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+        return cleanedFilters;
+    }
+
 }

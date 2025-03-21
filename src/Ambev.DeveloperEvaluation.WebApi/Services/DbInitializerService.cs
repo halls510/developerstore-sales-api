@@ -209,7 +209,7 @@ public class DbInitializerService : BackgroundService
                 Description = "Vinho tinto seco de alta qualidade, 750ml.",
                 Price = 59.99M,
                 Category = "Vinhos",
-                Image = "https://example.com/vinho.jpg",
+                Image = "https://minio-api.hallison.com.br/productsapisale/vinho_tinto_seco.webp",
                 Rating = new RatingRequest { Rate = 4.7, Count = 150 }
             },
             new CreateProductRequest
@@ -218,7 +218,7 @@ public class DbInitializerService : BackgroundService
                 Description = "Vinho branco suave e aromático, 750ml.",
                 Price = 49.99M,
                 Category = "Vinhos",
-                Image = "https://example.com/vinho-branco.jpg",
+                Image = "https://minio-api.hallison.com.br/productsapisale/vinho_branco_chardonnay.webp",
                 Rating = new RatingRequest { Rate = 4.6, Count = 100 }
             },
             new CreateProductRequest
@@ -227,7 +227,7 @@ public class DbInitializerService : BackgroundService
                 Description = "Espumante fino, ideal para celebrações, 750ml.",
                 Price = 79.99M,
                 Category = "Vinhos",
-                Image = "https://example.com/espumante.jpg",
+                Image = "https://minio-api.hallison.com.br/productsapisale/espumante_brut.webp",
                 Rating = new RatingRequest { Rate = 4.8, Count = 120 }
             },
 
@@ -238,7 +238,7 @@ public class DbInitializerService : BackgroundService
                 Description = "Whisky envelhecido 12 anos, garrafa de 750ml.",
                 Price = 149.99M,
                 Category = "Destilados",
-                Image = "https://example.com/whisky.jpg",
+                Image = "https://minio-api.hallison.com.br/productsapisale/whisky_12_anos.jpg",
                 Rating = new RatingRequest { Rate = 4.8, Count = 95 }
             },
             new CreateProductRequest
@@ -247,7 +247,7 @@ public class DbInitializerService : BackgroundService
                 Description = "Vodka premium destilada cinco vezes, 1L.",
                 Price = 79.99M,
                 Category = "Destilados",
-                Image = "https://example.com/vodka.jpg",
+                Image = "https://minio-api.hallison.com.br/productsapisale/vodka_premium.webp",
                 Rating = new RatingRequest { Rate = 4.6, Count = 85 }
             },
             new CreateProductRequest
@@ -256,7 +256,7 @@ public class DbInitializerService : BackgroundService
                 Description = "Rum envelhecido por 8 anos, garrafa de 750ml.",
                 Price = 89.99M,
                 Category = "Destilados",
-                Image = "https://example.com/rum.jpg",
+                Image = "https://minio-api.hallison.com.br/productsapisale/rum.webp",
                 Rating = new RatingRequest { Rate = 4.4, Count = 60 }
             },
             new CreateProductRequest
@@ -265,7 +265,7 @@ public class DbInitializerService : BackgroundService
                 Description = "Gin artesanal premium com ervas selecionadas, 700ml.",
                 Price = 99.99M,
                 Category = "Destilados",
-                Image = "https://example.com/gin.jpg",
+                Image = "https://minio-api.hallison.com.br/productsapisale/gin_Artesanal.webp",
                 Rating = new RatingRequest { Rate = 4.9, Count = 110 }
             },
             new CreateProductRequest
@@ -274,7 +274,7 @@ public class DbInitializerService : BackgroundService
                 Description = "Tequila envelhecida 6 meses em barris de carvalho, 750ml.",
                 Price = 119.99M,
                 Category = "Destilados",
-                Image = "https://example.com/tequila.jpg",
+                Image = "https://minio-api.hallison.com.br/productsapisale/tequila_reposado.webp",
                 Rating = new RatingRequest { Rate = 4.7, Count = 75 }
             },
 
