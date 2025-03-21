@@ -1,39 +1,43 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Services;
+using AutoMapper;
+using FluentValidation;
 using MediatR;
-using System.IO;
-using System.Net.Mime;
+using Microsoft.Extensions.Logging;
 
 namespace Ambev.DeveloperEvaluation.Application.Uploads;
 
-public class UploadImageHandler : IRequestHandler<UploadImageCommand,string>
+public class UploadImageHandler : IRequestHandler<UploadImageCommand, UploadImageResult>
 {
     private readonly IFileStorageService _fileStorageService;
+    private readonly IMapper _mapper;
+    private readonly ILogger<UploadImageHandler> _logger;
 
-    public UploadImageHandler(IFileStorageService fileStorageService)
+    public UploadImageHandler(IFileStorageService fileStorageService,
+         IMapper mapper,
+        ILogger<UploadImageHandler> logger)
     {
         _fileStorageService = fileStorageService;
-    }
+        _mapper = mapper;
+        _logger = logger;
+    }   
 
-    //public async Task<string> Handle(Stream fileStream, string fileName, string contentType)
-    //{
-    //    return await _fileStorageService.UploadFileAsync(fileStream, fileName, contentType);
-    //}
-
-    public async Task<string> Handle(UploadImageCommand command, CancellationToken cancellationToken)
+    public async Task<UploadImageResult> Handle(UploadImageCommand command, CancellationToken cancellationToken)
     {
-       // var file = command.File;
-       // using var memoryStream = new MemoryStream();
-       // Console.WriteLine("Iniciando cópia do arquivo...");
-       // await file.CopyToAsync(memoryStream);
-       // Console.WriteLine($"Arquivo copiado com sucesso! Tamanho: {memoryStream.Length} bytes");
+        _logger.LogInformation("Processing upload: {Filename}", command.File.FileName);
 
+        var validator = new UploadImageCommandValidator();
+        var validationResult = await validator.ValidateAsync(command, cancellationToken);
 
-       //// if (memoryStream.Length == 0)
-            
+        if (!validationResult.IsValid)
+        {
+            _logger.LogWarning("Validation failed for upload: {Filename}", command.File.FileName);
+            throw new ValidationException(validationResult.Errors);
+        }
 
-       // memoryStream.Position = 0; // Garante que a leitura começará do início
+        _logger.LogInformation("Upload created successfully: {Filename}", command.File.FileName);
+       
+        var result = await _fileStorageService.UploadFileAsync(command.File);
 
-       // return await _fileStorageService.UploadFileAsync(memoryStream, file.FileName, file.ContentType);
-        return await _fileStorageService.UploadFileAsync(command.File);
+        return _mapper.Map<UploadImageResult>(result);
     }
 }

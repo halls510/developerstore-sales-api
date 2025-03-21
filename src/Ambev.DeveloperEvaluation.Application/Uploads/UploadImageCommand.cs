@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Ambev.DeveloperEvaluation.Application.Uploads;
 
-public class UploadImageCommand : IRequest<string>
+public class UploadImageCommand : IRequest<UploadImageResult>
 {
     public IFormFile File { get; set; }
 }

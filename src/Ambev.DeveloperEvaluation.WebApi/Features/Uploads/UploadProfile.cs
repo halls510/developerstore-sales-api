@@ -15,5 +15,8 @@ public class UploadProfile : Profile
         CreateMap<UploadRequest, UploadImageCommand>()            
             .ReverseMap();
 
+        CreateMap<UploadImageResult, UploadResponse>()        
+        .ForMember(dest => dest.Url, opt => opt.MapFrom(src => src.Url));
+
     }
 }

@@ -2,10 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Ambev.DeveloperEvaluation.WebApi.Common;
-using Ambev.DeveloperEvaluation.WebApi.Features.Products.GetProduct;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Uploads;
 
@@ -14,15 +11,8 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features.Uploads;
 [ApiController]
 public class UploadController : ControllerBase
 {
-   // private readonly UploadImageHandler _uploadImageHandler;
     private readonly IMediator _mediator;
     private readonly IMapper _mapper;
-
-    //public UploadController(UploadImageHandler uploadImageHandler)
-    //{
-    //    _uploadImageHandler = uploadImageHandler;
-    //}
-
 
     public UploadController(IMediator mediator, IMapper mapper)
     {
@@ -36,23 +26,25 @@ public class UploadController : ControllerBase
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UploadImage([FromForm] IFormFile file, CancellationToken cancellationToken = default)
     {
-        if (file == null || file.Length == 0)
-            return BadRequest("Nenhuma imagem foi enviada.");
-
         UploadRequest request = new UploadRequest
         {
             File = file
         };
 
+        var validator = new UploadRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
 
         var command = _mapper.Map<UploadImageCommand>(request);
         var response = await _mediator.Send(command, cancellationToken);
 
-        return Created(string.Empty, new ApiResponseWithData<string>
+        return Created(string.Empty, new ApiResponseWithData<UploadResponse>
         {
             Success = true,
             Message = "Upload created successfully",
-            Data = _mapper.Map<string>(response)
+            Data = _mapper.Map<UploadResponse>(response)
         });       
     }
 }
