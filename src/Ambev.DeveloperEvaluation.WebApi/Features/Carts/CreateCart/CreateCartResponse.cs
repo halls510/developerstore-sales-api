@@ -28,5 +28,10 @@ public class CreateCartResponse
      /// Gets or sets the list of items in the cart.
      /// </summary>
      public List<CartItemResponse> Products { get; set; } // Relacionamento 1:N com CartItem
-  
+
+    /// <summary>
+    /// Gets or sets the total price of the cart.
+    /// </summary>
+    public decimal TotalPrice { get; set; }
+
 }

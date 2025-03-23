@@ -1,0 +1,80 @@
+.cart-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+}
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+
+  th, td {
+    padding: 0.75rem;
+    text-align: center;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  th {
+    background: #f8f8f8;
+    font-weight: bold;
+  }
+
+  .quantity-input {
+    width: 60px;
+    padding: 0.25rem;
+    text-align: center;
+  }
+}
+
+.total-box {
+  text-align: right;
+  font-size: 1.1rem;
+  margin-top: 1rem;
+
+  .price {
+    font-weight: bold;
+    color: #2e7d32;
+    margin-left: 0.5rem;
+  }
+}
+
+.actions {
+  text-align: right;
+  margin-top: 1.5rem;
+
+  .checkout-button {
+    background: #1976d2;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: #1565c0;
+    }
+  }
+}
+
+.empty-message {
+  text-align: center;
+  color: #777;
+  margin-top: 2rem;
+}
+
+.status-box {
+  text-align: center;
+  padding: 2rem;
+  color: #555;
+
+  .error-msg {
+    color: #d32f2f;
+    font-weight: bold;
+  }
+}

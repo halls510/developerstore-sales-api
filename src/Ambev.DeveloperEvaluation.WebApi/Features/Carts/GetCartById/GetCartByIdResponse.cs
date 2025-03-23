@@ -1,5 +1,7 @@
-﻿using Ambev.DeveloperEvaluation.Domain.ValueObjects;
+﻿using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 using Ambev.DeveloperEvaluation.WebApi.Common;
+using System.Text.Json.Serialization;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCartById;
 
@@ -19,6 +21,13 @@ public class GetCartByIdResponse
     /// Gets or sets the creation date of the cart.
     /// </summary>
     public DateTime Date { get; set; }
+
+    /// <summary>
+    /// Gets or sets the status of the cart.
+    /// Indicates whether the cart is active, completed, or cancelled.
+    /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public CartStatus Status { get; set; }
 
     /// <summary>
     /// Gets or sets the list of items in the cart.

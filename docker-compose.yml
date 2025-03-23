@@ -30,6 +30,19 @@ services:
       ambev.developerevaluation.minio:
         condition: service_healthy
 
+  ambev.developerevaluation.frontend:
+    container_name: ambev_developer_evaluation_frontend
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+      args:
+        BUILD_CONFIGURATION: production
+    ports:
+      - "4200:80"
+    depends_on:
+      - ambev.developerevaluation.webapi
+    restart: unless-stopped
+
   ambev.developerevaluation.database:
     container_name: ambev_developer_evaluation_database
     image: postgres:13

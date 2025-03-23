@@ -36,12 +36,15 @@ public class Program
             {
                 options.AddPolicy("AllowAngularDev", policy =>
                 {
-                    policy.WithOrigins("http://localhost:4200") // ✅ frontend Angular com HTTP
-                          .AllowAnyHeader()
-                          .AllowAnyMethod();
-                          //.AllowCredentials(); // se estiver usando cookies/autenticação
+                    policy.WithOrigins(
+                        "http://localhost:4200", // acesso pelo host
+                        "http://ambev.developerevaluation.frontend" // acesso interno entre containers
+                    )
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
                 });
             });
+
 
             // Habilita suporte para uploads de arquivos grandes
             builder.Services.Configure<FormOptions>(options =>
@@ -126,8 +129,11 @@ public class Program
                     options.SwaggerEndpoint("/swagger/v1/swagger.json", "Sale API V1");
                 });
             }
+            else
+            {
 
-            app.UseHttpsRedirection();
+                app.UseHttpsRedirection();
+            }
 
             app.UseAuthentication();
             app.UseAuthorization();

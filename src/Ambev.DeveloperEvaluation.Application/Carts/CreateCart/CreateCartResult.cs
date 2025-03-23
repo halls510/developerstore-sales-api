@@ -1,5 +1,6 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Common;
 using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.Domain.ValueObjects;
 using System.Text.Json.Serialization;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
@@ -39,4 +40,9 @@ public class CreateCartResult
     /// </summary>
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public CartStatus Status { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total price of the cart.
+    /// </summary>
+    public Money TotalPrice { get; set; }
 }

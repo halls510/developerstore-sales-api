@@ -1,0 +1,95 @@
+<div class="products-management">
+    <h1>Gerenciamento de Produtos</h1>
+  
+    <!-- Ações e filtros -->
+    <div class="filters">
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar produto..." />
+      <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
+        <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+      </select>
+      <button (click)="onSearch()">Buscar</button>
+      <button (click)="openCreateModal()">➕ Novo Produto</button>
+    </div>
+  
+    <!-- Feedbacks -->
+    <div *ngIf="isLoading">🔄 Carregando produtos...</div>
+    <div *ngIf="errorMessage" class="error">❌ {{ errorMessage }}</div>
+  
+    <!-- Tabela de produtos -->
+    <table *ngIf="!isLoading && products.length">
+      <thead>
+        <tr>
+          <th (click)="sort('id')">ID</th>
+          <th (click)="sort('title')">Nome</th>
+          <th (click)="sort('price.amount')">Preço</th>
+          <th>Categoria</th>
+          <th>Imagem</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of products">
+          <td>{{ product.id }}</td>
+          <td>{{ product.title }}</td>
+          <td>R$ {{ product.price | number: '1.2-2' }}</td>
+          <td>{{ product.category }}</td>
+          <td>
+            <img *ngIf="product.image" [src]="product.image" alt="{{ product.title }}" width="50" />
+          </td>
+          <td>
+            <button (click)="editProduct(product)">✏️</button>
+            <button class="delete" (click)="deleteProduct(product.id)">🗑️</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <!-- Paginação -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">⬅️ Anterior</button>
+      <span>Página {{ currentPage }} de {{ totalPages }}</span>
+      <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">Próxima ➡️</button>
+    </div>
+  </div>
+  
+  <!-- Modal de criação/edição -->
+  <div class="modal" *ngIf="showModal">
+    <div class="modal-content">
+      <h2>{{ isEditing ? 'Editar Produto' : 'Novo Produto' }}</h2>
+  
+      <label>Nome:</label>
+      <input type="text" [(ngModel)]="newProduct.title" placeholder="Nome do Produto" />
+  
+      <label>Preço:</label>
+      <input type="number" [(ngModel)]="newProduct.price" placeholder="Preço" />
+
+      <label>Descrição:</label>
+      <textarea [(ngModel)]="newProduct.description" placeholder="Descrição do Produto"></textarea> 
+  
+      <label>Categoria:</label>
+      <select [(ngModel)]="newProduct.category" (change)="checkNewCategory()">
+        <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+        <option value="other">Outro...</option>
+      </select>
+  
+      <input *ngIf="isNewCategory" type="text" [(ngModel)]="newCategory" placeholder="Nova categoria" />
+  
+      <label>Imagem:</label>
+      <input type="file" (change)="handleImageUpload($event)" />
+      <div *ngIf="isUploading">🔄 Enviando imagem...</div>
+      <img *ngIf="imagePreview" [src]="imagePreview" alt="Preview" width="100" />
+
+      <!-- Erros de API -->
+      <div *ngIf="apiErrors.length" class="api-error">
+        <ul>
+          <li *ngFor="let err of apiErrors">❌ {{ err.error }}: {{ err.detail }}</li>
+        </ul>
+      </div>
+  
+      <!-- Ações do modal -->
+      <div class="modal-actions">
+        <button (click)="saveProduct()">💾 Salvar</button>
+        <button class="cancel" (click)="closeModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>

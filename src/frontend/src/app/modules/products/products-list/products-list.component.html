@@ -1,0 +1,48 @@
+<div class="container">
+  <h2 class="title">Produtos Disponíveis</h2>
+
+  <!-- Filtros -->
+  <div class="filters">
+    <!-- Busca por nome -->
+    <input
+      type="text"
+      placeholder="Buscar produto..."
+      [(ngModel)]="searchQuery"
+      (keyup.enter)="onSearch()" />
+
+    <!-- Categorias -->
+    <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
+      <option *ngFor="let category of categories" [value]="category">
+        {{ category }}
+      </option>
+    </select>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading">Carregando produtos...</div>
+
+  <!-- Erro -->
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+  <!-- Lista de produtos -->
+  <div class="products-grid" *ngIf="!isLoading && products.length > 0">
+    <div class="product-card" *ngFor="let product of products">
+      <img [src]="product.image || 'assets/default-product.jpg'" [alt]="product.title">
+      <h3>{{ product.title }}</h3>
+      <p class="price">R$ {{ product.price | number:'1.2-2' }}</p>
+      <button (click)="addToCart(product)">Adicionar ao Carrinho</button>
+    </div>
+  </div>
+
+  <!-- Nenhum produto -->
+  <div *ngIf="!isLoading && products.length === 0" class="no-results">
+    Nenhum produto encontrado.
+  </div>
+
+  <!-- Paginação -->
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">Anterior</button>
+    <span>Página {{ currentPage }} de {{ totalPages }}</span>
+    <button [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">Próxima</button>
+  </div>
+</div>
