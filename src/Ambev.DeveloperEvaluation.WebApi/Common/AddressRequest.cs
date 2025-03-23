@@ -42,10 +42,10 @@ public class GeoLocationRequest
     /// <summary>
     /// Gets or sets the latitude.
     /// </summary>
-    public string Lat { get; set; } = string.Empty;
+    public string Lat { get; set; } = "0";
 
     /// <summary>
     /// Gets or sets the longitude.
     /// </summary>
-    public string Long { get; set; } = string.Empty;
+    public string Long { get; set; } = "0";
 }

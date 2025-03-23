@@ -26,7 +26,7 @@ public class BaseController : ControllerBase
         base.NotFound(new ApiResponse { Message = message, Success = false });
 
     protected IActionResult OkPaginated<T>(PaginatedList<T> pagedList) =>
-            Ok(new PaginatedResponse<T>
+            base.Ok(new PaginatedResponse<T>
             {
                 Data = pagedList,
                 CurrentPage = pagedList.CurrentPage,
@@ -34,4 +34,5 @@ public class BaseController : ControllerBase
                 TotalCount = pagedList.TotalCount,
                 Success = true
             });
+
 }
