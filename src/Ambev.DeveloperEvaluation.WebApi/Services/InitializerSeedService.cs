@@ -11,38 +11,56 @@ using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Minio.DataModel.Args;
+using Minio;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Services;
 
-public class DbInitializerService : BackgroundService
-{
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<DbInitializerService> _logger;
-    private static bool _isInitialized = false;
-    private static readonly object _lock = new();
-    private readonly MinioSettings _minioSettings;
+public class InitializerSeedService : BackgroundService
+{   
 
-    public DbInitializerService(IServiceProvider serviceProvider, ILogger<DbInitializerService> logger, IOptions<MinioSettings> minioOptions)
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<InitializerSeedService> _logger;
+    private readonly MinioSettings _minioSettings;
+    private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _env;
+
+    public InitializerSeedService(
+        IServiceProvider serviceProvider,
+        ILogger<InitializerSeedService> logger,
+        IOptions<MinioSettings> minioOptions,
+        IConfiguration configuration,
+        IWebHostEnvironment env)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
         _minioSettings = minioOptions.Value;
+        _configuration = configuration;
+        _env = env;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        lock (_lock)
-        {
-            if (_isInitialized)
-            {
-                _logger.LogWarning("Inicialização do banco de dados já foi executada. Ignorando nova tentativa.");
-                return;
-            }
-            _isInitialized = true;
-        }
+        var enableDbSeed = _configuration.GetValue<bool>("Seed:EnableDatabase");
+        var enableMinioSeed = _configuration.GetValue<bool>("Seed:EnableMinio");
 
         using var scope = _serviceProvider.CreateScope();
         var services = scope.ServiceProvider;
+
+
+        if (enableMinioSeed)
+        {
+            await SeedMinioAsync(stoppingToken);
+        }
+
+        if (enableDbSeed)
+        {
+            await SeedDatabaseAsync(services, stoppingToken);
+        }        
+    }
+
+    private async Task SeedDatabaseAsync(IServiceProvider services, CancellationToken stoppingToken)
+    {
         var context = services.GetRequiredService<DefaultContext>();
         var mediator = services.GetRequiredService<IMediator>();
         var mapper = services.GetRequiredService<IMapper>();
@@ -52,15 +70,14 @@ public class DbInitializerService : BackgroundService
 
         try
         {
-            if (configuration["ASPNETCORE_ENVIRONMENT"] == "Development")
+            if (_env.IsDevelopment())
             {
-                _logger.LogInformation("Ambiente de desenvolvimento detectado. Recriando banco de dados...");
+                _logger.LogInformation("Ambiente de desenvolvimento: recriando banco de dados...");
                 await context.Database.EnsureDeletedAsync(stoppingToken);
             }
 
-            _logger.LogInformation("Aplicando migrações pendentes no banco de dados...");
+            _logger.LogInformation("Aplicando migrações...");
             await context.Database.MigrateAsync(stoppingToken);
-            _logger.LogInformation("Migrações aplicadas com sucesso.");
         }
         catch (Exception ex)
         {
@@ -70,6 +87,89 @@ public class DbInitializerService : BackgroundService
 
         await InitializeUsers(mediator, mapper, userService, configuration, stoppingToken);
         await InitializeProducts(mediator, mapper, productService, stoppingToken);
+    }
+
+    private async Task SeedMinioAsync(CancellationToken cancellationToken)
+    {
+        try
+        {       
+
+            var minio = new MinioClient()
+                .WithEndpoint(_minioSettings.ApiEndpoint)
+                .WithCredentials(_minioSettings.AccessKey, _minioSettings.SecretKey)
+                .WithRegion(_minioSettings.Region)
+                .WithSSL(_minioSettings.UseHttps)
+                .Build();
+
+            // 🔍 Verifica se a conexão ao MinIO está funcionando
+            try
+            {
+                var buckets = await minio.ListBucketsAsync(cancellationToken);
+                _logger.LogInformation("✅ Conectado ao MinIO com sucesso. Buckets existentes: {Count}", buckets.Buckets.Count);
+            }
+            catch (Exception connEx)
+            {
+                _logger.LogError(connEx, "❌ Falha ao conectar com o MinIO. Verifique URL, porta, credenciais ou se o serviço está online.");
+                return; // Para tudo se não conectar
+            }
+
+            var bucketName = _minioSettings.BucketName;
+            var exists = await minio.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucketName), cancellationToken);
+
+            if (!exists)
+            {
+                await minio.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucketName), cancellationToken);
+                _logger.LogInformation("Bucket '{Bucket}' criado no MinIO.", bucketName);
+
+                await minio.SetPolicyAsync(new SetPolicyArgs()
+                    .WithBucket(bucketName)
+                    .WithPolicy(@"{
+                    ""Version"":""2012-10-17"",
+                    ""Statement"":[
+                        {
+                            ""Effect"":""Allow"",
+                            ""Principal"":{""AWS"":[""*""]},
+                            ""Action"":[""s3:GetObject""],
+                            ""Resource"":[""arn:aws:s3:::" + bucketName + @"/*""]
+                        }
+                    ]
+                }"));
+                _logger.LogInformation("Política pública aplicada ao bucket '{Bucket}'.", bucketName);
+            }
+
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "Seeds", "Images");
+            if (!Directory.Exists(path))
+            {
+                _logger.LogWarning("Diretório de imagens não encontrado: {Path}", path);
+                return;
+            }
+
+            var files = Directory.GetFiles(path);
+            foreach (var file in files)
+            {
+                var fileName = Path.GetFileName(file);
+
+                var contentType = Path.GetExtension(file).ToLower() switch
+                {
+                    ".png" => "image/png",
+                    ".jpg" or ".jpeg" => "image/jpeg",
+                    ".webp" => "image/webp",
+                    _ => "application/octet-stream"
+                };
+
+                await minio.PutObjectAsync(new PutObjectArgs()
+                    .WithBucket(bucketName)
+                    .WithObject(fileName)
+                    .WithFileName(file)
+                    .WithContentType(contentType), cancellationToken);
+
+                _logger.LogInformation("Imagem '{File}' enviada para o Minio.", fileName);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao fazer seed das imagens no Minio.");
+        }
     }
 
     private async Task InitializeUsers(
@@ -192,7 +292,8 @@ public class DbInitializerService : BackgroundService
     {
         _logger.LogInformation("Verificando produtos padrão...");
 
-        var baseImageUrl = $"https://{_minioSettings.ApiEndpoint}/{_minioSettings.BucketName}";
+        var scheme = _minioSettings.UseHttps ? "https" : "http";
+        var baseImageUrl = $"{scheme}://{_minioSettings.PublicUrl}/{_minioSettings.BucketName}";
 
         var products = new List<CreateProductRequest>
     {

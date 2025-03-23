@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using Ambev.DeveloperEvaluation.Domain.Validation;
+using FluentValidation;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Products.UpdateProduct;
 
@@ -37,9 +38,7 @@ public class UpdateProductRequestValidator : AbstractValidator<UpdateProductRequ
             .NotEmpty()
             .MaximumLength(100);
 
-        RuleFor(product => product.Image)
-            .Matches(@"^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$")
-            .WithMessage("Invalid URL format for the product image.");
+        RuleFor(product => product.Image).SetValidator(new UrlValidator());
 
         RuleFor(product => product.Rating.Rate)
             .InclusiveBetween(0, 5);

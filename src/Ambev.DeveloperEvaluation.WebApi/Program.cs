@@ -94,8 +94,8 @@ public class Program
             // Criação das filas no RabbitMq
             RabbitMqSetup.EnsureRabbitMqQueuesExist(builder.Configuration);
 
-            // Configurar inicialização do banco de dados em segundo plano
-            builder.Services.AddHostedService<DbInitializerService>();
+            // Configurar inicialização do Banco de dados e Minio em segundo plano
+            builder.Services.AddHostedService<InitializerSeedService>();
 
             // Registra o Publisher no container de DI
             builder.Services.AddTransient<IRabbitMqPublisher,RabbitMqPublisher>();

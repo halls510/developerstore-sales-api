@@ -14,6 +14,8 @@ services:
       - RABBITMQ_HOST=ambev.developerevaluation.rabbitmq
       - RABBITMQ_USER=${RABBITMQ_USER:-developer}
       - RABBITMQ_PASS=${RABBITMQ_PASSWORD:-example_password}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minio}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minio123}
     ports:
       - "8080:8080"
       - "8081:8081"
@@ -25,6 +27,8 @@ services:
         condition: service_healthy 
       ambev.developerevaluation.rabbitmq:
         condition: service_healthy
+      ambev.developerevaluation.minio:
+        condition: service_healthy
 
   ambev.developerevaluation.database:
     container_name: ambev_developer_evaluation_database
@@ -34,20 +38,21 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-developer}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-example_password}
     ports:
-      - "5432"
+      - "5432:5432"
     restart: unless-stopped 
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-developer} -d ${POSTGRES_DB:-developer_evaluation}"]
       interval: 5s
       timeout: 3s
       retries: 20
+
   ambev.developerevaluation.rabbitmq:
     container_name: ambev_developer_evaluation_rabbitmq
     image: rabbitmq:3-management
     restart: always
     ports:
-      - "5672:5672"   # Porta de comunica��o do RabbitMQ (AMQP)
-      - "15672:15672" # Interface Web de administra��o
+      - "5672:5672"
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-developer}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-example_password}
@@ -57,12 +62,23 @@ services:
       timeout: 5s
       retries: 5
 
-  # ambev.developerevaluation.cache:
-  #   container_name: ambev_developer_evaluation_cache 
-  #   image: redis:7.4.1-alpine     
-  #   command: redis-server --requirepass ${REDIS_PASSWORD:-example_password}
-  #   environment:
-  #      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-developer}
-  #      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-example_password}
-  #   ports:
-  #      - "6379"
+  ambev.developerevaluation.minio:
+    container_name: ambev_developer_evaluation_minio
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minio123}
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  minio_data: 
