@@ -22,7 +22,7 @@ public class UploadController : ControllerBase
 
     [HttpPost]
     [Consumes("multipart/form-data")]
-    [ProducesResponseType(typeof(PaginatedList<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponseWithData<UploadResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UploadImage([FromForm] IFormFile file, CancellationToken cancellationToken = default)
     {

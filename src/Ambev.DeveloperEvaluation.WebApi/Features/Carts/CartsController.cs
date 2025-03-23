@@ -52,7 +52,7 @@ public class CartsController : BaseController
     /// <returns>List of carts</returns>
     [HttpGet]
     [Authorize(Roles = "Admin,Manager,Customer")] // Apenas usuários autenticados podem acessar carrinhos
-    [ProducesResponseType(typeof(PaginatedList<GetCartResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<GetCartResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ListCarts(
         [FromQuery] int? _page = null,

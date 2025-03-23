@@ -14,6 +14,7 @@ public class CreateUserProfile : Profile
     /// <summary>
     /// Initializes the mappings for CreateUser feature
     /// </summary>
+
     public CreateUserProfile()
     {
         CreateMap<CreateUserRequest, CreateUserCommand>()
@@ -25,7 +26,11 @@ public class CreateUserProfile : Profile
         CreateMap<AddressRequest, Address>()
             .ForMember(dest => dest.Geolocation, opt => opt.MapFrom(src => src.Geolocation));
 
-        CreateMap<GeoLocationRequest, Geolocation>();
+        CreateMap<GeoLocationRequest, Geolocation>()
+            .ForMember(dest => dest.Lat, opt => opt.MapFrom(src =>
+                string.IsNullOrWhiteSpace(src.Lat) ? 0 : Convert.ToDouble(src.Lat)))
+            .ForMember(dest => dest.Long, opt => opt.MapFrom(src =>
+                string.IsNullOrWhiteSpace(src.Long) ? 0 : Convert.ToDouble(src.Long)));
 
         CreateMap<NameResult, NameResponse>();
 
@@ -38,4 +43,5 @@ public class CreateUserProfile : Profile
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
             .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address));
     }
+
 }
