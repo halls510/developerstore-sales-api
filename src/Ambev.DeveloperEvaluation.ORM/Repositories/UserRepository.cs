@@ -190,7 +190,7 @@ public class UserRepository : IUserRepository
     /// Retrieves the total count of Users in the database.
     /// </summary>
     public async Task<int> CountUsersAsync(Dictionary<string, string[]>? filters, CancellationToken cancellationToken)
-    {        
+    {
         var query = _context.Users
                         .Include(p => p.Address)
                         .ThenInclude(a => a.Geolocation)
@@ -208,7 +208,7 @@ public class UserRepository : IUserRepository
         }
 
         return await query.CountAsync(cancellationToken);
-    }   
+    }
 
     private static Expression<Func<T, bool>> BuildPredicate<T>(string property, string[] values)
     {
@@ -218,51 +218,165 @@ public class UserRepository : IUserRepository
         bool isMax = property.StartsWith("_max");
         string propertyName = isMin || isMax ? property.Substring(4) : property;
 
+        // Converte o nome do filtro para minúsculas
+        propertyName = propertyName.ToLower();
+
+        // Substituir "products" por "items" no nome do filtro
+        propertyName = propertyName.Replace("products", "items");
+
         // Substitui "." por "_" para aceitar os dois formatos
         propertyName = propertyName.Replace(".", "_");
 
-        // Divide propriedades aninhadas (ex: "Address.City" ou "Address_City")
+        // Divide propriedades aninhadas (ex: "products_productid" ou "items.productid")
+        var properties = propertyName.Split('_');
+
         Expression prop = param;
-        foreach (var propPart in propertyName.Split('_')) // Substituímos "." por "_"
+        Type currentType = typeof(T);
+
+        for (int i = 0; i < properties.Length; i++)
         {
-            prop = Expression.PropertyOrField(prop, propPart);
+            string propPart = properties[i];
+
+            var propInfo = currentType.GetProperties()
+                .FirstOrDefault(p => string.Equals(p.Name, propPart, StringComparison.OrdinalIgnoreCase));
+
+            if (propInfo == null)
+            {
+                throw new InvalidOperationException($"Propriedade '{propPart}' não encontrada em {currentType.Name}");
+            }
+
+            if (propInfo.PropertyType.IsGenericType && propInfo.PropertyType.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                var elementType = propInfo.PropertyType.GetGenericArguments().First();
+                var collectionParam = Expression.Parameter(elementType, "i");
+
+                currentType = elementType;
+
+                if (i + 1 < properties.Length)
+                {
+                    string nestedProperty = properties[i + 1];
+
+                    var nestedPropInfo = currentType.GetProperties()
+                        .FirstOrDefault(p => string.Equals(p.Name, nestedProperty, StringComparison.OrdinalIgnoreCase));
+
+                    if (nestedPropInfo == null)
+                    {
+                        throw new InvalidOperationException($"Propriedade '{nestedProperty}' não encontrada em {currentType.Name}");
+                    }
+
+                    var collectionProp = Expression.Property(collectionParam, nestedPropInfo.Name);
+
+                    Expression? body = null;
+
+                    foreach (var val in values)
+                    {
+                        var trimmedValue = val.Trim('*');
+
+                        object convertedValue;
+
+                        if (prop.Type.IsEnum)
+                        {
+                            convertedValue = Enum.Parse(prop.Type, trimmedValue, ignoreCase: true);
+                        }
+                        else
+                        {
+                            convertedValue = Convert.ChangeType(trimmedValue, prop.Type);
+                        }
+                        var constant = Expression.Constant(convertedValue);
+                        Expression condition;
+
+                        if (collectionProp.Type == typeof(string))
+                        {
+                            var toLowerMethod = typeof(string).GetMethod("ToLower", Type.EmptyTypes);
+                            var propToLower = Expression.Call(collectionProp, toLowerMethod);
+                            var constantToLower = Expression.Call(constant, toLowerMethod);
+
+                            if (val.StartsWith("*") && val.EndsWith("*"))
+                                condition = Expression.Call(propToLower, "Contains", Type.EmptyTypes, constantToLower);
+                            else if (val.StartsWith("*"))
+                                condition = Expression.Call(propToLower, "EndsWith", Type.EmptyTypes, constantToLower);
+                            else if (val.EndsWith("*"))
+                                condition = Expression.Call(propToLower, "StartsWith", Type.EmptyTypes, constantToLower);
+                            else
+                                condition = Expression.Equal(propToLower, constantToLower);
+                        }
+                        else if (isMin)
+                            condition = Expression.GreaterThanOrEqual(collectionProp, constant);
+                        else if (isMax)
+                            condition = Expression.LessThanOrEqual(collectionProp, constant);
+                        else
+                            condition = Expression.Equal(collectionProp, constant);
+
+                        body = body == null ? condition : Expression.OrElse(body, condition);
+                    }
+
+                    var anyLambda = Expression.Lambda(body ?? Expression.Constant(true), collectionParam);
+                    return Expression.Lambda<Func<T, bool>>(
+                        Expression.Call(typeof(Enumerable), "Any", new Type[] { elementType }, Expression.Property(param, propInfo.Name), anyLambda),
+                        param
+                    );
+                }
+            }
+            else
+            {
+                // Propriedade direta (não é lista)
+                prop = Expression.Property(prop, propInfo.Name);
+                currentType = propInfo.PropertyType;
+            }
         }
 
-        Expression? body = null;
+        // === ADICIONADO: aplica o filtro para propriedades diretas ===
+        Expression? finalBody = null;
 
         foreach (var val in values)
         {
             var trimmedValue = val.Trim('*');
-            var convertedValue = Convert.ChangeType(trimmedValue, prop.Type);
-            var constant = Expression.Constant(convertedValue);
+            object convertedValue;
 
+            if (prop.Type.IsEnum)
+            {
+                convertedValue = Enum.Parse(prop.Type, trimmedValue, ignoreCase: true);
+            }
+            else
+            {
+                convertedValue = Convert.ChangeType(trimmedValue, prop.Type);
+            }
+            var constant = Expression.Constant(convertedValue);
             Expression condition;
-            if (val.StartsWith("*") && val.EndsWith("*")) // Contém
-                condition = Expression.Call(prop, "Contains", Type.EmptyTypes, constant);
-            else if (val.StartsWith("*")) // Termina com
-                condition = Expression.Call(prop, "EndsWith", Type.EmptyTypes, constant);
-            else if (val.EndsWith("*")) // Começa com
-                condition = Expression.Call(prop, "StartsWith", Type.EmptyTypes, constant);
-            else if (isMin) // Valor mínimo
+
+            if (prop.Type == typeof(string))
+            {
+                var toLowerMethod = typeof(string).GetMethod("ToLower", Type.EmptyTypes);
+                var propToLower = Expression.Call(prop, toLowerMethod);
+                var constantToLower = Expression.Call(constant, toLowerMethod);
+
+                if (val.StartsWith("*") && val.EndsWith("*"))
+                    condition = Expression.Call(propToLower, "Contains", Type.EmptyTypes, constantToLower);
+                else if (val.StartsWith("*"))
+                    condition = Expression.Call(propToLower, "EndsWith", Type.EmptyTypes, constantToLower);
+                else if (val.EndsWith("*"))
+                    condition = Expression.Call(propToLower, "StartsWith", Type.EmptyTypes, constantToLower);
+                else
+                    condition = Expression.Equal(propToLower, constantToLower);
+            }
+            else if (isMin)
                 condition = Expression.GreaterThanOrEqual(prop, constant);
-            else if (isMax) // Valor máximo
+            else if (isMax)
                 condition = Expression.LessThanOrEqual(prop, constant);
-            else // Igualdade normal
+            else
                 condition = Expression.Equal(prop, constant);
 
-            // Se houver múltiplos valores no mesmo campo, aplicar OR entre eles
-            body = body == null ? condition : Expression.OrElse(body, condition);
+            finalBody = finalBody == null ? condition : Expression.OrElse(finalBody, condition);
         }
 
-        return Expression.Lambda<Func<T, bool>>(body ?? Expression.Constant(true), param);
+        return Expression.Lambda<Func<T, bool>>(finalBody ?? Expression.Constant(true), param);
     }
-
     private Dictionary<string, string[]> CleanFilters(Dictionary<string, string[]>? filters)
     {
         if (filters == null) return new Dictionary<string, string[]>();
 
         var cleanedFilters = filters
-            .Where(kvp => kvp.Key != "_page" && kvp.Key != "_size")
+            .Where(kvp => kvp.Key != "_page" && kvp.Key != "_size" && kvp.Key != "_order")
             .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
         return cleanedFilters;
