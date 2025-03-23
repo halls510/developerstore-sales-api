@@ -14,16 +14,18 @@ public class MinioFileStorageService : IFileStorageService
     private readonly IMinioClient _minioClient;
     private readonly string _bucketName;
     private readonly string _apiEndpoint;
+    private readonly bool _useHttps;
 
     public MinioFileStorageService(ILogger<MinioFileStorageService> logger, IConfiguration configuration)
     {
         _logger = logger;
 
-        _apiEndpoint = configuration["Minio:ApiEndpoint"] ?? throw new ArgumentNullException("ApiEndpoint não configurado.");
-        _bucketName = configuration["Minio:BucketName"] ?? throw new ArgumentNullException("BucketName não configurado.");
-        string accessKey = configuration["Minio:AccessKey"] ?? throw new ArgumentNullException("AccessKey não configurado.");
-        string secretKey = configuration["Minio:SecretKey"] ?? throw new ArgumentNullException("SecretKey não configurado.");
-        string region = configuration["Minio:Region"] ?? "us-east-1";
+        _useHttps = bool.TryParse(configuration["MinioSettings:UseHttps"], out var result) && result;
+        _apiEndpoint = configuration["MinioSettings:ApiEndpoint"] ?? throw new ArgumentNullException("ApiEndpoint não configurado.");
+        _bucketName = configuration["MinioSettings:BucketName"] ?? throw new ArgumentNullException("BucketName não configurado.");
+        string accessKey = configuration["MinioSettings:AccessKey"] ?? throw new ArgumentNullException("AccessKey não configurado.");
+        string secretKey = configuration["MinioSettings:SecretKey"] ?? throw new ArgumentNullException("SecretKey não configurado.");
+        string region = configuration["MinioSettings:Region"] ?? "us-east-1";
 
         _minioClient = new MinioClient()
             .WithEndpoint(_apiEndpoint)
@@ -51,7 +53,9 @@ public class MinioFileStorageService : IFileStorageService
 
             await _minioClient.PutObjectAsync(putObjectArgs);
 
-            string url = $"{_apiEndpoint}/{_bucketName}/{objectName}";
+            string protocol = _useHttps ? "https" : "http";
+            string url = $"{protocol}://{_apiEndpoint}/{_bucketName}/{objectName}";
+
             return url;
         }
         catch (MinioException minioEx)
