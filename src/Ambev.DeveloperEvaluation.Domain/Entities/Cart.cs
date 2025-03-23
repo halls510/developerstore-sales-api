@@ -26,7 +26,7 @@ public class Cart : BaseEntity
     /// <summary>
     /// Gets or sets the creation date of the cart.
     /// </summary>
-    public DateTime Date { get; set; } = DateTime.UtcNow;
+    public DateTime Date { get; set; }
 
     /// <summary>
     /// Gets or sets the list of items in the cart.
@@ -44,6 +44,13 @@ public class Cart : BaseEntity
     /// </summary>
     public Money TotalPrice { get; set; }
 
+    public Cart()
+    {
+        Date = DateTime.UtcNow;
+        Status = CartStatus.Active;
+        Items = new List<CartItem>();
+    }
+
     /// <summary>
     /// Marks the cart as checked out, preventing further modifications.
     /// </summary>
@@ -57,6 +64,8 @@ public class Cart : BaseEntity
 
         Status = CartStatus.CheckedOut;
     }
+
+    
 
     public ValidationResultDetail Validate()
     {

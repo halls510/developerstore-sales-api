@@ -1,4 +1,5 @@
-﻿using Ambev.DeveloperEvaluation.WebApi.Common;
+﻿using Ambev.DeveloperEvaluation.Domain.ValueObjects;
+using Ambev.DeveloperEvaluation.WebApi.Common;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Carts.GetCartById;
 
@@ -23,4 +24,9 @@ public class GetCartByIdResponse
     /// Gets or sets the list of items in the cart.
     /// </summary>
     public List<CartItemResponse> Products { get; set; } // Relacionamento 1:N com CartItem
+
+    /// <summary>
+    /// Gets or sets the total price of the cart.
+    /// </summary>
+    public decimal TotalPrice { get; set; }
 }
