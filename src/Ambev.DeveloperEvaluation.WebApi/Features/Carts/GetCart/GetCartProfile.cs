@@ -21,11 +21,15 @@ public class GetCartProfile : Profile
 
         // Mapeia GetCartResult para GetCartResponse (para retorno da API)
         CreateMap<GetCartResult, GetCartResponse>()
-            .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Products));
+            .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Products))
+            .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice.Amount));
 
         // Mapeia CartItemResult para CartItemResponse (para retorno da API)
         CreateMap<CartItemResult, CartItemResponse>()
             .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductId))
+            .ForMember(dest => dest.Discount, opt => opt.MapFrom(src => src.Discount.Amount))
+            .ForMember(dest => dest.UnitPrice, opt => opt.MapFrom(src => src.UnitPrice.Amount))
+            .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.Total.Amount))
             .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity));
 
     }

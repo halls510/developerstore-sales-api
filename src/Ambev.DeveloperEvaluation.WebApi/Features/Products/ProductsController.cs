@@ -54,7 +54,7 @@ public class ProductsController : BaseController
     /// <returns>List of products</returns>
     [HttpGet]
     [AllowAnonymous] // Qualquer pessoa pode visualizar produtos
-    [ProducesResponseType(typeof(PaginatedList<GetProductResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<GetProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ListProducts(
         [FromQuery] int? _page = null,
@@ -208,7 +208,7 @@ public class ProductsController : BaseController
     /// <returns>List of categories</returns>
     [HttpGet("categories")]
     [AllowAnonymous] // Qualquer pessoa pode visualizar categorias
-    [ProducesResponseType(typeof(PaginatedList<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<string>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ListCategories(
         [FromQuery] int _page = 1,
@@ -256,7 +256,7 @@ public class ProductsController : BaseController
     /// </returns>
     [HttpGet("category/{category}")]
     [AllowAnonymous] // Qualquer pessoa pode visualizar produtos ´por categoria
-    [ProducesResponseType(typeof(PaginatedList<GetProductResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<GetProductResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetProductsByCategory(
         [FromRoute] string category,

@@ -178,4 +178,15 @@ public class CategoryRepository : ICategoryRepository
     {
         return await _context.Categories.CountAsync(cancellationToken);
     }
+
+    private Dictionary<string, string[]> CleanFilters(Dictionary<string, string[]>? filters)
+    {
+        if (filters == null) return new Dictionary<string, string[]>();
+
+        var cleanedFilters = filters
+            .Where(kvp => kvp.Key != "_page" && kvp.Key != "_size" && kvp.Key != "_order")
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+        return cleanedFilters;
+    }
 }

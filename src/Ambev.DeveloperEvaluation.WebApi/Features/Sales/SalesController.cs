@@ -50,7 +50,7 @@ public class SalesController : BaseController
     /// <returns>List of sales</returns>
     [HttpGet]
     [Authorize(Roles = "Admin,Manager,Customer")]
-    [ProducesResponseType(typeof(PaginatedList<GetSaleResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<GetSaleResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ListSales(
         [FromQuery] int? _page = null,
@@ -92,8 +92,7 @@ public class SalesController : BaseController
             response.CurrentPage,
             response.PageSize
         );
-
-        return Ok(paginatedList);
+        return OkPaginated(paginatedList);
     }
 
     /// <summary>

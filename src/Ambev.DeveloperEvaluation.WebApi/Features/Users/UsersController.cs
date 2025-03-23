@@ -52,7 +52,7 @@ public class UsersController : BaseController
     /// <returns>List of users</returns>
     [HttpGet]
     [Authorize(Roles = "Admin,Manager")] // Apenas Admins e Managers podem listar usuários
-    [ProducesResponseType(typeof(PaginatedList<GetUserResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(PaginatedResponse<GetUserResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ListUsers(
         [FromQuery] int? _page = null,

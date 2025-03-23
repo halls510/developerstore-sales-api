@@ -1,5 +1,8 @@
 ﻿using Ambev.DeveloperEvaluation.Application.Uploads;
 using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
+using MediatR;
+using Ambev.DeveloperEvaluation.WebApi.Common;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Features.Uploads;
 
@@ -8,38 +11,41 @@ namespace Ambev.DeveloperEvaluation.WebApi.Features.Uploads;
 [ApiController]
 public class UploadController : ControllerBase
 {
-    private readonly UploadImageHandler _uploadImageHandler;
+    private readonly IMediator _mediator;
+    private readonly IMapper _mapper;
 
-    public UploadController(UploadImageHandler uploadImageHandler)
+    public UploadController(IMediator mediator, IMapper mapper)
     {
-        _uploadImageHandler = uploadImageHandler;
+        _mediator = mediator;
+        _mapper = mapper;
     }
 
     [HttpPost]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> UploadImage([FromForm] IFormFile file)
+    [ProducesResponseType(typeof(ApiResponseWithData<UploadResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UploadImage([FromForm] IFormFile file, CancellationToken cancellationToken = default)
     {
-        if (file == null || file.Length == 0)
-            return BadRequest("Nenhuma imagem foi enviada.");
-
-        try
+        UploadRequest request = new UploadRequest
         {
-            using var memoryStream = new MemoryStream();
-            await file.CopyToAsync(memoryStream); // Copia para um stream em memória
+            File = file
+        };
 
-            if (memoryStream.Length == 0)
-                return BadRequest("O arquivo está vazio após a cópia.");
+        var validator = new UploadRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
-            memoryStream.Position = 0; // Garante que a leitura começará do início
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
 
-            string fileUrl = await _uploadImageHandler.Handle(memoryStream, file.FileName, file.ContentType);
+        var command = _mapper.Map<UploadImageCommand>(request);
+        var response = await _mediator.Send(command, cancellationToken);
 
-            return Ok(new { imageUrl = fileUrl });
-        }
-        catch (Exception ex)
+        return Created(string.Empty, new ApiResponseWithData<UploadResponse>
         {
-            return StatusCode(500, new { error = "Erro ao processar o upload da imagem", details = ex.Message });
-        }
+            Success = true,
+            Message = "Upload created successfully",
+            Data = _mapper.Map<UploadResponse>(response)
+        });       
     }
 }
 

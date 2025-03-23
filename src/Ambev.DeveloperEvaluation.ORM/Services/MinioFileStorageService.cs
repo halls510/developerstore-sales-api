@@ -1,301 +1,100 @@
-﻿using System.Globalization;
-using System.Net.Http.Headers;
-using System.Security.Cryptography;
-using System.Text;
-using Ambev.DeveloperEvaluation.Domain.Services;
+﻿using Ambev.DeveloperEvaluation.Domain.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Minio;
+using Minio.DataModel.Args;
+using Minio.Exceptions;
 
 namespace Ambev.DeveloperEvaluation.ORM.Services;
 
 public class MinioFileStorageService : IFileStorageService
 {
     private readonly ILogger<MinioFileStorageService> _logger;
-    private const string BucketName = "teste11";
-    private const string ApiEndpoint = "https://minio-api.hallison.com.br";
-    private const string AccessKey = "admin";
-    private const string SecretKey = "admin123";
-    private const string Region = "us-east-1";
-    private const string ServiceName = "s3";
+    private readonly IMinioClient _minioClient;
+    private readonly string _bucketName;
+    private readonly string _apiEndpoint;
+    private readonly bool _useHttps;
 
-    public MinioFileStorageService(ILogger<MinioFileStorageService> logger)
+    public MinioFileStorageService(ILogger<MinioFileStorageService> logger, IConfiguration configuration)
     {
         _logger = logger;
+
+        _useHttps = bool.TryParse(configuration["MinioSettings:UseHttps"], out var result) && result;
+        _apiEndpoint = configuration["MinioSettings:ApiEndpoint"] ?? throw new ArgumentNullException("ApiEndpoint não configurado.");
+        _bucketName = configuration["MinioSettings:BucketName"] ?? throw new ArgumentNullException("BucketName não configurado.");
+        string accessKey = configuration["MinioSettings:AccessKey"] ?? throw new ArgumentNullException("AccessKey não configurado.");
+        string secretKey = configuration["MinioSettings:SecretKey"] ?? throw new ArgumentNullException("SecretKey não configurado.");
+        string region = configuration["MinioSettings:Region"] ?? "us-east-1";
+
+        _minioClient = new MinioClient()
+            .WithEndpoint(_apiEndpoint)
+            .WithCredentials(accessKey, secretKey)
+            .WithRegion(region)
+            .WithSSL()
+            .Build();
     }
 
-    public async Task<string?> UploadFileAsync(Stream fileStream, string fileName, string contentType)
+    public async Task<string?> UploadFileAsync(IFormFile file)
     {
         try
         {
-            if (!IsValidImage(contentType))
-                throw new InvalidOperationException("Formato de arquivo não suportado.");
-
             await EnsureBucketExistsAsync();
-            string objectName = $"{Guid.NewGuid()}-{fileName}";
-            string url = $"{ApiEndpoint}/{BucketName}/{objectName}";
 
-            var request = new HttpRequestMessage(HttpMethod.Put, url)
-            {
-                Content = new StreamContent(fileStream)
-            };
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
+            using var stream = file.OpenReadStream();
+            string objectName = GenerateObjectName(file.FileName);
 
-            SignRequest(request, "PUT", BucketName, objectName);
+            var putObjectArgs = new PutObjectArgs()
+                .WithBucket(_bucketName)
+                .WithObject(objectName)
+                .WithStreamData(stream)
+                .WithObjectSize(file.Length)
+                .WithContentType(file.ContentType);
 
-            using var client = new HttpClient();
-            var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
+            await _minioClient.PutObjectAsync(putObjectArgs);
 
-            _logger.LogInformation($"[UPLOAD] Sucesso: {objectName} enviado para {BucketName}");
+            string protocol = _useHttps ? "https" : "http";
+            string url = $"{protocol}://{_apiEndpoint}/{_bucketName}/{objectName}";
+
             return url;
+        }
+        catch (MinioException minioEx)
+        {
+            _logger.LogError($"Erro ao enviar arquivo para o MinIO: {minioEx.Message}");
+            throw new Exception("Falha ao armazenar arquivo no MinIO.", minioEx);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Erro ao enviar arquivo: {ex.Message}");
-            return null;
+            _logger.LogError($"Erro inesperado ao enviar arquivo: {ex.Message}");
+            throw new Exception("Ocorreu um erro ao fazer upload do arquivo.", ex);
         }
     }
-
-    //public async Task<string?> UploadFileAsync(Stream fileStream, string fileName, string contentType)
-    //{
-    //    try
-    //    {
-    //        if (!IsValidImage(contentType))
-    //            throw new InvalidOperationException("Formato de arquivo não suportado.");
-
-    //        await EnsureBucketExistsAsync();
-    //        return "";
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        _logger.LogError($"Erro ao enviar arquivo: {ex.Message}");
-    //        return null;
-    //    }
-    //}
 
     private async Task EnsureBucketExistsAsync()
     {
         try
         {
-            string url = $"{ApiEndpoint}/{BucketName}";
-            var request = new HttpRequestMessage(HttpMethod.Put, url);
-            var content = new StringContent(string.Empty);
-            request.Content = content;
+            var bucketExistsArgs = new BucketExistsArgs().WithBucket(_bucketName);
+            bool exists = await _minioClient.BucketExistsAsync(bucketExistsArgs);
 
-            SignRequest(request, "PUT", BucketName, null);
-
-            using var client = new HttpClient();
-            var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-
-            _logger.LogInformation($"[BUCKET] Verificação concluída: {BucketName} está pronto para uso");
+            if (!exists)
+            {
+                _logger.LogInformation($"Bucket {_bucketName} não encontrado. Criando...");
+                var makeBucketArgs = new MakeBucketArgs().WithBucket(_bucketName);
+                await _minioClient.MakeBucketAsync(makeBucketArgs);
+            }
         }
-        catch (Exception ex)
+        catch (MinioException minioEx)
         {
-            _logger.LogError($"Erro ao verificar/criar bucket: {ex.Message}");
+            _logger.LogError($"Erro ao verificar ou criar bucket: {minioEx.Message}");
+            throw new Exception("Erro ao verificar/criar bucket no MinIO.", minioEx);
         }
     }
 
-    private void SignRequest(HttpRequestMessage request, string httpMethod, string bucket, string? objectName)
-    {
-        string amzDate = DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
-        string dateStamp = amzDate.Substring(0, 8);
-        string canonicalUri = objectName != null ? $"/{bucket}/{objectName}" : $"/{bucket}";
-        string canonicalQueryString = "";
-        string payloadHash = request.Content != null
-            ? Hash(Encoding.UTF8.GetString(request.Content.ReadAsByteArrayAsync().Result))
-            : "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-
-        string contentTypeHeader = request.Content?.Headers.ContentType?.ToString() ?? "application/octet-stream";
-
-        string canonicalHeaders = $"content-type:{contentTypeHeader}\n" +
-                                   $"host:{new Uri(ApiEndpoint).Host}\n" +
-                                   $"x-amz-content-sha256:{payloadHash}\n" +
-                                   $"x-amz-date:{amzDate}\n";
-
-        string signedHeaders = "content-type;host;x-amz-content-sha256;x-amz-date";
-
-        string canonicalRequest = $"{httpMethod}\n{canonicalUri}\n{canonicalQueryString}\n{canonicalHeaders}\n{signedHeaders}\n{payloadHash}";
-        string credentialScope = $"{dateStamp}/{Region}/{ServiceName}/aws4_request";
-        string stringToSign = $"AWS4-HMAC-SHA256\n{amzDate}\n{credentialScope}\n{Hash(canonicalRequest)}";
-
-        byte[] signingKey = GetSignatureKey(SecretKey, dateStamp, Region, ServiceName);
-        string signature = HexEncode(HmacSHA256(stringToSign, signingKey));
-
-        string authorizationHeader = $"AWS4-HMAC-SHA256 Credential={AccessKey}/{credentialScope}, SignedHeaders={signedHeaders}, Signature={signature}";
-
-        request.Headers.TryAddWithoutValidation("Authorization", authorizationHeader);
-        request.Headers.TryAddWithoutValidation("x-amz-date", amzDate);
-        request.Headers.TryAddWithoutValidation("x-amz-content-sha256", payloadHash);
+    private string GenerateObjectName(string fileName)
+    {       
+        string fileExtension = Path.GetExtension(fileName).ToLower(); // Mantém a extensão original
+        return $"{Guid.NewGuid()}{fileExtension}";
     }
 
-    private static string Hash(string data)
-    {
-        using var sha256 = SHA256.Create();
-        return BitConverter.ToString(sha256.ComputeHash(Encoding.UTF8.GetBytes(data))).Replace("-", "").ToLower();
-    }
-
-    private static byte[] HmacSHA256(string data, byte[] key)
-    {
-        using var hmac = new HMACSHA256(key);
-        return hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
-    }
-
-    private static byte[] GetSignatureKey(string key, string dateStamp, string regionName, string serviceName)
-    {
-        byte[] kDate = HmacSHA256(dateStamp, Encoding.UTF8.GetBytes("AWS4" + key));
-        byte[] kRegion = HmacSHA256(regionName, kDate);
-        byte[] kService = HmacSHA256(serviceName, kRegion);
-        return HmacSHA256("aws4_request", kService);
-    }
-
-    private static string HexEncode(byte[] data) => BitConverter.ToString(data).Replace("-", "").ToLower();
-
-    private bool IsValidImage(string contentType)
-    {
-        var allowedTypes = new HashSet<string> { "image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp" };
-        return allowedTypes.Contains(contentType);
-    }
 }
-
-
-
-////using System.Globalization;
-////using System.Net.Http.Headers;
-////using System.Security.Cryptography;
-////using System.Text;
-////using Ambev.DeveloperEvaluation.Domain.Services;
-////using Microsoft.Extensions.Logging;
-
-////namespace Ambev.DeveloperEvaluation.ORM.Services;
-
-////public class MinioFileStorageService : IFileStorageService
-////{
-////    private readonly ILogger<MinioFileStorageService> _logger;
-////    private const string BucketName = "teste3";
-////    private const string ApiEndpoint = "https://minio-api.hallison.com.br";
-////    private const string AccessKey = "admin";
-////    private const string SecretKey = "admin123";
-////    private const string Region = "us-east-1";
-////    private const string ServiceName = "s3";
-
-////    public MinioFileStorageService(ILogger<MinioFileStorageService> logger)
-////    {
-////        _logger = logger;
-////    }
-
-////    public async Task<string?> UploadFileAsync(Stream fileStream, string fileName, string contentType)
-////    {
-////        try
-////        {
-////            if (!IsValidImage(contentType))
-////                throw new InvalidOperationException("Formato de arquivo não suportado.");
-
-////            await EnsureBucketExistsAsync();
-////            //string objectName = $"{Guid.NewGuid()}-{fileName}";
-////            //string url = $"{ApiEndpoint}/{BucketName}/{objectName}";
-
-////            //var request = new HttpRequestMessage(HttpMethod.Put, url)
-////            //{
-////            //    Content = new StreamContent(fileStream)
-////            //};
-////            //request.Content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
-
-////            //SignRequest(request, "PUT", BucketName, objectName);
-
-////            //using var client = new HttpClient();
-////            //var response = await client.SendAsync(request);
-////            //response.EnsureSuccessStatusCode();
-
-////            //_logger.LogInformation($"[UPLOAD] Sucesso: {objectName} enviado para {BucketName}");
-////            //return url;
-////            return "";
-////        }
-////        catch (Exception ex)
-////        {
-////            _logger.LogError($"Erro ao enviar arquivo: {ex.Message}");
-////            return null;
-////        }
-////    }
-
-////    private async Task EnsureBucketExistsAsync()
-////    {
-////        try
-////        {
-////            string url = $"{ApiEndpoint}/{BucketName}";
-////            var request = new HttpRequestMessage(HttpMethod.Put, url);
-////            SignRequest(request, "PUT", BucketName, null);
-
-////            using var client = new HttpClient();
-////            var response = await client.SendAsync(request);
-////            response.EnsureSuccessStatusCode();
-
-////            _logger.LogInformation($"[BUCKET] Verificação concluída: {BucketName} está pronto para uso");
-////        }
-////        catch (Exception ex)
-////        {
-////            _logger.LogError($"Erro ao verificar/criar bucket: {ex.Message}");
-////        }
-////    }
-
-////    private void SignRequest(HttpRequestMessage request, string httpMethod, string bucket, string? objectName)
-////    {
-////        string amzDate = DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ", CultureInfo.InvariantCulture);
-////        string dateStamp = amzDate.Substring(0, 8);
-////        string canonicalUri = objectName != null ? $"/{bucket}/{objectName}" : $"/{bucket}";
-////        string canonicalQueryString = "";
-////        string payloadHash = request.Content != null
-////            ? Hash(Encoding.UTF8.GetString(request.Content.ReadAsByteArrayAsync().Result))
-////            : "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
-
-////        string contentTypeHeader = request.Content?.Headers.ContentType?.ToString() ?? "application/octet-stream";
-
-////        string canonicalHeaders = $"content-type:{contentTypeHeader}\n" +
-////                                   $"host:{new Uri(ApiEndpoint).Host}\n" +
-////                                   $"x-amz-content-sha256:{payloadHash}\n" +
-////                                   $"x-amz-date:{amzDate}\n";
-
-////        string signedHeaders = "content-type;host;x-amz-content-sha256;x-amz-date";
-
-////        string canonicalRequest = $"{httpMethod}\n{canonicalUri}\n{canonicalQueryString}\n{canonicalHeaders}\n{signedHeaders}\n{payloadHash}";
-////        string credentialScope = $"{dateStamp}/{Region}/{ServiceName}/aws4_request";
-////        string stringToSign = $"AWS4-HMAC-SHA256\n{amzDate}\n{credentialScope}\n{Hash(canonicalRequest)}";
-
-////        byte[] signingKey = GetSignatureKey(SecretKey, dateStamp, Region, ServiceName);
-////        string signature = HexEncode(HmacSHA256(stringToSign, signingKey));
-
-////        string authorizationHeader = $"AWS4-HMAC-SHA256 Credential={AccessKey}/{credentialScope}, SignedHeaders={signedHeaders}, Signature={signature}";
-
-////        request.Headers.TryAddWithoutValidation("Authorization", authorizationHeader);
-////        request.Headers.TryAddWithoutValidation("x-amz-date", amzDate);
-////        request.Headers.TryAddWithoutValidation("x-amz-content-sha256", payloadHash);
-////    }
-
-
-////    private static string Hash(string data)
-////    {
-////        using var sha256 = SHA256.Create();
-////        return BitConverter.ToString(sha256.ComputeHash(Encoding.UTF8.GetBytes(data))).Replace("-", "").ToLower();
-////    }
-
-////    private static byte[] HmacSHA256(string data, byte[] key)
-////    {
-////        using var hmac = new HMACSHA256(key);
-////        return hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
-////    }
-
-////    private static byte[] GetSignatureKey(string key, string dateStamp, string regionName, string serviceName)
-////    {
-////        byte[] kDate = HmacSHA256(dateStamp, Encoding.UTF8.GetBytes("AWS4" + key));
-////        byte[] kRegion = HmacSHA256(regionName, kDate);
-////        byte[] kService = HmacSHA256(serviceName, kRegion);
-////        return HmacSHA256("aws4_request", kService);
-////    }
-
-////    private static string HexEncode(byte[] data) => BitConverter.ToString(data).Replace("-", "").ToLower();
-
-////    private bool IsValidImage(string contentType)
-////    {
-////        var allowedTypes = new HashSet<string> { "image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp" };
-////        return allowedTypes.Contains(contentType);
-////    }
-////}
