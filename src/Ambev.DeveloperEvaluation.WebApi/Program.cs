@@ -16,6 +16,7 @@ using Ambev.DeveloperEvaluation.Application.Uploads;
 using Ambev.DeveloperEvaluation.Domain.Services;
 using Ambev.DeveloperEvaluation.ORM.Services;
 using Microsoft.AspNetCore.Http.Features;
+using Ambev.DeveloperEvaluation.Common.Configuration;
 
 namespace Ambev.DeveloperEvaluation.WebApi;
 
@@ -29,6 +30,18 @@ public class Program
 
             WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
             builder.AddDefaultLogging();
+
+            // 1️⃣ Adiciona a política de CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAngularDev", policy =>
+                {
+                    policy.WithOrigins("http://localhost:4200") // ✅ frontend Angular com HTTP
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                          //.AllowCredentials(); // se estiver usando cookies/autenticação
+                });
+            });
 
             // Habilita suporte para uploads de arquivos grandes
             builder.Services.Configure<FormOptions>(options =>
@@ -91,10 +104,17 @@ public class Program
             // Adiciona UploadImageHandler
             builder.Services.AddScoped<UploadImageHandler>();
 
+            // Aqui precisa ter:
+            builder.Services.Configure<MinioSettings>(
+                builder.Configuration.GetSection("MinioSettings"));
+
             // Adiciona MinioFileStorageService implementando IFileStorageService
             builder.Services.AddScoped<IFileStorageService, MinioFileStorageService>();
 
             var app = builder.Build();
+
+            // 2️⃣ Aplica o CORS antes de Authorization
+            app.UseCors("AllowAngularDev");
 
             app.UseMiddleware<GlobalExceptionMiddleware>();
 
