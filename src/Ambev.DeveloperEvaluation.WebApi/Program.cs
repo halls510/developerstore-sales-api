@@ -22,7 +22,7 @@ namespace Ambev.DeveloperEvaluation.WebApi;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         try
         {
@@ -97,11 +97,11 @@ public class Program
             // Criação das filas no RabbitMq
             RabbitMqSetup.EnsureRabbitMqQueuesExist(builder.Configuration);
 
-            // Configurar inicialização do Banco de dados e Minio em segundo plano
-            builder.Services.AddHostedService<InitializerSeedService>();
+            // Configurar inicialização de Seed do Banco de dados e Minio em segundo plano
+            builder.Services.AddSingleton<InitializerSeedService>();
 
             // Registra o Publisher no container de DI
-            builder.Services.AddTransient<IRabbitMqPublisher,RabbitMqPublisher>();
+            builder.Services.AddTransient<IRabbitMqPublisher, RabbitMqPublisher>();
 
 
             // Adiciona UploadImageHandler
@@ -112,9 +112,23 @@ public class Program
                 builder.Configuration.GetSection("MinioSettings"));
 
             // Adiciona MinioFileStorageService implementando IFileStorageService
-            builder.Services.AddScoped<IFileStorageService, MinioFileStorageService>();
+            builder.Services.AddScoped<IFileStorageService, MinioFileStorageService>();           
 
             var app = builder.Build();
+
+            // Aplica as migrations automaticamente
+            using (var scope = app.Services.CreateScope())
+            {
+                if (app.Environment.IsDevelopment())
+                {
+                    var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                    await context.Database.MigrateAsync();
+
+                    var services = scope.ServiceProvider;
+                    var seedService = services.GetRequiredService<InitializerSeedService>();
+                    await seedService.RunManuallyAsync();
+                }
+            }           
 
             // 2️⃣ Aplica o CORS antes de Authorization
             app.UseCors("AllowAngularDev");
