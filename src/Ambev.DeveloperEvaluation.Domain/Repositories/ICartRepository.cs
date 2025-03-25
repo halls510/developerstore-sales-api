@@ -23,6 +23,8 @@ public interface ICartRepository
     /// <returns>The cart if found, null otherwise.</returns>
     Task<Cart?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
+    Task<Cart?> GetActiveCartByUserIdAsync(int userId, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Retrieves all carts with optional pagination and sorting.
     /// </summary>

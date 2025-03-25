@@ -2,6 +2,7 @@
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
 using Ambev.DeveloperEvaluation.Application.Common;
+using Ambev.DeveloperEvaluation.Application.Carts.UpdateCart;
 
 namespace Ambev.DeveloperEvaluation.Application.Carts.CreateCart
 {
@@ -24,7 +25,8 @@ namespace Ambev.DeveloperEvaluation.Application.Carts.CreateCart
             // Mapeia o CartId dentro dos CartItems
             CreateMap<CreateCartCommand, Cart>()
                 .ForMember(dest => dest.Date, opt => opt.MapFrom(src => DateTime.SpecifyKind(src.Date, DateTimeKind.Utc)));
-           
+
+            CreateMap<UpdateCartResult, CreateCartResult>();
         }
     }
 }
