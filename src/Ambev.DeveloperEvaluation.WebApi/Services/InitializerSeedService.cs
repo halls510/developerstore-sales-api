@@ -184,9 +184,11 @@ public class InitializerSeedService : BackgroundService
     CancellationToken cancellationToken)
     {
         // Admin via variável de ambiente
-        string adminPassword = configuration["AdminPassword"] ?? "admin123";
-        string adminEmail = configuration["AdminEmail"] ?? "admin@example.com";
-        string adminPhone = configuration["AdminPhone"] ?? "31999999999";
+        string adminPassword = configuration["AdminPassword"] ?? "";
+        string adminEmail = configuration["AdminEmail"] ?? "";
+
+        _logger.LogInformation($"adminPassword:{adminPassword}");
+        _logger.LogInformation($"adminEmail:{adminEmail}");
 
         if (string.IsNullOrEmpty(adminPassword) || string.IsNullOrEmpty(adminEmail))
         {
@@ -202,7 +204,7 @@ public class InitializerSeedService : BackgroundService
             lastname: "Admin",
             email: adminEmail,
             password: adminPassword,
-            phone: adminPhone
+            phone: "31988888899"
         );
 
         // Manager com valores fixos

@@ -52,10 +52,16 @@ public class Program
                 options.MultipartBodyLengthLimit = 104857600; // 100MB de limite
             });
 
-            // Adicionando User Secrets
+            // ORDEM DE CARREGAMENTO DAS CONFIGS
+            builder.Configuration
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+                .AddEnvironmentVariables(); // .env e docker-compose vars
+
             if (builder.Environment.IsDevelopment())
             {
-                builder.Configuration.AddUserSecrets<Program>();
+                builder.Configuration.AddUserSecrets<Program>(); // só local
             }
 
             builder.Services.AddControllers()
