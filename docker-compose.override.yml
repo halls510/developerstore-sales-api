@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  ambev.developerevaluation.webapi:
+    volumes:
+      - type: bind
+        source: ${USER_SECRETS_PATH:-${HOME}/.microsoft/usersecrets}
+        target: /usersecrets
+        read_only: true
+      - type: bind
+        source: ${HTTPS_CERT_PATH:-${HOME}/.aspnet/https}
+        target: /https
+        read_only: true

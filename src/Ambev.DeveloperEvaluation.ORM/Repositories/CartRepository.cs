@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Domain.Exceptions;
 using Ambev.DeveloperEvaluation.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -90,6 +91,14 @@ public class CartRepository : ICartRepository
             .Include(c => c.Items)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<Cart?> GetActiveCartByUserIdAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Carts
+            .Include(p => p.Items)
+            .FirstOrDefaultAsync(c => c.UserId == userId && c.Status == CartStatus.Active);
+    }
+
 
     /// <summary>
     /// Retrieves a paginated list of carts with optional sorting.

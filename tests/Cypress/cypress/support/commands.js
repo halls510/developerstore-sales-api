@@ -1,29 +1,32 @@
 
 Cypress.Commands.add('login', () => {
   cy.visit('/login');
+  // espera 1 segundo para garantir tempo de renderização
+  cy.wait(1000);
   cy.get('[data-testid="input-email"]').type('admin@example.com');
   cy.get('[data-testid="input-password"]').type('A#g7jfdsd#$%#');
   cy.get('[data-testid="btn-login"]').click();
+  // espera 1 segundo para garantir tempo de renderização
+  cy.wait(1000);
   cy.url().should('include', '/home');
 });
 
 Cypress.Commands.add('addProductToCart', () => {
-  // Espera o primeiro produto renderizar
+  cy.window().then((win) => {
+    cy.stub(win, 'alert').as('alertAddToCart');
+  });
+
   cy.get('.product-card', { timeout: 10000 }).first().as('produto');
 
-  // Captura o título antes do clique
   cy.get('@produto').find('h3').invoke('text').then((tituloProduto) => {
-    // Escuta o alert e verifica se contém o nome do produto
-    cy.on('window:alert', (mensagem) => {
-      expect(mensagem).to.contain(tituloProduto.trim());
-    });
-
-    // Clica no botão "Adicionar ao Carrinho"
     cy.get('@produto').within(() => {
       cy.contains('button', 'Adicionar ao Carrinho').click();
     });
+
+    cy.get('@alertAddToCart').should('have.been.calledWithMatch', new RegExp(tituloProduto.trim()));
   });
 });
+
 
 Cypress.Commands.add('loginAPI', () => {
   return cy.request('POST', 'https://localhost:8081/api/auth', {
