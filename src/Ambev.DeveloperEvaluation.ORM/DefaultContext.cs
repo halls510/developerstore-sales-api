@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.Reflection;
 
 namespace Ambev.DeveloperEvaluation.ORM;
@@ -35,7 +36,7 @@ public class DefaultContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 }
-public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
+public class DefaultContextFactory : IDesignTimeDbContextFactory<DefaultContext>
 {
     public DefaultContext CreateDbContext(string[] args)
     {
@@ -46,11 +47,26 @@ public class YourDbContextFactory : IDesignTimeDbContextFactory<DefaultContext>
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json")
             .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
-            .AddUserSecrets<YourDbContextFactory>()
+            .AddEnvironmentVariables()
+            .AddUserSecrets<DefaultContextFactory>()
             .Build();
+
+        var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder.AddConsole();
+        });
+        var logger = loggerFactory.CreateLogger<DefaultContextFactory>();
 
         var builder = new DbContextOptionsBuilder<DefaultContext>();
         var connectionString = configuration.GetConnectionString("DefaultConnection");
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            logger.LogError("Connection string 'DefaultConnection' não encontrada no ambiente '{Env}'.", environment);
+            throw new InvalidOperationException("Connection string 'DefaultConnection' não encontrada.");
+        }
+
+        logger.LogInformation("Connection string carregada com sucesso para o ambiente '{Env}'.", environment);
 
         builder.UseNpgsql(
                connectionString,

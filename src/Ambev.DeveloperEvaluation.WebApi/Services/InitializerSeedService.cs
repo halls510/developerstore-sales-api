@@ -3,13 +3,11 @@ using Ambev.DeveloperEvaluation.Application.Users.CreateUser;
 using Ambev.DeveloperEvaluation.Common.Configuration;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Domain.Services;
-using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.WebApi.Common;
 using Ambev.DeveloperEvaluation.WebApi.Features.Products.CreateProduct;
 using Ambev.DeveloperEvaluation.WebApi.Features.Users.CreateUser;
 using AutoMapper;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Minio.DataModel.Args;
 using Minio;
@@ -17,7 +15,7 @@ using Minio;
 namespace Ambev.DeveloperEvaluation.WebApi.Services;
 
 public class InitializerSeedService : BackgroundService
-{   
+{
 
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<InitializerSeedService> _logger;
@@ -39,6 +37,25 @@ public class InitializerSeedService : BackgroundService
         _env = env;
     }
 
+    public async Task RunManuallyAsync(CancellationToken cancellationToken = default)
+    {
+        var enableDbSeed = _configuration.GetValue<bool>("Seed:EnableDatabase");
+        var enableMinioSeed = _configuration.GetValue<bool>("Seed:EnableMinio");
+
+        using var scope = _serviceProvider.CreateScope();
+        var services = scope.ServiceProvider;
+
+        if (enableMinioSeed)
+        {
+            await SeedMinioAsync(cancellationToken);
+        }
+
+        if (enableDbSeed)
+        {
+            await SeedDatabaseAsync(services, cancellationToken);
+        }
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var enableDbSeed = _configuration.GetValue<bool>("Seed:EnableDatabase");
@@ -53,46 +70,33 @@ public class InitializerSeedService : BackgroundService
             await SeedMinioAsync(stoppingToken);
         }
 
-        if (enableDbSeed)
+        try
         {
-            await SeedDatabaseAsync(services, stoppingToken);
-        }        
+            if (enableDbSeed)
+                await SeedDatabaseAsync(services, stoppingToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro geral durante o seed do banco. A aplicação pode cair.");
+        }
     }
 
     private async Task SeedDatabaseAsync(IServiceProvider services, CancellationToken stoppingToken)
-    {
-        var context = services.GetRequiredService<DefaultContext>();
+    {   
         var mediator = services.GetRequiredService<IMediator>();
         var mapper = services.GetRequiredService<IMapper>();
         var configuration = services.GetRequiredService<IConfiguration>();
         var userService = services.GetRequiredService<IUserService>();
         var productService = services.GetRequiredService<IProductService>();
 
-        try
-        {
-            if (_env.IsDevelopment())
-            {
-                _logger.LogInformation("Ambiente de desenvolvimento: recriando banco de dados...");
-                await context.Database.EnsureDeletedAsync(stoppingToken);
-            }
-
-            _logger.LogInformation("Aplicando migrações...");
-            await context.Database.MigrateAsync(stoppingToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Erro ao aplicar migrações no banco de dados.");
-            return;
-        }
-
-        await InitializeUsers(mediator, mapper, userService, configuration, stoppingToken);
         await InitializeProducts(mediator, mapper, productService, stoppingToken);
+        await InitializeUsers(mediator, mapper, userService, configuration, stoppingToken);
     }
 
     private async Task SeedMinioAsync(CancellationToken cancellationToken)
     {
         try
-        {       
+        {
 
             var minio = new MinioClient()
                 .WithEndpoint(_minioSettings.ApiEndpoint)
@@ -101,7 +105,7 @@ public class InitializerSeedService : BackgroundService
                 .WithSSL(_minioSettings.UseHttps)
                 .Build();
 
-            // 🔍 Verifica se a conexão ao MinIO está funcionando
+            //  Verifica se a conexão ao MinIO está funcionando
             try
             {
                 var buckets = await minio.ListBucketsAsync(cancellationToken);
@@ -180,9 +184,11 @@ public class InitializerSeedService : BackgroundService
     CancellationToken cancellationToken)
     {
         // Admin via variável de ambiente
-        string adminPassword = configuration["AdminPassword"];
-        string adminEmail = configuration["AdminEmail"];
-        string adminPhone = configuration["AdminPhone"];
+        string adminPassword = configuration["AdminPassword"] ?? "";
+        string adminEmail = configuration["AdminEmail"] ?? "";
+
+        _logger.LogInformation($"adminPassword:{adminPassword}");
+        _logger.LogInformation($"adminEmail:{adminEmail}");
 
         if (string.IsNullOrEmpty(adminPassword) || string.IsNullOrEmpty(adminEmail))
         {
@@ -198,7 +204,7 @@ public class InitializerSeedService : BackgroundService
             lastname: "Admin",
             email: adminEmail,
             password: adminPassword,
-            phone: adminPhone
+            phone: "31988888899"
         );
 
         // Manager com valores fixos
@@ -240,6 +246,7 @@ public class InitializerSeedService : BackgroundService
         string phone)
     {
         var existingUser = await userService.GetUserByEmailAsync(email, cancellationToken);
+        _logger.LogInformation("Verificação do usuário existente para {Email}: {Resultado}", email, existingUser != null);
         if (existingUser != null)
         {
             _logger.LogInformation($"Usuário {role} já existe. Nenhuma ação necessária.");
@@ -296,7 +303,7 @@ public class InitializerSeedService : BackgroundService
         var baseImageUrl = $"{scheme}://{_minioSettings.PublicUrl}/{_minioSettings.BucketName}";
 
         var products = new List<CreateProductRequest>
-    {
+        {
 
             // Cervejas
            // Cervejas da Ambev
@@ -524,5 +531,4 @@ public class InitializerSeedService : BackgroundService
             _logger.LogInformation("Produto '{Title}' criado com sucesso.", request.Title);
         }
     }
-
 }

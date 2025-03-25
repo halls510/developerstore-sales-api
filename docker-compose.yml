@@ -53,6 +53,8 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped 
+    volumes:
+      - pg_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-developer} -d ${POSTGRES_DB:-developer_evaluation}"]
       interval: 5s
@@ -94,4 +96,5 @@ services:
       retries: 5
 
 volumes:
-  minio_data: 
+  minio_data:
+  pg_data:

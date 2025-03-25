@@ -27,4 +27,8 @@ RUN dotnet publish "./Ambev.DeveloperEvaluation.WebApi.csproj" -c $BUILD_CONFIGU
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# Adiciona os arquivos de seed (imagens)
+COPY src/Ambev.DeveloperEvaluation.WebApi/Seeds/Images /app/Seeds/Images
+
 ENTRYPOINT ["dotnet", "Ambev.DeveloperEvaluation.WebApi.dll"]

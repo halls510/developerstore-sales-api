@@ -401,3 +401,5 @@ FodyWeavers.xsd
 /src/Ambev.DeveloperEvaluation.WebApi/appsettings.json
 /src/Ambev.DeveloperEvaluation.WebApi/appsettings.Development.json
 /.env
+/src/Ambev.DeveloperEvaluation.WebApi/appsettings.Development.json
+/docker-compose.override.yml
