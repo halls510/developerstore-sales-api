@@ -6,6 +6,7 @@ using System.Text;
 using Xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Ambev.DeveloperEvaluation.Functional.Infrastructure;
 
@@ -21,7 +22,10 @@ public abstract class FunctionalTestBase : IClassFixture<CustomWebApplicationFac
 
     public FunctionalTestBase(CustomWebApplicationFactory factory)
     {
-        _client = factory.CreateClient();
+        _client = factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("http://localhost:8080")
+        });
         _configuration = factory.Services.GetRequiredService<IConfiguration>(); // Obtém a configuração da fábrica
         Console.WriteLine($"🔹 Teste rodando na URL base: {_client.BaseAddress}");
         AuthenticateClientAsync().GetAwaiter().GetResult();
@@ -42,7 +46,7 @@ public abstract class FunctionalTestBase : IClassFixture<CustomWebApplicationFac
         };
 
         var content = new StringContent(JsonConvert.SerializeObject(credentials), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/auth", content); // 🚀 Corrigido para "/auth/login"
+        var response = await _client.PostAsync("/api/auth", content); 
 
         if (!response.IsSuccessStatusCode)
         {
@@ -53,7 +57,7 @@ public abstract class FunctionalTestBase : IClassFixture<CustomWebApplicationFac
         response.StatusCode.Should().Be(HttpStatusCode.OK, "Falha ao autenticar usuário de teste");
 
         var responseData = JsonConvert.DeserializeObject<dynamic>(await response.Content.ReadAsStringAsync());
-        return responseData?.token;
+        return responseData?.data.token;
     }
 
     /// <summary>

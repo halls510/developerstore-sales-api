@@ -101,7 +101,7 @@ public class Program
             builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
             // Criação das filas no RabbitMq
-            RabbitMqSetup.EnsureRabbitMqQueuesExist(builder.Configuration);
+            await RabbitMqSetup.EnsureRabbitMqQueuesExist(builder.Configuration);
 
             // Configurar inicialização de Seed do Banco de dados e Minio em segundo plano
             builder.Services.AddSingleton<InitializerSeedService>();
@@ -125,9 +125,9 @@ public class Program
             // Aplica as migrations automaticamente
             using (var scope = app.Services.CreateScope())
             {
-                if (app.Environment.IsDevelopment())
+                var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+                if (app.Environment.IsDevelopment() && context.Database.IsRelational())
                 {
-                    var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
                     await context.Database.MigrateAsync();
 
                     var services = scope.ServiceProvider;

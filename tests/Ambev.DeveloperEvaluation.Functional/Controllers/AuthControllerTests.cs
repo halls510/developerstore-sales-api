@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Functional.Infrastructure;
+using Ambev.DeveloperEvaluation.WebApi.Common;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using System.Net;
@@ -19,16 +20,16 @@ public class AuthControllerTests : FunctionalTestBase
     {
         var loginRequest = new
         {
-            Email = "halls510@hotmail.com",
+            Email = "admin@example.com",
             Password = "A#g7jfdsd#$%#"
         };
 
-        var response = await _client.PostAsJsonAsync("/auth", loginRequest);
+        var response = await _client.PostAsJsonAsync("/api/auth", loginRequest);
         response.StatusCode.Should().Be(HttpStatusCode.OK, $"Erro ao autenticar: {await response.Content.ReadAsStringAsync()}");
 
-        var authResult = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+        var authResult = await response.Content.ReadFromJsonAsync<ApiResponseWithData<AuthResponseDto>>();
         authResult.Should().NotBeNull();
-        authResult!.Token.Should().NotBeNullOrWhiteSpace();
+        authResult!.Data.Token.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -40,7 +41,7 @@ public class AuthControllerTests : FunctionalTestBase
             Password = "WrongPassword"
         };
 
-        var response = await _client.PostAsJsonAsync("/auth", loginRequest);
+        var response = await _client.PostAsJsonAsync("/api/auth", loginRequest);
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
@@ -53,7 +54,7 @@ public class AuthControllerTests : FunctionalTestBase
             Password = ""
         };
 
-        var response = await _client.PostAsJsonAsync("/auth", loginRequest);
+        var response = await _client.PostAsJsonAsync("/api/auth", loginRequest);
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 

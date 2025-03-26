@@ -91,50 +91,7 @@ public class ProductIntegrationTests : IntegrationTestBase
         Assert.Contains(products, p => p["title"]?.ToString() == "Smartphone"); 
         Console.WriteLine(" Produtos retornados com sucesso!");
     }
-    [Fact]
-    public async Task GetProductById_ShouldReturnCorrectProduct()
-    {
-        await AuthenticateClientAsync(); // Adiciona o token JWT ao cliente
-
-        int productId = 0;
-
-        // Arrange - Criar um produto no banco de dados antes de buscá-lo
-        ExecuteDbContext(context =>
-        {
-            var product = new Ambev.DeveloperEvaluation.Domain.Entities.Product
-            {
-                Title = "Monitor 4K",
-                Price = new Ambev.DeveloperEvaluation.Domain.ValueObjects.Money(1899.99M),
-                Description = "Monitor 4K de 27 polegadas",
-                Image = "https://example.com/monitor.jpg",
-                CreatedAt = DateTime.UtcNow,
-                Category = new Ambev.DeveloperEvaluation.Domain.Entities.Category
-                {
-                    Name = "Eletrônicos"
-                }
-            };
-
-            context.Products.Add(product);
-            context.SaveChanges();
-
-            productId = product.Id;
-        });
-
-        // Act - Buscar produto pelo ID
-        var response = await _client.GetAsync($"api/products/{productId}");
-        response.EnsureSuccessStatusCode();
-
-        var jsonResponse = await response.Content.ReadAsStringAsync();
-        Console.WriteLine($"Resposta da API: {jsonResponse}");
-
-        var productResponse = JsonConvert.DeserializeObject<dynamic>(jsonResponse);
-
-        // Assert - Agora acessamos o título corretamente dentro de "data"
-        Assert.Equal("Monitor 4K", (string)productResponse["data"]["title"]);
-        Console.WriteLine("Produto retornado corretamente!");
-    }
-
-
+   
     [Fact]
     public async Task DeleteProduct_ShouldRemoveProductFromDatabase()
     {

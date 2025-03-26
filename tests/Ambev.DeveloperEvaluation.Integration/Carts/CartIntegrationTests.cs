@@ -48,9 +48,9 @@ public class CartIntegrationTests : IntegrationTestBase
             Date = DateTime.UtcNow,
             Products = new[]
             {
-            new { ProductId = 1, Quantity = 2 },
-            new { ProductId = 2, Quantity = 1 }
-        }
+                new { ProductId = 1, Quantity = 2 },
+                new { ProductId = 2, Quantity = 1 }
+            }
         };
 
         var content = new StringContent(JsonConvert.SerializeObject(cart), Encoding.UTF8, "application/json");
@@ -266,28 +266,58 @@ public class CartIntegrationTests : IntegrationTestBase
     [Fact]
     public async Task Checkout_ShouldProcessCheckoutSuccessfully()
     {
-        await AuthenticateClientAsync();
+        await AuthenticateClientAsync(); // 🔐 Autentica o cliente e injeta JWT
 
-        int cartId = 0;
+        // 🔹 Etapa 1: Criar produtos no banco
         ExecuteDbContext(context =>
         {
-            var cart = new Ambev.DeveloperEvaluation.Domain.Entities.Cart
+            context.Products.AddRange(new[]
             {
-                UserId = 1,
-                Date = DateTime.UtcNow,
-                Items = new List<Ambev.DeveloperEvaluation.Domain.Entities.CartItem>
+                new Ambev.DeveloperEvaluation.Domain.Entities.Product
                 {
-                    new() { ProductId = 1, Quantity = 2 }
+                    Title = "Produto 1",
+                    Price = new Ambev.DeveloperEvaluation.Domain.ValueObjects.Money(150.00M),
+                    Description = "Produto para checkout",
+                    Image = "https://example.com/produto-checkout.jpg",
+                    CreatedAt = DateTime.UtcNow,
+                    Category = new Ambev.DeveloperEvaluation.Domain.Entities.Category { Name = "Checkout" }
                 }
-            };
-            context.Carts.Add(cart);
+              });
+
             context.SaveChanges();
-            cartId = cart.Id;
         });
 
-        var response = await _client.PostAsync($"api/carts/{cartId}/checkout", null);
-        response.EnsureSuccessStatusCode();
+        // 🔹 Etapa 2: Criar carrinho com produto
+        var cart = new
+        {
+            UserId = 1,
+            Date = DateTime.UtcNow,
+            Products = new[]
+            {
+            new { ProductId = 1, Quantity = 2 }
+            }
+        };
 
+        var content = new StringContent(JsonConvert.SerializeObject(cart), Encoding.UTF8, "application/json");
+        var createCartResponse = await _client.PostAsync("api/carts", content);
+        createCartResponse.EnsureSuccessStatusCode();
+
+        // 🔹 Etapa 3: Obter o carrinho criado
+        var createdCartJson = await createCartResponse.Content.ReadAsStringAsync();
+        var createdCart = JsonConvert.DeserializeObject<dynamic>(createdCartJson);
+        int cartId = createdCart?.data.id;
+
+        // 🔹 Etapa 4: Realizar o checkout
+        var checkoutResponse = await _client.PostAsync($"api/carts/{cartId}/checkout", null);
+
+        if (!checkoutResponse.IsSuccessStatusCode)
+        {
+            var error = await checkoutResponse.Content.ReadAsStringAsync();
+            Console.WriteLine($"Erro no checkout: {checkoutResponse.StatusCode} - {error}");
+        }
+
+        checkoutResponse.EnsureSuccessStatusCode();
         Console.WriteLine("Checkout realizado com sucesso!");
     }
+
 }

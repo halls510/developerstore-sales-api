@@ -3,6 +3,7 @@ using Ambev.DeveloperEvaluation.WebApi;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Ambev.DeveloperEvaluation.Integration.Infrastructure;
@@ -14,6 +15,17 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Define que estamos em ambiente de testes
+        Environment.SetEnvironmentVariable("IS_TEST_ENVIRONMENT", "true");
+
+        builder.ConfigureAppConfiguration((context, config) =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                { "IS_TEST_ENVIRONMENT", "true" }
+            });
+        });
+
         builder.ConfigureServices(services =>
         {
             Console.WriteLine("Configurando WebApplicationFactory para testes...");

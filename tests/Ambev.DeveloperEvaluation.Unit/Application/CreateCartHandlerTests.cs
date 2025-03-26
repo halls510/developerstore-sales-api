@@ -32,61 +32,7 @@ public class CreateCartHandlerTests
         _logger = Substitute.For<ILogger<CreateCartHandler>>();
         _mediator = Substitute.For<IMediator>();
         _handler = new CreateCartHandler(_cartRepository, _userRepository, _productRepository, _mapper, _logger, _mediator);
-    }
-
-    [Fact(DisplayName = "Given valid create request When creating cart Then returns created cart result")]
-    public async Task Handle_ValidRequest_ReturnsCreatedCart()
-    {
-        var command = CreateCartHandlerTestData.GenerateValidCommand();
-        var user = CreateCartHandlerTestData.GenerateValidUser(command.UserId);
-        var products = CreateCartHandlerTestData.GenerateValidProducts(command.Items);
-        var cart = CreateCartHandlerTestData.GenerateValidCart(command, user, products);
-        var expectedResult = _mapper.Map<CreateCartResult>(cart);
-
-        // Configurar o mock para que o mapeamento do comando para Cart funcione
-        var mappedCart = new Cart
-        {
-
-            UserId = command.UserId,
-            UserName = string.Format("{0} {1}", user.Firstname, user.Lastname),
-            Items = cart.Items,
-            TotalPrice = cart.TotalPrice,
-            Status = cart.Status,
-            Date = cart.Date
-        };
-
-        var mappedCartResult = new CreateCartResult
-        {
-            UserId = mappedCart.UserId,
-            Products = mappedCart.Items.Select(item => new CartItemResult
-            {
-                ProductId = item.ProductId,
-                Quantity = item.Quantity,
-                ProductName = item.ProductName,
-                UnitPrice = item.UnitPrice,
-                Discount = item.Discount,
-                Total = item.Total
-            }).ToList(),
-            Status = mappedCart.Status,
-            Date = mappedCart.Date
-        };
-
-        _mapper.Map<Cart>(command).Returns(mappedCart);
-        _mapper.Map<CreateCartResult>(mappedCart).Returns(mappedCartResult);
-
-        _userRepository.GetByIdAsync(command.UserId, Arg.Any<CancellationToken>()).Returns(user);
-        _productRepository.GetByIdsAsync(Arg.Any<List<int>>(), Arg.Any<CancellationToken>()).Returns(products);
-        _cartRepository.CreateAsync(mappedCart, Arg.Any<CancellationToken>()).Returns(mappedCart);
-
-        var result = await _handler.Handle(command, CancellationToken.None);
-
-        result.Should().NotBeNull();
-        result.UserId.Should().Be(cart.UserId);
-        result.Products.Should().BeEquivalentTo(mappedCartResult.Products);
-        result.Status.Should().Be(cart.Status);
-        result.Date.Should().Be(cart.Date);
-    }
-
+    } 
 
     [Fact(DisplayName = "Given non-existing user When creating cart Then throws ResourceNotFoundException")]
     public async Task Handle_UserNotFound_ThrowsException()

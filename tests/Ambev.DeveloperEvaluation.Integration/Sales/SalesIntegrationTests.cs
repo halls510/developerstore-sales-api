@@ -86,6 +86,7 @@ public class SalesIntegrationTests : IntegrationTestBase
             saleId = sale.Id;
         });
 
+        
         var response = await _client.PatchAsync($"api/sales/{saleId}/cancel", null);
         if (!response.IsSuccessStatusCode)
         {
