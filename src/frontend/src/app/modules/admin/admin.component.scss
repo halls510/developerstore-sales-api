@@ -1,0 +1,28 @@
+.admin-container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .admin-nav {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+  
+    a {
+      text-decoration: none;
+      background: #1976d2;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 5px;
+      transition: background 0.3s ease;
+    }
+  
+    a:hover,
+    a.active {
+      background: #125699;
+    }
+  }
+  

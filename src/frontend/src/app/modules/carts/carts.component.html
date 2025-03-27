@@ -1,0 +1,69 @@
+<div class="cart-container" *ngIf="!isLoading && !error; else loadingOrError">
+  <ng-container *ngIf="activeCart; else noCart">
+    <h2>Carrinho Ativo</h2>
+
+    <table class="cart-table">
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th>Qtd</th>
+          <th>Preço Unitário</th>
+          <th>Desconto</th>
+          <th>Total</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of activeCart.products">
+          <td>{{ getProductName(item.productId) }}</td>
+          <td>
+            <input
+              type="number"
+              min="1"
+              max="20"
+              [(ngModel)]="item.quantity"
+              (change)="onQuantityChange(item)"
+              class="quantity-input"
+            />
+          </td>
+          <td>
+            R$ {{ item.unitPrice | number: '1.2-2' }}
+          </td>
+          <td>
+            R$ {{ item.discount | number: '1.2-2' }}
+          </td>
+          <td>
+            R$ {{ item.total | number: '1.2-2' }}
+          </td>
+          <td>
+            <button class="remove-btn" (click)="removeItem(item.productId)">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="total-box">
+      <strong>Total do Carrinho:</strong>
+      <span class="price">R$ {{ activeCart.totalPrice | number: '1.2-2' }}</span>
+    </div>
+
+    <div class="actions">
+      <button class="checkout-button" (click)="checkout()">
+        Finalizar Compra
+      </button>
+    </div>
+  </ng-container>
+
+  <ng-template #noCart>
+    <p class="empty-message">Nenhum carrinho ativo encontrado.</p>
+  </ng-template>
+</div>
+
+<ng-template #loadingOrError>
+  <div class="status-box">
+    <p *ngIf="isLoading">🔄 Carregando carrinho...</p>
+    <p *ngIf="error" class="error-msg">❌ {{ error }}</p>
+  </div>
+</ng-template>

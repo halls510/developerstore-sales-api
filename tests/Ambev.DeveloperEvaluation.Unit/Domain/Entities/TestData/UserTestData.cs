@@ -14,20 +14,39 @@ public static class UserTestData
     /// <summary>
     /// Configures the Faker to generate valid User entities.
     /// The generated users will have valid:
+    /// - Firstname and Lastname (realistic names)
     /// - Username (using internet usernames)
     /// - Password (meeting complexity requirements)
     /// - Email (valid format)
     /// - Phone (Brazilian format)
+    /// - Address (valid City, Street, Number, Zipcode, and Geolocation)
     /// - Status (Active or Suspended)
     /// - Role (Customer or Admin)
     /// </summary>
     private static readonly Faker<User> UserFaker = new Faker<User>()
+        .RuleFor(u => u.Firstname, f => f.Name.FirstName())
+        .RuleFor(u => u.Lastname, f => f.Name.LastName())
         .RuleFor(u => u.Username, f => f.Internet.UserName())
         .RuleFor(u => u.Password, f => $"Test@{f.Random.Number(100, 999)}")
         .RuleFor(u => u.Email, f => f.Internet.Email())
         .RuleFor(u => u.Phone, f => $"+55{f.Random.Number(11, 99)}{f.Random.Number(100000000, 999999999)}")
+        .RuleFor(u => u.Address, f => new Address
+        {
+            City = f.Address.City(),
+            Street = f.Address.StreetName(),
+            Number = f.Random.Int(1, 1000),
+            Zipcode = f.Address.ZipCode(),
+            Geolocation = new Geolocation
+            {
+                Lat = f.Address.Latitude(),
+                Long = f.Address.Longitude()
+            }
+        })
         .RuleFor(u => u.Status, f => f.PickRandom(UserStatus.Active, UserStatus.Suspended))
-        .RuleFor(u => u.Role, f => f.PickRandom(UserRole.Customer, UserRole.Admin));
+        .RuleFor(u => u.Role, f => f.PickRandom(UserRole.Customer, UserRole.Admin))
+        .RuleFor(u => u.CreatedAt, f => f.Date.Past())
+        .RuleFor(u => u.UpdatedAt, f => f.Date.Recent())
+        .RuleFor(u => u.LastHash, f => string.Empty);
 
     /// <summary>
     /// Generates a valid User entity with randomized data.

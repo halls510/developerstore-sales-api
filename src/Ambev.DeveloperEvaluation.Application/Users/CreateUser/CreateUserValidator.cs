@@ -14,6 +14,8 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
     /// </summary>
     /// <remarks>
     /// Validation rules include:
+    /// - Fisrtname: Required, length between 3 and 24 characters
+    /// - Lasttname: Required, length between 3 and 24 characters
     /// - Email: Must be in valid format (using EmailValidator)
     /// - Username: Required, must be between 3 and 50 characters
     /// - Password: Must meet security requirements (using PasswordValidator)
@@ -23,10 +25,12 @@ public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
     /// </remarks>
     public CreateUserCommandValidator()
     {
+        RuleFor(user => user.Firstname).NotEmpty().Length(3, 24);
+        RuleFor(user => user.Lastname).NotEmpty().Length(3, 24);
         RuleFor(user => user.Email).SetValidator(new EmailValidator());
         RuleFor(user => user.Username).NotEmpty().Length(3, 50);
         RuleFor(user => user.Password).SetValidator(new PasswordValidator());
-        RuleFor(user => user.Phone).Matches(@"^\+?[1-9]\d{1,14}$");
+        RuleFor(user => user.Phone).SetValidator(new PhoneValidator());
         RuleFor(user => user.Status).NotEqual(UserStatus.Unknown);
         RuleFor(user => user.Role).NotEqual(UserRole.None);
     }

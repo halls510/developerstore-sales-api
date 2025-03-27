@@ -1,0 +1,78 @@
+<div class="sales-management">
+  <h1>Gerenciamento de Vendas</h1>
+
+  <!-- Barra de Pesquisa -->
+  <div class="search-bar">
+    <input
+    type="text"
+    [(ngModel)]="searchQuery"
+    (keyup.enter)="onSearch()"
+    placeholder="Buscar por nome do cliente..."
+    aria-label="Campo de busca de vendas" />
+  <button (click)="onSearch()">Buscar</button>
+  </div>
+
+  <!-- Tabela de Vendas -->
+  <table>
+    <thead>
+      <tr>
+        <th (click)="sort('saleNumber')">Venda</th>
+        <th (click)="sort('customerName')">Cliente</th>
+        <th (click)="sort('saleDate')">Data</th>
+        <th (click)="sort('totalValue.amount')">Total</th>
+        <th (click)="sort('status')">Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let sale of sales">
+        <td>{{ sale.saleNumber }}</td>
+        <td>{{ sale.customerName }}</td>
+        <td>{{ sale.saleDate | date: 'dd/MM/yyyy' }}</td>
+        <td>R$ {{ sale.totalValue | number: '1.2-2' }}</td>
+        <td [ngClass]="['status', sale.status]">{{ sale.status }}</td>
+        <td class="action-buttons">
+          <!-- Botão Ver Detalhes -->
+          <button (click)="viewDetails(sale)" aria-label="Ver Detalhes">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M2.05 12a9.95 9.95 0 0 1 19.9 0 9.95 9.95 0 0 1-19.9 0z"></path>
+            </svg>
+          </button>
+
+          <!-- Botão Cancelar Venda -->
+          <button
+            (click)="cancelSale(sale.saleId)"
+            [disabled]="sale.status === 'Cancelled'"
+            aria-label="Cancelar Venda">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Paginação -->
+  <div class="pagination">
+    <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">
+      Anterior
+    </button>
+    <span>Página {{ currentPage }} de {{ totalPages }}</span>
+    <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">
+      Próxima
+    </button>
+  </div>
+
+  <!-- Drawer de Detalhes -->
+  <app-sale-details-drawer
+    *ngIf="drawerVisible && selectedSale"
+    [sale]="selectedSale"
+    [visible]="drawerVisible"
+    [onClose]="closeDrawer.bind(this)">
+  </app-sale-details-drawer>
+</div>

@@ -1,0 +1,188 @@
+<div class="users-management">
+  <h1>Gerenciamento de Usuários</h1>
+
+  <!-- 🔎 Filtros e Ações -->
+  <div class="filters">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      placeholder="🔍 Buscar por nome de usuário..."
+      (input)="onSearch()"
+    />
+
+    <select [(ngModel)]="selectedStatus" (change)="onStatusChange()">
+      <option value="Todos">Todos os Status</option>
+      <option [value]="userStatus.Active">Ativo</option>
+      <option [value]="userStatus.Inactive">Inativo</option>
+      <option [value]="userStatus.Suspended">Suspenso</option>
+    </select>
+
+    <button (click)="openCreateModal()">➕ Novo Usuário</button>
+  </div>
+
+  <!-- 🌀 Estado de carregamento ou erro -->
+  <div *ngIf="isLoading">⏳ Carregando usuários...</div>
+  <div *ngIf="errorMessage" class="error-message">{{ errorMessage }}</div>
+
+  <!-- 📋 Tabela de Usuários -->
+  <table *ngIf="!isLoading && users.length > 0">
+    <thead>
+      <tr>
+        <th (click)="sort('id')">ID</th>
+        <th (click)="sort('firstname')">Nome</th>
+        <th (click)="sort('username')">Username</th>
+        <th (click)="sort('email')">Email</th>
+        <th (click)="sort('role')">Função</th>
+        <th (click)="sort('status')">Status</th>
+        <th>Endereço</th>
+        <th>Geolocalização</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>{{ user.id }}</td>
+        <td>{{ user.name.firstname }} {{ user.name.lastname }}</td>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.role }}</td>
+        <td
+          [ngClass]="{
+            'active': user.status === userStatus.Active,
+            'inactive': user.status === userStatus.Inactive,
+            'suspended': user.status === userStatus.Suspended
+          }"
+        >
+          {{ user.status }}
+        </td>
+        <td>{{ user.address.street }}, {{ user.address.number }} - {{ user.address.city }}</td>
+        <td>
+          Lat: {{ user.address.geolocation.lat }}<br />
+          Long: {{ user.address.geolocation.long }}
+        </td>
+        <td>
+          <button (click)="editUser(user)">✏️ Editar</button>
+          <button (click)="deleteUser(user.id)">🗑️ Excluir</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!isLoading && users.length === 0">
+    <p>Nenhum usuário encontrado.</p>
+  </div>
+
+  <!-- 📄 Paginação -->
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button (click)="changePage(currentPage - 1)" [disabled]="currentPage === 1">⬅️ Anterior</button>
+    <span>Página {{ currentPage }} de {{ totalPages }}</span>
+    <button (click)="changePage(currentPage + 1)" [disabled]="currentPage === totalPages">Próxima ➡️</button>
+  </div>
+</div>
+
+<!-- 💬 Modal de Formulário -->
+<div class="modal" *ngIf="showModal">
+  <form [formGroup]="form" (ngSubmit)="saveUser()" class="modal-content">
+    <h2>{{ isEditing ? '✏️ Editar Usuário' : '➕ Adicionar Usuário' }}</h2>
+
+    <!-- Nome -->
+    <div formGroupName="name">
+      <label>Primeiro Nome:</label>
+      <input type="text" formControlName="firstname" placeholder="Digite o primeiro nome" />
+      <div *ngIf="form.get('name.firstname')?.invalid && form.get('name.firstname')?.touched">
+        <small class="error">Campo obrigatório.</small>
+      </div>
+
+      <label>Sobrenome:</label>
+      <input type="text" formControlName="lastname" placeholder="Digite o sobrenome" />
+      <div *ngIf="form.get('name.lastname')?.invalid && form.get('name.lastname')?.touched">
+        <small class="error">Campo obrigatório.</small>
+      </div>
+    </div>
+
+    <!-- Email -->
+    <label>Email:</label>
+    <input type="email" formControlName="email" placeholder="Digite o email" />
+    <div *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+      <small class="error">Email inválido.</small>
+    </div>
+
+    <!-- Username -->
+    <label>Usuário:</label>
+    <input type="text" formControlName="username" placeholder="Digite o nome de usuário" />
+    <div *ngIf="form.get('username')?.invalid && form.get('username')?.touched">
+      <small class="error">Campo obrigatório.</small>
+    </div>
+
+    <!-- Senha -->
+    <label>Senha:</label>
+    <input type="password" formControlName="password" placeholder="Digite a senha" />
+    <div *ngIf="form.get('password')?.errors?.['passwordStrength'] && form.get('password')?.touched">
+      <small class="error">A senha deve conter:</small>
+      <ul>
+        <li *ngIf="!form.get('password')?.errors?.['passwordStrength'].hasUpperCase">✔️ Letra maiúscula</li>
+        <li *ngIf="!form.get('password')?.errors?.['passwordStrength'].hasLowerCase">✔️ Letra minúscula</li>
+        <li *ngIf="!form.get('password')?.errors?.['passwordStrength'].hasNumber">✔️ Número</li>
+        <li *ngIf="!form.get('password')?.errors?.['passwordStrength'].hasSpecialChar">✔️ Caractere especial (!@#$%^&*)</li>
+        <li *ngIf="!form.get('password')?.errors?.['passwordStrength'].isValidLength">✔️ Pelo menos 8 caracteres</li>
+      </ul>
+    </div>
+
+    <!-- Telefone -->
+    <label>Telefone:</label>
+    <input type="text" formControlName="phone" placeholder="Digite o telefone" />
+
+    <!-- Função -->
+    <label>Função:</label>
+    <select formControlName="role">
+      <option value="Admin">Admin</option>
+      <option value="Manager">Manager</option>
+      <option value="Customer">Customer</option>
+    </select>
+
+    <!-- Status -->
+    <label>Status:</label>
+    <select formControlName="status">
+      <option [value]="userStatus.Active">Ativo</option>
+      <option [value]="userStatus.Inactive">Inativo</option>
+      <option [value]="userStatus.Suspended">Suspenso</option>
+    </select>
+
+    <!-- Endereço -->
+    <h3>Endereço</h3>
+    <div formGroupName="address">
+      <label>Rua:</label>
+      <input type="text" formControlName="street" placeholder="Rua" />
+
+      <label>Número:</label>
+      <input type="text" formControlName="number" placeholder="Número" />
+
+      <label>Cidade:</label>
+      <input type="text" formControlName="city" placeholder="Cidade" />
+
+      <label>CEP:</label>
+      <input type="text" formControlName="zipcode" placeholder="CEP" />
+
+      <div formGroupName="geolocation">
+        <label>Latitude:</label>
+        <input type="text" step="any" formControlName="lat" placeholder="Latitude" />
+
+        <label>Longitude:</label>
+        <input type="text" step="any" formControlName="long" placeholder="Longitude" />
+      </div>
+    </div>
+
+    <!-- 📛 Erros da API -->
+    <div *ngIf="apiErrors.length" class="api-error">
+      <ul>
+        <li *ngFor="let err of apiErrors">❌ {{ err.error }}: {{ err.detail }}</li>
+      </ul>
+    </div>
+
+    <!-- Ações -->
+    <div class="modal-actions">
+      <button class="save" type="submit" [disabled]="form.invalid">💾 Salvar</button>
+      <button class="cancel" type="button" (click)="closeModal()">❌ Cancelar</button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,25 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  background-color: #1976d2;
+  padding: 10px;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+button {
+  margin-left: auto;
+  background: #d32f2f;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #b71c1c;
+}

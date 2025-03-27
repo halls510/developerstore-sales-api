@@ -1,0 +1,38 @@
+<div *ngIf="isLoading">🔄 Carregando detalhes da venda...</div>
+<div *ngIf="errorMessage" class="error">❌ {{ errorMessage }}</div>
+
+<div *ngIf="sale && !isLoading">
+  <h2>📋 Detalhes da Venda #{{ sale.saleNumber }}</h2>
+
+  <p><strong>🗓 Data:</strong> {{ sale.saleDate | date:'short' }}</p>
+  <p><strong>👤 Cliente:</strong> {{ sale.customerName }} (ID: {{ sale.customerId }})</p>
+  <p><strong>🏢 Filial:</strong> {{ sale.branch }}</p>
+  <p><strong>📦 Status:</strong> {{ sale.status }}</p>
+  <p><strong>💰 Total:</strong> {{ sale.totalValue | currency:'BRL' }}</p>
+
+  <h3>🛒 Itens da Venda</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Produto</th>
+        <th>Qtd</th>
+        <th>Unitário</th>
+        <th>Desconto</th>
+        <th>Total</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of sale.items">
+        <td>{{ item.productName }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ item.unitPrice | currency:'BRL' }}</td>
+        <td>{{ item.discount | currency:'BRL' }}</td>
+        <td>{{ item.total | currency:'BRL' }}</td>
+        <td>{{ item.status }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+

@@ -3,16 +3,32 @@ using Ambev.DeveloperEvaluation.Common.Validation;
 using Ambev.DeveloperEvaluation.Domain.Common;
 using Ambev.DeveloperEvaluation.Domain.Enums;
 using Ambev.DeveloperEvaluation.Domain.Validation;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Ambev.DeveloperEvaluation.Domain.Entities;
 
 
 /// <summary>
-/// Represents a user in the system with authentication and profile information.
-/// This entity follows domain-driven design principles and includes business rules validation.
+/// Represents a product in the system.
 /// </summary>
 public class User : BaseEntity, IUser
 {
+    /// <summary>
+    /// Gets or sets the user's first name.
+    /// </summary>
+    public string Firstname { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the user's last name.
+    /// </summary>
+    public string Lastname { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the user's address.
+    /// </summary>
+    public Address Address { get; set; } = new Address();  // Adicionando o Address
+
     /// <summary>
     /// Gets the user's full name.
     /// Must not be null or empty and should contain both first and last names.
@@ -42,7 +58,7 @@ public class User : BaseEntity, IUser
     /// Gets the user's role in the system.
     /// Determines the user's permissions and access levels.
     /// </summary>
-    public UserRole Role { get;     set; }
+    public UserRole Role { get; set; }
 
     /// <summary>
     /// Gets the user's current status.
@@ -78,12 +94,16 @@ public class User : BaseEntity, IUser
     /// <returns>The user's role as a string.</returns>
     string IUser.Role => Role.ToString();
 
+    // Campo para armazenar o hash das informações do usuário
+    public string LastHash { get; private set; } = string.Empty;
+
     /// <summary>
     /// Initializes a new instance of the User class.
     /// </summary>
     public User()
     {
         CreatedAt = DateTime.UtcNow;
+        LastHash = CalculateHash(); // Define o hash inicial na criação do usuário
     }
 
     /// <summary>
@@ -115,32 +135,75 @@ public class User : BaseEntity, IUser
     }
 
     /// <summary>
-    /// Activates the user account.
+    /// Calcula um hash baseado nos dados do usuário.
+    /// </summary>
+    public string CalculateHash()
+    {
+        using var sha256 = SHA256.Create();
+
+        var rawData = $"{Firstname}{Lastname}{Email}{Phone}{Role}{Status}" +
+                      $"{Address.City}{Address.Street}{Address.Number}{Address.Zipcode}" +
+                      $"{Address.Geolocation.Lat}{Address.Geolocation.Long}";
+
+        var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(rawData));
+        return Convert.ToBase64String(hashBytes);
+    }
+
+    /// <summary>
+    /// Atualiza o hash após uma modificação.
+    /// </summary>
+    public void UpdateHash()
+    {
+        LastHash = CalculateHash();
+    }
+
+    /// <summary>
+    /// Activates the user account if it is not already active.
     /// Changes the user's status to Active.
     /// </summary>
     public void Activate()
     {
+        if (Status == UserStatus.Active)
+        {
+            throw new InvalidOperationException("User is already active.");
+        }
+
         Status = UserStatus.Active;
         UpdatedAt = DateTime.UtcNow;
+        UpdateHash(); // Atualiza o hash quando o status é alterado
     }
 
     /// <summary>
-    /// Deactivates the user account.
+    /// Deactivates the user account if it is not already inactive.
     /// Changes the user's status to Inactive.
     /// </summary>
     public void Deactivate()
     {
+        if (Status == UserStatus.Inactive)
+        {
+            throw new InvalidOperationException("User is already inactive.");
+        }
+
         Status = UserStatus.Inactive;
         UpdatedAt = DateTime.UtcNow;
+        UpdateHash(); // Atualiza o hash quando o status é alterado
     }
 
     /// <summary>
-    /// Blocks the user account.
-    /// Changes the user's status to Blocked.
+    /// Suspends the user account if it is not already suspended.
+    /// Changes the user's status to Suspended.
     /// </summary>
     public void Suspend()
     {
+        if (Status == UserStatus.Suspended)
+        {
+            throw new InvalidOperationException("User is already suspended.");
+        }
+
         Status = UserStatus.Suspended;
         UpdatedAt = DateTime.UtcNow;
+        UpdateHash(); // Atualiza o hash quando o status é alterado
     }
+
+
 }

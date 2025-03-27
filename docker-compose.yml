@@ -11,40 +11,90 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
+      - RABBITMQ_HOST=ambev.developerevaluation.rabbitmq
+      - RABBITMQ_USER=${RABBITMQ_USER:-developer}
+      - RABBITMQ_PASS=${RABBITMQ_PASS:-example_password}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minio}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minio123}
     ports:
-      - "8080"
-      - "8081"
+      - "8080:8080"
+      - "8081:8081"
     volumes:
-      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+      - ${APPDATA}/Microsoft/UserSecrets:/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/https:ro
+    depends_on:
+      ambev.developerevaluation.database:
+        condition: service_healthy 
+      ambev.developerevaluation.rabbitmq:
+        condition: service_healthy
+      ambev.developerevaluation.minio:
+        condition: service_healthy
+
+  ambev.developerevaluation.frontend:
+    container_name: ambev_developer_evaluation_frontend
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+      args:
+        BUILD_CONFIGURATION: production
+    ports:
+      - "4200:80"
+    depends_on:
+      - ambev.developerevaluation.webapi
+    restart: unless-stopped
 
   ambev.developerevaluation.database:
     container_name: ambev_developer_evaluation_database
     image: postgres:13
-
     environment:
-      POSTGRES_DB: developer_evaluation
-      POSTGRES_USER: developer
-      POSTGRES_PASSWORD: ev@luAt10n
+      POSTGRES_DB: ${POSTGRES_DB:-developer_evaluation}
+      POSTGRES_USER: ${POSTGRES_USER:-developer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-example_password}
     ports:
-      - "5432"
-    restart: unless-stopped
+      - "5432:5432"
+    restart: unless-stopped 
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-developer} -d ${POSTGRES_DB:-developer_evaluation}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
-  ambev.developerevaluation.nosql:
-    container_name: ambev_developer_evaluation_nosql 
-    image: mongo:8.0    
-    environment:
-        MONGO_INITDB_ROOT_USERNAME: developer
-        MONGO_INITDB_ROOT_PASSWORD: ev@luAt10n
+  ambev.developerevaluation.rabbitmq:
+    container_name: ambev_developer_evaluation_rabbitmq
+    image: rabbitmq:3-management
+    restart: always
     ports:
-      - "27017"
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-developer}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-example_password}
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  ambev.developerevaluation.cache:
-    container_name: ambev_developer_evaluation_cache 
-    image: redis:7.4.1-alpine     
-    command: redis-server --requirepass ev@luAt10n
-    environment:
-       MONGO_INITDB_ROOT_USERNAME: developer
-       MONGO_INITDB_ROOT_PASSWORD: ev@luAt10n
+  ambev.developerevaluation.minio:
+    container_name: ambev_developer_evaluation_minio
+    image: minio/minio
     ports:
-       - "6379"
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minio123}
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  minio_data:
+  pg_data:

@@ -1,0 +1,72 @@
+/* Overlay escuro ao fundo */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1999;
+  animation: fadeIn 0.3s ease;
+}
+
+/* Drawer lateral */
+.drawer {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 400px;
+  height: 100%;
+  background: white;
+  box-shadow: -3px 0 15px rgba(0, 0, 0, 0.2);
+  overflow-y: auto;
+  transition: right 0.3s ease-in-out;
+  z-index: 2000;
+  padding: 20px;
+
+  &.visible {
+    right: 0;
+  }
+ 
+  &.open {
+    right: 0;
+  }
+
+  .drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h3 {
+      margin: 0;
+    }
+
+    button {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+    }
+  }
+
+  table {
+    width: 100%;
+    margin-top: 15px;
+    border-collapse: collapse;
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+
+    th {
+      background-color: #f4f4f4;
+    }
+  }
+}
+
+/* Fade-in suave para o overlay */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
