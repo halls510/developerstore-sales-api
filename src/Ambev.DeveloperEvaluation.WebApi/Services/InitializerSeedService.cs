@@ -91,18 +91,18 @@ public class InitializerSeedService : BackgroundService
         var mapper = services.GetRequiredService<IMapper>();
         var configuration = services.GetRequiredService<IConfiguration>();
         var userService = services.GetRequiredService<IUserService>();
-        var productService = services.GetRequiredService<IProductService>();
-        ;
+        var productService = services.GetRequiredService<IProductService>();        
 
         await InitializeProducts(mediator, mapper, productService, stoppingToken);
         await InitializeUsers(mediator, mapper, userService, configuration, stoppingToken);
-        await InitializeCarts(mediator, mapper, productService, stoppingToken);
+
+        var isTestEnv = _configuration["IS_TEST_ENVIRONMENT"] == "true";
+        if (isTestEnv)
+            await InitializeCarts(mediator, mapper, productService, stoppingToken);
     }
 
     private async Task SeedMinioAsync(CancellationToken cancellationToken)
-    {
-        //var isTestEnv = _configuration["IS_TEST_ENVIRONMENT"] == "true";
-        //if (isTestEnv) return;
+    {      
 
         try
         {
@@ -607,6 +607,8 @@ public class InitializerSeedService : BackgroundService
         IProductService productService,
         CancellationToken cancellationToken)
     {
+
+
         _logger.LogInformation("Criando carrinhos padrão para usuários ID 1 a 3...");
 
         var products = await productService.GetAllAsync(1, 10, null, cancellationToken);

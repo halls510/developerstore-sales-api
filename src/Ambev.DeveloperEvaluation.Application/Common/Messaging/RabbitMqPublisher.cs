@@ -42,8 +42,7 @@ namespace Ambev.DeveloperEvaluation.Application.Common.Messaging
                         .Map<SaleCreatedEvent>("queue-sale-created")
                         .Map<SaleCancelledEvent>("queue-sale-cancelled")
                         .Map<ItemCancelledEvent>("queue-sale-item-cancelled")
-                        .Map<SaleModifiedEvent>("queue-sale-updated")
-                        .Map<TestEvent>("queue-test"))
+                        .Map<SaleModifiedEvent>("queue-sale-updated"))
 
                     .Start();
             }
