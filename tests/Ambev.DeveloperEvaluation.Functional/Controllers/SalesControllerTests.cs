@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Functional.Infrastructure;
+using Ambev.DeveloperEvaluation.WebApi.Common;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using System.Net;
@@ -11,8 +12,7 @@ namespace Ambev.DeveloperEvaluation.Functional.Controllers;
 /// Testes funcionais para o SalesController.
 /// </summary>
 public class SalesControllerTests : FunctionalTestBase
-{
-    public SalesControllerTests(CustomWebApplicationFactory factory) : base(factory) { }
+{    
 
     [Fact]
     public async Task GetSale_ShouldReturn_SaleDetails()
@@ -33,7 +33,15 @@ public class SalesControllerTests : FunctionalTestBase
     {
         var updateRequest = new
         {
-            Status = "Completed"
+            CustomerId = 3,
+            Items = new List<SaleItemRequest>()
+            {
+                new SaleItemRequest()
+                {
+                    ProductId = 1,
+                    Quantity = 10
+                }
+            }
         };
 
         var response = await _client.PutAsJsonAsync("/api/sales/1", updateRequest);
@@ -50,7 +58,7 @@ public class SalesControllerTests : FunctionalTestBase
     [Fact]
     public async Task CancelItem_ShouldReturn_Success()
     {
-        var response = await _client.PatchAsync("/api/sales/1/items/2/cancel", null);
+        var response = await _client.PatchAsync("/api/sales/3/items/1/cancel", null);
         response.StatusCode.Should().Be(HttpStatusCode.OK, $"Erro ao cancelar item da venda: {await response.Content.ReadAsStringAsync()}");
     }
 }

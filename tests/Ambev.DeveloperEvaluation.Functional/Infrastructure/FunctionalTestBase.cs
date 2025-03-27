@@ -13,21 +13,22 @@ namespace Ambev.DeveloperEvaluation.Functional.Infrastructure;
 /// <summary>
 /// Classe base para testes funcionais, garantindo autenticação sem dependência de banco de dados.
 /// </summary>
-public abstract class FunctionalTestBase : IClassFixture<CustomWebApplicationFactory>
+public abstract class FunctionalTestBase 
 {
     protected readonly HttpClient _client;
     private static string? _authToken;
     private static readonly object _lock = new(); // Evita problemas de concorrência
     private readonly IConfiguration _configuration;
 
-    public FunctionalTestBase(CustomWebApplicationFactory factory)
+    public FunctionalTestBase()
     {
+        var factory = new CustomWebApplicationFactory(); 
         _client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
             BaseAddress = new Uri("http://localhost:8080")
         });
         _configuration = factory.Services.GetRequiredService<IConfiguration>(); // Obtém a configuração da fábrica
-        Console.WriteLine($"🔹 Teste rodando na URL base: {_client.BaseAddress}");
+        Console.WriteLine($"Teste rodando na URL base: {_client.BaseAddress}");
         AuthenticateClientAsync().GetAwaiter().GetResult();
     }
 
@@ -46,12 +47,12 @@ public abstract class FunctionalTestBase : IClassFixture<CustomWebApplicationFac
         };
 
         var content = new StringContent(JsonConvert.SerializeObject(credentials), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("/api/auth", content); 
+        var response = await _client.PostAsync("/api/auth", content);
 
         if (!response.IsSuccessStatusCode)
         {
             var errorDetails = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"❌ Erro ao autenticar: {response.StatusCode}, Resposta: {errorDetails}");
+            Console.WriteLine($"Erro ao autenticar: {response.StatusCode}, Resposta: {errorDetails}");
         }
 
         response.StatusCode.Should().Be(HttpStatusCode.OK, "Falha ao autenticar usuário de teste");
@@ -82,6 +83,6 @@ public abstract class FunctionalTestBase : IClassFixture<CustomWebApplicationFac
             throw new InvalidOperationException("⚠️ Autenticação falhou. Nenhum token recebido.");
 
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _authToken);
-        Console.WriteLine($"✅ Token JWT recebido: {_authToken}");
+        Console.WriteLine($"Token JWT recebido: {_authToken}");
     }
 }

@@ -17,4 +17,9 @@ public class ProductService : IProductService
     {
         return await _productRepository.GetByTitleAsync(title, cancellationToken);
     }
+
+    public async Task<List<Product>> GetAllAsync(int page, int pageSize, string orderBy, CancellationToken cancellationToken = default)
+    {
+        return await _productRepository.GetAllAsync(page, pageSize, orderBy, cancellationToken);
+    }
 }

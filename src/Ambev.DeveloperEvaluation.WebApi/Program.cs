@@ -121,12 +121,14 @@ public class Program
             builder.Services.AddScoped<IFileStorageService, MinioFileStorageService>();           
 
             var app = builder.Build();
-
-            // Aplica as migrations automaticamente
+           
             using (var scope = app.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
-                if (app.Environment.IsDevelopment() && context.Database.IsRelational())
+                var isTestEnv = app.Configuration["IS_TEST_ENVIRONMENT"] == "true";
+
+                // Ambiente de desenvolvimento com banco relacional e fora de teste
+                if (app.Environment.IsDevelopment() && !isTestEnv && context.Database.IsRelational())
                 {
                     await context.Database.MigrateAsync();
 
@@ -134,7 +136,18 @@ public class Program
                     var seedService = services.GetRequiredService<InitializerSeedService>();
                     await seedService.RunManuallyAsync();
                 }
-            }           
+
+                // Ambiente de teste com banco InMemory
+                if (isTestEnv && !context.Database.IsRelational())
+                {
+                    await context.Database.EnsureDeletedAsync();
+                    await context.Database.EnsureCreatedAsync();
+
+                    var services = scope.ServiceProvider;
+                    var seedService = services.GetRequiredService<InitializerSeedService>();
+                    await seedService.RunManuallyAsync();
+                }
+            }
 
             // 2️⃣ Aplica o CORS antes de Authorization
             app.UseCors("AllowAngularDev");

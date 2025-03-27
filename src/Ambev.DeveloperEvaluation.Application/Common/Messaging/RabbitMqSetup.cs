@@ -11,8 +11,6 @@ public static class RabbitMqSetup
     /// </summary>
     public async static Task EnsureRabbitMqQueuesExist(IConfiguration configuration)
     {
-        var isTestEnv = configuration["IS_TEST_ENVIRONMENT"] == "true";
-        if (isTestEnv) return;
 
         try
         {
@@ -34,8 +32,7 @@ public static class RabbitMqSetup
                 "queue-sale-created",
                 "queue-sale-cancelled",
                 "queue-sale-item-cancelled",
-                "queue-sale-updated",
-                "queue-test"
+                "queue-sale-updated"
             };
 
             foreach (var queue in queues)

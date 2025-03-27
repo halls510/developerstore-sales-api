@@ -12,8 +12,7 @@ namespace Ambev.DeveloperEvaluation.Functional.Controllers;
 /// Testes para autenticação de usuários no AuthController.
 /// </summary>
 public class AuthControllerTests : FunctionalTestBase
-{
-    public AuthControllerTests(CustomWebApplicationFactory factory) : base(factory) { }
+{    
 
     [Fact]
     public async Task AuthenticateUser_ShouldReturn_Token_On_ValidCredentials()

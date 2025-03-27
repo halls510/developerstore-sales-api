@@ -1,6 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Common.Security;
 using Ambev.DeveloperEvaluation.Integration.Infrastructure;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -10,13 +9,11 @@ using Xunit;
 namespace Ambev.DeveloperEvaluation.Integration.Users;
 
 public class UserIntegrationTests : IntegrationTestBase
-{
-    public UserIntegrationTests(CustomWebApplicationFactory factory) : base(factory) { }
+{    
 
     [Fact]
     public async Task CreateUser_ShouldAddUserToDatabase()
-    {
-        await AuthenticateClientAsync(); // Adiciona o token JWT ao cliente
+    {       
 
         var user = new
         {
@@ -60,8 +57,7 @@ public class UserIntegrationTests : IntegrationTestBase
 
     [Fact]
     public async Task GetUsers_ShouldReturnUsersFromDatabase()
-    {
-        await AuthenticateClientAsync(); // Adiciona o token JWT ao cliente
+    {        
 
         var passwordHasher = new BCryptPasswordHasher(); // Instancia o BCrypt
         var hashedPassword = passwordHasher.HashPassword("Ana@123");
@@ -100,8 +96,7 @@ public class UserIntegrationTests : IntegrationTestBase
 
     [Fact]
     public async Task DeleteUser_ShouldRemoveUserFromDatabase()
-    {
-        await AuthenticateClientAsync(); // Adiciona o token JWT ao cliente
+    {        
 
         int userId = 0;
         var passwordHasher = new BCryptPasswordHasher(); // Instancia o BCrypt
@@ -144,7 +139,6 @@ public class UserIntegrationTests : IntegrationTestBase
     [Fact]
     public async Task GetUserById_ShouldReturnCorrectUser()
     {
-        await AuthenticateClientAsync(); // Adiciona o token JWT ao cliente
 
         int userId = 0;
         var passwordHasher = new BCryptPasswordHasher(); // Instancia o BCrypt
@@ -185,8 +179,7 @@ public class UserIntegrationTests : IntegrationTestBase
 
     [Fact]
     public async Task UpdateUser_ShouldModifyUserInDatabase()
-    {
-        await AuthenticateClientAsync(); // Adiciona o token JWT ao cliente
+    {        
 
         int userId = 0;
         var passwordHasher = new BCryptPasswordHasher(); // Instancia o BCrypt

@@ -25,12 +25,10 @@ public class GetProductHandlerTests
         _productRepository = Substitute.For<IProductRepository>();
         _mapper = Substitute.For<IMapper>();
         _logger = Substitute.For<ILogger<GetProductHandler>>();
-        _rabbitMqPublisher = Substitute.For<IRabbitMqPublisher>();
         _handler = new GetProductHandler(
             Substitute.For<IServiceProvider>(),
             _productRepository,
             _mapper,
-            _rabbitMqPublisher,
             _logger);
     }
 

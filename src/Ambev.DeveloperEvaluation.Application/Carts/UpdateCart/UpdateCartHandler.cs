@@ -116,9 +116,9 @@ public class UpdateCartHandler : IRequestHandler<UpdateCartCommand, UpdateCartRe
                 ProductId = item.ProductId,
                 Quantity = item.Quantity,
                 ProductName = product?.Title ?? "Unknown Product",
-                UnitPrice = product?.Price ?? new Money(0),
-                Discount = discount,
-                Total = totalWithDiscount
+                UnitPrice = new Money(product?.Price ?? new Money(0)),
+                Discount = new Money(discount),
+                Total = new Money(totalWithDiscount)
             };
         }).ToList();
 

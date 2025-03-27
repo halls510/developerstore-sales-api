@@ -1,132 +1,109 @@
 ﻿using Ambev.DeveloperEvaluation.ORM;
-using Ambev.DeveloperEvaluation.Domain.Entities;
-using Ambev.DeveloperEvaluation.Domain.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using System.Text;
 using Xunit;
-using Ambev.DeveloperEvaluation.Common.Security;
-using Ambev.DeveloperEvaluation.WebApi.Common;
+using System.Net;
+using FluentAssertions;
+using Microsoft.Extensions.Configuration;
 
 namespace Ambev.DeveloperEvaluation.Integration.Infrastructure;
 
 /// <summary>
-/// Classe base para testes de integração, fornecendo autenticação e acesso ao banco de dados.
+/// Classe base para testes de integração, utilizando o banco real com acesso ao contexto e autenticação via seed.
 /// </summary>
-public abstract class IntegrationTestBase : IClassFixture<CustomWebApplicationFactory>
+public abstract class IntegrationTestBase 
 {
     protected readonly HttpClient _client;
     protected readonly IServiceScopeFactory _scopeFactory;
+    private string? _authToken;
+    private static readonly object _lock = new(); // Evita concorrência
+    private readonly IConfiguration _configuration;
 
-    public IntegrationTestBase(CustomWebApplicationFactory factory)
+    public IntegrationTestBase()
     {
+        var factory = new CustomWebApplicationFactory(); 
         _client = factory.CreateClient();
         _scopeFactory = factory.Services.GetRequiredService<IServiceScopeFactory>();
+        _configuration = factory.Services.GetRequiredService<IConfiguration>();
 
-        Console.WriteLine($"Teste rodando na URL base: {_client.BaseAddress}");
+        Console.WriteLine($"🧪 Teste rodando na URL base: {_client.BaseAddress}");
 
-        EnsureAdminUser(); // Criar usuário Admin se não existir
+        AuthenticateClientAsync().GetAwaiter().GetResult();
     }
 
     /// <summary>
-    /// Executa ações no contexto do banco de dados de testes.
+    /// Executa ações síncronas diretamente no contexto do banco de dados.
     /// </summary>
     protected void ExecuteDbContext(Action<DefaultContext> action)
     {
-        using (var scope = _scopeFactory.CreateScope())
-        {
-            var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
-            action(context);
-        }
+        using var scope = _scopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+        action(context);
     }
 
     /// <summary>
-    /// Garante que um usuário Admin existe no banco de dados.
+    /// Executa ações assíncronas diretamente no contexto do banco de dados.
     /// </summary>
-    protected void EnsureAdminUser()
+    protected async Task ExecuteDbContextAsync(Func<DefaultContext, Task> action)
     {
-        ExecuteDbContext(context =>
-        {
-            var adminUser = context.Users.FirstOrDefault(u => u.Email == "admin@example.com");
-            if (adminUser == null)
-            {
-                var passwordHasher = new BCryptPasswordHasher(); // Instancia o BCrypt
-                var hashedPassword = passwordHasher.HashPassword("A#g7jfdsd#$%#"); // Gera a senha hash
-
-                context.Users.Add(new User
-                {
-                    Username = "admin",
-                    Firstname = "Usuário",
-                    Lastname = "Admin",
-                    Email = "admin@example.com",
-                    Password = hashedPassword,
-                    Phone = "+5511999999999",
-                    Role = UserRole.Admin,
-                    Status = UserStatus.Active,
-                    Address = new Address
-                    {
-                        City = "Belo Horizonte",
-                        Street = "Avenida do Contorno",
-                        Number = 1000,
-                        Zipcode = "30110-936", 
-                        Geolocation = new Geolocation
-                        {
-                            Lat = -19.9245, 
-                            Long = -43.9352 
-                        }
-                    }
-                });
-
-                context.SaveChanges();
-                Console.WriteLine("Usuário Admin criado com senha criptografada!");
-            }
-        });
+        using var scope = _scopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<DefaultContext>();
+        await action(context);
     }
 
-
     /// <summary>
-    /// Obtém um token de autenticação JWT para testes.
+    /// Obtém um token de autenticação JWT com base no usuário de seed.
     /// </summary>
-    protected async Task<string> GetAuthToken(string email = "admin@example.com", string password = "A#g7jfdsd#$%#")
+    protected async Task<string> GetAuthToken()
     {
+        var adminEmail = _configuration["AdminEmail"];
+        var adminPassword = _configuration["AdminPassword"];
+
         var credentials = new
         {
-            Email = email, // 🔹 Corrigido para usar Email em vez de Username
-            Password = password
+            Email = adminEmail,
+            Password = adminPassword
         };
 
         var content = new StringContent(JsonConvert.SerializeObject(credentials), Encoding.UTF8, "application/json");
-        var response = await _client.PostAsync("api/auth", content);
+        var response = await _client.PostAsync("/api/auth", content);
 
         if (!response.IsSuccessStatusCode)
         {
             var errorDetails = await response.Content.ReadAsStringAsync();
-            Console.WriteLine($"Erro ao autenticar: {response.StatusCode}, Resposta: {errorDetails}");
+            Console.WriteLine($"❌ Erro ao autenticar: {response.StatusCode}, Resposta: {errorDetails}");
         }
 
-        response.EnsureSuccessStatusCode(); // Se falhar, significa que as credenciais estão erradas
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "Falha ao autenticar usuário Admin da seed");
 
         var responseData = JsonConvert.DeserializeObject<dynamic>(await response.Content.ReadAsStringAsync());
-        return responseData.data.token;
+        return responseData?.data.token;
     }
 
     /// <summary>
-    /// Adiciona o token de autenticação ao HttpClient.
+    /// Autentica o cliente HTTP adicionando o token JWT.
     /// </summary>
-    protected async Task AuthenticateClientAsync()
+    private async Task AuthenticateClientAsync()
     {
-        var token = await GetAuthToken();
+        if (!string.IsNullOrEmpty(_authToken))
+        {
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _authToken);
+            return;
+        }
 
-        if (string.IsNullOrEmpty(token))
+        lock (_lock)
         {
-            Console.WriteLine("Erro: O token JWT não foi gerado!");
+            if (!string.IsNullOrEmpty(_authToken)) return;
         }
-        else
-        {
-            Console.WriteLine($"Token JWT recebido: {token}");
-            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        }
+
+        _authToken = await GetAuthToken();
+
+        if (string.IsNullOrEmpty(_authToken))
+            throw new InvalidOperationException("⚠️ Autenticação falhou. Nenhum token recebido.");
+
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _authToken);
+        Console.WriteLine($"✅ Token JWT recebido: {_authToken}");
     }
-
 }
