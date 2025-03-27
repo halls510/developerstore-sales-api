@@ -18,18 +18,15 @@ public class GetProductHandler : IRequestHandler<GetProductCommand, GetProductRe
     private readonly IProductRepository _productRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<GetProductHandler> _logger;
-    private readonly IRabbitMqPublisher _rabbitMqPublisher;
 
     public GetProductHandler(
         IServiceProvider serviceProvider,
         IProductRepository productRepository,
         IMapper mapper,
-        IRabbitMqPublisher rabbitMqPublisher,
         ILogger<GetProductHandler> logger)
     {        
         _productRepository = productRepository;
         _mapper = mapper;
-        _rabbitMqPublisher = rabbitMqPublisher;
         _logger = logger;
     }
 
@@ -56,8 +53,7 @@ public class GetProductHandler : IRequestHandler<GetProductCommand, GetProductRe
         }
 
         _logger.LogInformation("Product with ID {ProductId} retrieved successfully", request.Id);
-        TestEvent testEvent = new TestEvent($"Product with ID {request.Id} retrieved successfully");
-        await _rabbitMqPublisher.SendAsync(testEvent);
+     
         return _mapper.Map<GetProductResult>(product);
     }
 }

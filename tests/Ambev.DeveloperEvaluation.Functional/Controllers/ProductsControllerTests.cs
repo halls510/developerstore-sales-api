@@ -1,9 +1,12 @@
-﻿using Ambev.DeveloperEvaluation.Functional.Infrastructure;
+﻿using Ambev.DeveloperEvaluation.Domain.Entities;
+using Ambev.DeveloperEvaluation.Functional.Infrastructure;
+using Ambev.DeveloperEvaluation.WebApi.Common;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Http.Json;
 using Xunit;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Ambev.DeveloperEvaluation.Functional.Controllers;
 
@@ -11,8 +14,7 @@ namespace Ambev.DeveloperEvaluation.Functional.Controllers;
 /// Testes funcionais para o ProductsController.
 /// </summary>
 public class ProductsControllerTests : FunctionalTestBase
-{
-    public ProductsControllerTests(CustomWebApplicationFactory factory) : base(factory) { }
+{    
 
     [Fact]
     public async Task CreateProduct_ShouldReturn_Created()
@@ -24,7 +26,7 @@ public class ProductsControllerTests : FunctionalTestBase
             Description = "Smartphone de última geração",
             Category = "Electronics",
             Image = "https://example.com/smartphone.jpg"
-        };
+        };                
 
         var response = await _client.PostAsJsonAsync("/api/products", productRequest);
         response.StatusCode.Should().Be(HttpStatusCode.Created, $"Erro ao criar produto: {await response.Content.ReadAsStringAsync()}");
@@ -42,8 +44,11 @@ public class ProductsControllerTests : FunctionalTestBase
     {
         var updateRequest = new
         {
-            Title = "Smartphone X Pro",
-            Price = 1499.99
+           Title = "Skol Pilsen Plus",
+           Description = "Cerveja Pilsen leve e refrescante, 600ml.",
+           Price = 8.99M,
+           Category = "Cervejas",
+           Image = "http://example.com/skol.png"
         };
 
         var response = await _client.PutAsJsonAsync("/api/products/1", updateRequest);
@@ -53,7 +58,7 @@ public class ProductsControllerTests : FunctionalTestBase
     [Fact]
     public async Task DeleteProduct_ShouldReturn_Success()
     {
-        var response = await _client.DeleteAsync("/api/products/1"); // Supondo que o produto 1 existe
+        var response = await _client.DeleteAsync("/api/products/21"); // Supondo que o produto 21 existe
         response.StatusCode.Should().Be(HttpStatusCode.OK, $"Erro ao excluir produto: {await response.Content.ReadAsStringAsync()}");
     }
 

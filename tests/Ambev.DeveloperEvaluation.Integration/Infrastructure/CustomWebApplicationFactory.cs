@@ -1,9 +1,13 @@
-﻿using Ambev.DeveloperEvaluation.ORM;
+﻿using Ambev.DeveloperEvaluation.Application.Common.Messaging;
+using Ambev.DeveloperEvaluation.Integration.Utils;
+using Ambev.DeveloperEvaluation.ORM;
 using Ambev.DeveloperEvaluation.WebApi;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NSubstitute;
 
 namespace Ambev.DeveloperEvaluation.Integration.Infrastructure;
 
@@ -12,8 +16,36 @@ namespace Ambev.DeveloperEvaluation.Integration.Infrastructure;
 /// </summary>
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
+    public IConfiguration Configuration { get; private set; }
+    private readonly string _databaseName;
+
+    public CustomWebApplicationFactory(string? databaseName = null)
+    {
+        _databaseName = databaseName ?? Guid.NewGuid().ToString(); // Garante banco único
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+
+        builder.ConfigureAppConfiguration((context, config) =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                { "IS_TEST_ENVIRONMENT", "true" }
+            });
+
+            EnvLoader.LoadEnvFromProjectRoot();
+
+            // Define que estamos em ambiente de testes
+            Environment.SetEnvironmentVariable("IS_TEST_ENVIRONMENT", "true");
+
+            config.AddEnvironmentVariables();
+
+            // Constrói o IConfiguration completo para acesso imediato
+            var builtConfig = config.Build();
+            Configuration = builtConfig;
+        });
+
         builder.ConfigureServices(services =>
         {
             Console.WriteLine("Configurando WebApplicationFactory para testes...");
@@ -29,17 +61,22 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             // Configurar banco de dados em memória para testes
             services.AddDbContext<DefaultContext>(options =>
             {
-                options.UseInMemoryDatabase("TestDatabase");
+                options.UseInMemoryDatabase(_databaseName);
             });
 
-            // Criar banco de dados para testes
-            using var scope = services.BuildServiceProvider().CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<DefaultContext>();
-            db.Database.EnsureCreated();
+            // ✅ Mock de IRabbitMqPublisher
+            var publisherDescriptor = services.FirstOrDefault(s =>
+                s.ServiceType == typeof(IRabbitMqPublisher));
+            if (publisherDescriptor != null) services.Remove(publisherDescriptor);
 
-            Console.WriteLine("Banco de dados de testes inicializado.");
+            var mockPublisher = Substitute.For<IRabbitMqPublisher>();
+            services.AddSingleton(mockPublisher);
+
+            Console.WriteLine("✅ Banco InMemory configurado.");
+            Console.WriteLine("✅ Mock de IRabbitMqPublisher registrado.");
         });
 
         Console.WriteLine("API de Teste inicializada com sucesso!");
-    }
+
+    }    
 }

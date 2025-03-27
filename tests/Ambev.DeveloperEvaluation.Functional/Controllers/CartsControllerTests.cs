@@ -1,6 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Functional.Infrastructure;
 using FluentAssertions;
-using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Http.Json;
 using Xunit;
@@ -12,14 +11,13 @@ namespace Ambev.DeveloperEvaluation.Functional.Controllers;
 /// </summary>
 public class CartsControllerTests : FunctionalTestBase
 {
-    public CartsControllerTests(CustomWebApplicationFactory factory) : base(factory) { }
 
     [Fact]
     public async Task CreateCart_ShouldReturn_Created()
     {
         var cartRequest = new
         {
-            UserId = 1,
+            UserId = 8,
             Products = new[]
             {
                 new { ProductId = 1, Quantity = 2 }
@@ -42,9 +40,10 @@ public class CartsControllerTests : FunctionalTestBase
     {
         var updateRequest = new
         {
+            UserId = 1,
             Products = new[]
             {
-                new { ProductId = 1, Quantity = 5 } // Alterando quantidade
+                new { ProductId = 18, Quantity = 5 } // Alterando quantidade
             }
         };
 
@@ -55,7 +54,7 @@ public class CartsControllerTests : FunctionalTestBase
     [Fact]
     public async Task DeleteCart_ShouldReturn_Success()
     {
-        var response = await _client.DeleteAsync("/api/carts/1"); // Supondo que o carrinho 1 existe
+        var response = await _client.DeleteAsync("/api/carts/2"); // Supondo que o carrinho 2 existe
         response.StatusCode.Should().Be(HttpStatusCode.OK, $"Erro ao excluir carrinho: {await response.Content.ReadAsStringAsync()}");
     }
 

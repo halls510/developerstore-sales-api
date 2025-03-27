@@ -1,7 +1,6 @@
 ﻿using Ambev.DeveloperEvaluation.Integration.Infrastructure;
 using Ambev.DeveloperEvaluation.Domain.Entities;
 using Ambev.DeveloperEvaluation.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System.Net;
 using System.Text;
@@ -11,8 +10,7 @@ using Ambev.DeveloperEvaluation.Common.Security;
 namespace Ambev.DeveloperEvaluation.Integration.Auth
 {
     public class AuthIntegrationTests : IntegrationTestBase
-    {
-        public AuthIntegrationTests(CustomWebApplicationFactory factory) : base(factory) { }
+    {        
 
         [Fact]
         public async Task AuthenticateUser_ShouldReturnToken_WhenCredentialsAreValid()

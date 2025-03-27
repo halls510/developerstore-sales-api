@@ -10,13 +10,11 @@ using Xunit;
 namespace Ambev.DeveloperEvaluation.Integration.Sales;
 
 public class SalesIntegrationTests : IntegrationTestBase
-{
-    public SalesIntegrationTests(CustomWebApplicationFactory factory) : base(factory) { }
+{    
 
     [Fact]
     public async Task ListSales_ShouldReturnSalesFromDatabase()
     {
-        await AuthenticateClientAsync();
 
         // Arrange - Criar uma venda antes de buscar
         ExecuteDbContext(context =>
@@ -45,7 +43,6 @@ public class SalesIntegrationTests : IntegrationTestBase
     [Fact]
     public async Task GetSaleById_ShouldReturnCorrectSale()
     {
-        await AuthenticateClientAsync();
 
         int saleId = 0;
         ExecuteDbContext(context =>
@@ -73,18 +70,17 @@ public class SalesIntegrationTests : IntegrationTestBase
     [Fact]
     public async Task CancelSale_ShouldMarkSaleAsCancelled()
     {
-        await AuthenticateClientAsync();
-
         int saleId = 0;
         ExecuteDbContext(context =>
         {
             var sale = new Sale(1, "Carlos Silva");
-            sale.AddItem(new SaleItem(1, "Produto Teste", 2, new Money(50M), new Money(0M), new Money(100M)));            
+            sale.AddItem(new SaleItem(1, "Produto Teste", 2, new Money(50M), new Money(0M), new Money(100M)));
 
             context.Sales.Add(sale);
             context.SaveChanges();
             saleId = sale.Id;
         });
+
 
         var response = await _client.PatchAsync($"api/sales/{saleId}/cancel", null);
         if (!response.IsSuccessStatusCode)
@@ -107,7 +103,6 @@ public class SalesIntegrationTests : IntegrationTestBase
     [Fact]
     public async Task CancelItem_ShouldMarkItemAsCancelled()
     {
-        await AuthenticateClientAsync();
 
         int saleId = 0, productId = 2;
         ExecuteDbContext(context =>

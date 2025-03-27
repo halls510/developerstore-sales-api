@@ -11,6 +11,10 @@ using MediatR;
 using Microsoft.Extensions.Options;
 using Minio.DataModel.Args;
 using Minio;
+using Ambev.DeveloperEvaluation.Application.Carts.CreateCart;
+using Ambev.DeveloperEvaluation.WebApi.Features.Carts.CreateCart;
+using Amazon.Runtime.Internal;
+using Ambev.DeveloperEvaluation.Application.Carts.Checkout;
 
 namespace Ambev.DeveloperEvaluation.WebApi.Services;
 
@@ -82,19 +86,24 @@ public class InitializerSeedService : BackgroundService
     }
 
     private async Task SeedDatabaseAsync(IServiceProvider services, CancellationToken stoppingToken)
-    {   
+    {
         var mediator = services.GetRequiredService<IMediator>();
         var mapper = services.GetRequiredService<IMapper>();
         var configuration = services.GetRequiredService<IConfiguration>();
         var userService = services.GetRequiredService<IUserService>();
         var productService = services.GetRequiredService<IProductService>();
+        ;
 
         await InitializeProducts(mediator, mapper, productService, stoppingToken);
         await InitializeUsers(mediator, mapper, userService, configuration, stoppingToken);
+        await InitializeCarts(mediator, mapper, productService, stoppingToken);
     }
 
     private async Task SeedMinioAsync(CancellationToken cancellationToken)
     {
+        //var isTestEnv = _configuration["IS_TEST_ENVIRONMENT"] == "true";
+        //if (isTestEnv) return;
+
         try
         {
 
@@ -109,7 +118,7 @@ public class InitializerSeedService : BackgroundService
             try
             {
                 var buckets = await minio.ListBucketsAsync(cancellationToken);
-                _logger.LogInformation("✅ Conectado ao MinIO com sucesso. Buckets existentes: {Count}", buckets.Buckets.Count);
+                _logger.LogInformation("✅ Conectado ao MinIO com sucesso");
             }
             catch (Exception connEx)
             {
@@ -229,6 +238,66 @@ public class InitializerSeedService : BackgroundService
             email: "customer@devstore.com",
             password: "Customer123!",
             phone: "31977777777"
+        );
+
+        // Customer com valores fixos
+        await CreateUserIfNotExists(
+            mediator, mapper, userService, cancellationToken,
+            role: UserRole.Customer,
+            username: "customer_dois",
+            firstname: "Usuário",
+            lastname: "Customer Dois",
+            email: "customerdois@devstore.com",
+            password: "Customer1232342!",
+            phone: "31977777788"
+        );
+
+        // Customer com valores fixos
+        await CreateUserIfNotExists(
+            mediator, mapper, userService, cancellationToken,
+            role: UserRole.Customer,
+            username: "customer_tres",
+            firstname: "Usuário",
+            lastname: "Customer Tres",
+            email: "customertres@devstore.com",
+            password: "Customer123asda2342!",
+            phone: "31977777799"
+        );
+
+        // Customer com valores fixos
+        await CreateUserIfNotExists(
+            mediator, mapper, userService, cancellationToken,
+            role: UserRole.Customer,
+            username: "customer_quatro",
+            firstname: "Usuário",
+            lastname: "Customer Quatro",
+            email: "customerquatro@devstore.com",
+            password: "Customer123DF34asda2342!",
+            phone: "31977887799"
+        );
+
+        // Customer com valores fixos
+        await CreateUserIfNotExists(
+            mediator, mapper, userService, cancellationToken,
+            role: UserRole.Customer,
+            username: "customer_cinco",
+            firstname: "Usuário",
+            lastname: "Customer Cinco",
+            email: "customercinco@devstore.com",
+            password: "Customer12sadsad3DF34asda2342!",
+            phone: "31977888899"
+        );
+
+        // Customer com valores fixos
+        await CreateUserIfNotExists(
+            mediator, mapper, userService, cancellationToken,
+            role: UserRole.Customer,
+            username: "customer_seis",
+            firstname: "Usuário",
+            lastname: "Customer Seis",
+            email: "customerseis@devstore.com",
+            password: "Customer1sdfs2sadsad3DF34asda2342!",
+            phone: "31977898899"
         );
     }
 
@@ -531,4 +600,71 @@ public class InitializerSeedService : BackgroundService
             _logger.LogInformation("Produto '{Title}' criado com sucesso.", request.Title);
         }
     }
+
+    private async Task InitializeCarts(
+        IMediator mediator,
+        IMapper mapper,
+        IProductService productService,
+        CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Criando carrinhos padrão para usuários ID 1 a 3...");
+
+        var products = await productService.GetAllAsync(1, 10, null, cancellationToken);
+
+
+        if (!products.Any())
+        {
+            _logger.LogWarning("Nenhum produto disponível para adicionar aos carrinhos.");
+            return;
+        }
+
+        var random = new Random();
+
+        for (int userId = 1; userId <= 5; userId++)
+        {
+            var selectedProducts = products.OrderBy(_ => random.Next()).Take(2).ToList();
+            var cartRequest = new CreateCartRequest();
+            if (userId == 5)
+            {
+                var productsItems = new List<CartItemRequest>
+                {
+                 new CartItemRequest { ProductId = 1, Quantity = 4},
+                 new CartItemRequest { ProductId = 2, Quantity = 6}
+                };
+
+                cartRequest = new CreateCartRequest
+                {
+                    UserId = userId,
+                    Date = DateTime.UtcNow,
+                    Products = productsItems
+                };
+            }
+            else
+            {
+                cartRequest = new CreateCartRequest
+                {
+                    UserId = userId,
+                    Date = DateTime.UtcNow,
+                    Products = selectedProducts.Select(p => new CartItemRequest
+                    {
+                        ProductId = p.Id,
+                        Quantity = random.Next(1, 5) // Quantidade entre 1 e 4
+                    }).ToList()
+                };
+            }
+            var command = mapper.Map<CreateCartCommand>(cartRequest);
+            var createdCart = await mediator.Send(command, cancellationToken);
+
+            _logger.LogInformation("Carrinho criado para usuário com ID {UserId}", userId);
+
+            // ✅ Se for o usuário 3, realiza o checkout
+            if (userId == 3 || userId == 4  || userId == 5)
+            {
+                var checkoutCommand = new CheckoutCommand { CartId = createdCart.Id };
+                var sale = await mediator.Send(checkoutCommand, cancellationToken);
+                _logger.LogInformation("Checkout realizado para o carrinho do usuário ID 3.");
+            }
+        }
+    }
+
 }

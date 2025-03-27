@@ -13,7 +13,7 @@ services:
       - ASPNETCORE_HTTPS_PORTS=8081
       - RABBITMQ_HOST=ambev.developerevaluation.rabbitmq
       - RABBITMQ_USER=${RABBITMQ_USER:-developer}
-      - RABBITMQ_PASS=${RABBITMQ_PASSWORD:-example_password}
+      - RABBITMQ_PASS=${RABBITMQ_PASS:-example_password}
       - MINIO_ROOT_USER=${MINIO_ROOT_USER:-minio}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-minio123}
     ports:

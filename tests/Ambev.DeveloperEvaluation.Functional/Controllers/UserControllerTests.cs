@@ -1,4 +1,5 @@
-﻿using Ambev.DeveloperEvaluation.Functional.Infrastructure;
+﻿using Ambev.DeveloperEvaluation.Domain.Enums;
+using Ambev.DeveloperEvaluation.Functional.Infrastructure;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using System.Net;
@@ -11,8 +12,7 @@ namespace Ambev.DeveloperEvaluation.Functional.Controllers;
 /// Testes para o UserController.
 /// </summary>
 public class UserControllerTests : FunctionalTestBase
-{
-    public UserControllerTests(CustomWebApplicationFactory factory) : base(factory) { }
+{    
 
     [Fact]
     public async Task CreateUser_ShouldReturn_Created()
@@ -46,14 +46,14 @@ public class UserControllerTests : FunctionalTestBase
         {
             Name = new { Firstname = "Ana", Lastname = "Lima" },
             Username = "analima",
-            Email = "ana@example.com",
+            Email = "customercinco@devstore.com",
             Password = "Ana@123454",
             Phone = "+5511988888847",
             Role = "Customer",
             Status = "Active"
         };
 
-        var response = await _client.PutAsJsonAsync("/api/users/1", updateRequest);
+        var response = await _client.PutAsJsonAsync("/api/users/7", updateRequest);
         response.StatusCode.Should().Be(HttpStatusCode.OK, $"Erro ao atualizar usuário: {await response.Content.ReadAsStringAsync()}");
     }
 

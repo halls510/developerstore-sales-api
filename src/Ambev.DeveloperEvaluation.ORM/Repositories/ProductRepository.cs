@@ -81,11 +81,9 @@ public class ProductRepository : IProductRepository
     /// <summary>
     /// Retrieves all products with pagination and sorting.
     /// </summary>
-    public async Task<(IEnumerable<Product>, int, int, int)> GetAllAsync(int page, int pageSize, string orderBy, CancellationToken cancellationToken = default)
+    public async Task<List<Product>> GetAllAsync(int page, int pageSize, string orderBy, CancellationToken cancellationToken = default)
     {
-        var query = _context.Products.Include(p => p.Category).AsQueryable();
-        int totalItems = await query.CountAsync(cancellationToken);
-        int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+        var query = _context.Products.Include(p => p.Category).AsQueryable();    
 
         if (!string.IsNullOrEmpty(orderBy))
         {
@@ -104,7 +102,7 @@ public class ProductRepository : IProductRepository
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-        return (products, totalItems, page, totalPages);
+        return products;
     }
 
     /// <summary>

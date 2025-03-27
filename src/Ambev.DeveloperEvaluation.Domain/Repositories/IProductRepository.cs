@@ -49,12 +49,8 @@ public interface IProductRepository
     /// <returns>
     /// A tuple containing:
     /// - A collection of products.
-    /// - Total number of items.
-    /// - Current page.
-    /// - Total number of pages.
     /// </returns>
-    Task<(IEnumerable<Product> Products, int TotalItems, int CurrentPage, int TotalPages)>
-        GetAllAsync(int page, int pageSize, string orderBy, CancellationToken cancellationToken = default);
+    Task<List<Product>>  GetAllAsync(int page, int pageSize, string orderBy, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates an existing product in the repository.

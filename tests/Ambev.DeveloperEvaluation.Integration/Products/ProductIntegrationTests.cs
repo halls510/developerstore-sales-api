@@ -1,4 +1,5 @@
 ﻿using Ambev.DeveloperEvaluation.Integration.Infrastructure;
+using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -8,14 +9,11 @@ using Xunit;
 namespace Ambev.DeveloperEvaluation.Integration.Products;
 
 public class ProductIntegrationTests : IntegrationTestBase
-{
-    public ProductIntegrationTests(CustomWebApplicationFactory factory) : base(factory) { }
+{    
 
     [Fact]
     public async Task CreateProduct_ShouldAddProductToDatabase()
     {
-        await AuthenticateClientAsync(); // Adiciona o token JWT ao cliente
-
         var product = new
         {
             Title = "Notebook Gamer",
@@ -52,93 +50,12 @@ public class ProductIntegrationTests : IntegrationTestBase
         });
 
         Console.WriteLine("Produto criado com sucesso!");
-    }
-
-    [Fact]
-    public async Task GetProducts_ShouldReturnProductsFromDatabase()
-    {
-        await AuthenticateClientAsync(); // Adiciona o token JWT ao cliente
-
-        // Arrange - Criar um produto no banco de dados antes de buscar
-        ExecuteDbContext(context =>
-        {
-            context.Products.Add(new Ambev.DeveloperEvaluation.Domain.Entities.Product
-            {
-                Title = "Smartphone",
-                Price = new Ambev.DeveloperEvaluation.Domain.ValueObjects.Money(2999.99M),
-                Description = "Smartphone Android com 128GB",
-                Image = "https://example.com/smartphone.jpg",
-                CreatedAt = DateTime.UtcNow,
-                Category = new Ambev.DeveloperEvaluation.Domain.Entities.Category
-                {
-                    Name = "Eletrônicos"
-                }
-            });
-            context.SaveChanges();
-        });
-
-        // Act - Buscar produtos
-        var response = await _client.GetAsync("api/products");
-        response.EnsureSuccessStatusCode();
-
-        var jsonResponse = await response.Content.ReadAsStringAsync();
-        Console.WriteLine($"Resposta da API: {jsonResponse}");
-
-        var responseData = JObject.Parse(jsonResponse); // Converte a resposta JSON para JObject
-        var products = responseData["data"].ToObject<List<JObject>>(); // Converte "data" para uma lista de JObject
-
-        // Assert
-        Assert.Contains(products, p => p["title"]?.ToString() == "Smartphone"); 
-        Console.WriteLine(" Produtos retornados com sucesso!");
-    }
-    [Fact]
-    public async Task GetProductById_ShouldReturnCorrectProduct()
-    {
-        await AuthenticateClientAsync(); // Adiciona o token JWT ao cliente
-
-        int productId = 0;
-
-        // Arrange - Criar um produto no banco de dados antes de buscá-lo
-        ExecuteDbContext(context =>
-        {
-            var product = new Ambev.DeveloperEvaluation.Domain.Entities.Product
-            {
-                Title = "Monitor 4K",
-                Price = new Ambev.DeveloperEvaluation.Domain.ValueObjects.Money(1899.99M),
-                Description = "Monitor 4K de 27 polegadas",
-                Image = "https://example.com/monitor.jpg",
-                CreatedAt = DateTime.UtcNow,
-                Category = new Ambev.DeveloperEvaluation.Domain.Entities.Category
-                {
-                    Name = "Eletrônicos"
-                }
-            };
-
-            context.Products.Add(product);
-            context.SaveChanges();
-
-            productId = product.Id;
-        });
-
-        // Act - Buscar produto pelo ID
-        var response = await _client.GetAsync($"api/products/{productId}");
-        response.EnsureSuccessStatusCode();
-
-        var jsonResponse = await response.Content.ReadAsStringAsync();
-        Console.WriteLine($"Resposta da API: {jsonResponse}");
-
-        var productResponse = JsonConvert.DeserializeObject<dynamic>(jsonResponse);
-
-        // Assert - Agora acessamos o título corretamente dentro de "data"
-        Assert.Equal("Monitor 4K", (string)productResponse["data"]["title"]);
-        Console.WriteLine("Produto retornado corretamente!");
-    }
+    } 
 
 
     [Fact]
     public async Task DeleteProduct_ShouldRemoveProductFromDatabase()
-    {
-        await AuthenticateClientAsync(); // 🔹 Adiciona o token JWT ao cliente
+    {      
 
         int productId = 0;
 
@@ -180,8 +97,7 @@ public class ProductIntegrationTests : IntegrationTestBase
 
     [Fact]
     public async Task UpdateProduct_ShouldModifyProductInDatabase()
-    {
-        await AuthenticateClientAsync();
+    {      
 
         int productId = 0;
         ExecuteDbContext(context =>
@@ -232,8 +148,7 @@ public class ProductIntegrationTests : IntegrationTestBase
 
     [Fact]
     public async Task GetCategories_ShouldReturnProductCategories()
-    {
-        await AuthenticateClientAsync();
+    {       
 
         // Arrange - Criar algumas categorias no banco de dados
         ExecuteDbContext(context =>

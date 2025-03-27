@@ -32,8 +32,8 @@ public static class UpdateUserHandlerTestData
             Email = command.Email ?? "default@example.com",
             Password = "hashedPassword123",
             Status = command.Status,
-            Firstname = command.Firstname ?? "John",
-            Lastname = command.Lastname ?? "Doe",
+            Firstname = command.Firstname ?? "Johnn",
+            Lastname = command.Lastname ?? "Doee",
             Phone = command.Phone ?? "+55 11 99999-9999",
             Role = command.Role,
             Address = command.Address ?? new Address
