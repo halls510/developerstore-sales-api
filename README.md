@@ -17,7 +17,7 @@ O projeto está preparado para rodar localmente via Docker com configuração fa
 7. [🧪 Testes Automatizados](#-testes-automatizados)
 8. [🗂️ Estrutura do Projeto](#️-estrutura-do-projeto)
 9. [🚧 Troubleshooting](#-troubleshooting)
-
+10. [🔐 Acesso e Credenciais de Acesso (Ambiente de Demonstração)](#-acesso-e-credenciais-de-acesso-ambiente-de-demonstracao)
 ---
 
 ## 🎯 Finalidade do Projeto
@@ -222,3 +222,32 @@ root/
 | Erro de SSL / API não sobe      | Caminho ou senha do certificado incorretos no appsettings               |
 | Porta em uso                    | Altere no `docker-compose.override.yml` ou finalize serviços conflitantes |
 | Serviços não conectam           | Verifique `.env` e credenciais (RabbitMQ, MinIO)                        |
+
+## 🔐 Acesso e Credenciais de Acesso (Ambiente de Demonstração)
+
+- **RabbitMQ**  
+  - URL: https://rabbitmq.hallison.com.br/  
+  - Usuário: `devstore`  
+  - Senha: `devstore123`
+
+- **MinIO**  
+  - URL: https://minio-ui.hallison.com.br/  
+  - Usuário: `minioadminstore`  
+  - Senha: `minioadminstore`
+
+- **Frontend**  
+  - URL: https://store.hallison.com.br/  
+  - Usuário de teste: `manager@devstore.com`  
+  - Senha: `Manager123!`
+
+- **WebApi**  
+  - URL: https://api.hallison.com.br/api  
+  - Email: `admin@example.com`  
+  - Senha: `A#g7jfdsd#$%#`
+
+- **WebApi Swagger**  
+  - URL: https://api.hallison.com.br/swagger  
+  - Email: `admin@example.com`  
+  - Senha: `A#g7jfdsd#$%#`  
+
+> *Obs: Estes acessos são apenas para fins de avaliação do projeto.*
